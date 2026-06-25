@@ -1,0 +1,257 @@
+'use server'
+
+import { createClient } from '@/lib/supabase'
+import { revalidatePath } from 'next/cache'
+import { generatePickupCode } from '@/utils/generatePickupCode'
+import { WRITE_BLOCKED_STATUSES } from '@/constants/subscriptionStatuses'
+import { ORDER_STATUS_TRANSITIONS } from '@/constants/statuses'
+import type { OrderStatus, OrderPriority } from '@/constants/statuses'
+import type { SubscriptionStatus } from '@/constants/subscriptionStatuses'
+import type { ServiceResult } from '@/types/serviceResult'
+
+export interface OrderListItem {
+  id: string
+  orderNumber: string
+  status: OrderStatus
+  priority: OrderPriority
+  total: number
+  pickupDate: string | null
+  createdAt: string
+  customerName: string
+  customerPhone: string
+  branchName: string
+}
+
+export interface CreateOrderInput {
+  customerId: string
+  branchId: string
+  priority: OrderPriority
+  pickupDate?: string
+  notes?: string
+  items: {
+    itemTypeId: string
+    serviceId: string
+    quantity: number
+    unitPrice: number
+    totalPrice: number
+  }[]
+}
+
+export async function getOrders(laundryId: string, status?: OrderStatus): Promise<OrderListItem[]> {
+  const supabase = createClient()
+
+  let query = supabase
+    .from('orders')
+    .select(`
+      id, order_number, status, priority, total, pickup_date, created_at,
+      customers(first_name, last_name, phone),
+      branches(name)
+    `)
+    .eq('laundry_id', laundryId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(100)
+
+  if (status) query = query.eq('status', status)
+
+  const { data } = await query
+
+  return (data ?? []).map(r => {
+    const customer = r.customers as unknown as { first_name: string; last_name: string; phone: string } | null
+    const branch = r.branches as unknown as { name: string } | null
+    return {
+      id: r.id,
+      orderNumber: r.order_number,
+      status: r.status as OrderStatus,
+      priority: r.priority as OrderPriority,
+      total: Number(r.total),
+      pickupDate: r.pickup_date,
+      createdAt: r.created_at,
+      customerName: customer ? `${customer.first_name} ${customer.last_name}` : '',
+      customerPhone: customer?.phone ?? '',
+      branchName: branch?.name ?? '',
+    }
+  })
+}
+
+export async function createOrder(input: CreateOrderInput): Promise<ServiceResult<{ orderId: string; orderNumber: string; pickupCode: string }>> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Not authenticated.' }
+
+  const { data: emp } = await supabase
+    .from('employees')
+    .select('id, laundry_id, branch_id, role')
+    .eq('auth_user_id', user.id)
+    .eq('is_active', true)
+    .single()
+
+  if (!emp) return { success: false, error: 'Employee not found.' }
+
+  // Subscription write-block check
+  const { data: sub } = await supabase
+    .from('subscriptions')
+    .select('status')
+    .eq('laundry_id', emp.laundry_id)
+    .neq('status', 'cancelled')
+    .maybeSingle()
+
+  if (!sub) return { success: false, error: 'No active subscription. Contact Rinsion support.' }
+  if (WRITE_BLOCKED_STATUSES.includes(sub.status as SubscriptionStatus)) {
+    return { success: false, error: 'Account is blocked. Please renew your subscription.' }
+  }
+
+  const orderNumber = generateOrderNumber()
+  const pickupCode = generatePickupCode()
+  const subtotal = input.items.reduce((s, i) => s + i.totalPrice, 0)
+  const branchId = emp.role === 'admin' ? input.branchId : emp.branch_id
+
+  const { data: order, error: orderErr } = await supabase
+    .from('orders')
+    .insert({
+      order_number: orderNumber,
+      pickup_code: pickupCode,
+      laundry_id: emp.laundry_id,
+      branch_id: branchId,
+      customer_id: input.customerId,
+      created_by_employee_id: emp.id,
+      status: 'received',
+      priority: input.priority,
+      pickup_date: input.pickupDate ?? null,
+      subtotal,
+      total: subtotal,
+    })
+    .select('id')
+    .single()
+
+  if (orderErr) return { success: false, error: orderErr.message }
+
+  await supabase.from('order_items').insert(
+    input.items.map(item => ({
+      order_id: order.id,
+      item_type_id: item.itemTypeId,
+      service_id: item.serviceId,
+      quantity: item.quantity,
+      unit_price: item.unitPrice,
+      total_price: item.totalPrice,
+    }))
+  )
+
+  if (input.notes?.trim()) {
+    await supabase.from('order_notes').insert({
+      order_id: order.id,
+      created_by_type: 'employee',
+      created_by_id: emp.id,
+      note: input.notes.trim(),
+    })
+  }
+
+  await supabase.from('order_status_history').insert({
+    order_id: order.id,
+    employee_id: emp.id,
+    previous_status: null,
+    new_status: 'received',
+  })
+
+  await supabase.from('activity_logs').insert({
+    laundry_id: emp.laundry_id,
+    order_id: order.id,
+    employee_id: emp.id,
+    action_type: 'ORDER_CREATED',
+    description: `Order ${orderNumber} created`,
+  })
+
+  // Update customer last_visit_date
+  await supabase
+    .from('customers')
+    .update({ last_visit_date: new Date().toISOString().split('T')[0] })
+    .eq('id', input.customerId)
+
+  revalidatePath('/orders')
+  return { success: true, data: { orderId: order.id, orderNumber, pickupCode } }
+}
+
+export async function getOrder(id: string) {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('orders')
+    .select(`
+      id, order_number, pickup_code, status, priority, pickup_date, subtotal, total, created_at,
+      customers(id, first_name, last_name, phone),
+      branches(name),
+      order_items(
+        id, quantity, unit_price, total_price,
+        item_types(name),
+        services(name)
+      ),
+      payments(id, amount, payment_method, created_at),
+      order_notes(id, note, created_at, created_by_type),
+      order_status_history(previous_status, new_status, created_at)
+    `)
+    .eq('id', id)
+    .single()
+
+  return data
+}
+
+export async function updateOrderStatus(
+  orderId: string,
+  newStatus: OrderStatus
+): Promise<ServiceResult<null>> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Not authenticated.' }
+
+  const { data: emp } = await supabase
+    .from('employees')
+    .select('id, laundry_id')
+    .eq('auth_user_id', user.id)
+    .single()
+
+  if (!emp) return { success: false, error: 'Employee not found.' }
+
+  const { data: order } = await supabase
+    .from('orders')
+    .select('status')
+    .eq('id', orderId)
+    .single()
+
+  if (!order) return { success: false, error: 'Order not found.' }
+
+  const currentStatus = order.status as OrderStatus
+  const allowed = ORDER_STATUS_TRANSITIONS[currentStatus]
+  if (!allowed.includes(newStatus)) {
+    return { success: false, error: `Cannot move from ${currentStatus} to ${newStatus}.` }
+  }
+
+  await supabase
+    .from('orders')
+    .update({ status: newStatus })
+    .eq('id', orderId)
+
+  await supabase.from('order_status_history').insert({
+    order_id: orderId,
+    employee_id: emp.id,
+    previous_status: currentStatus,
+    new_status: newStatus,
+  })
+
+  await supabase.from('activity_logs').insert({
+    laundry_id: emp.laundry_id,
+    order_id: orderId,
+    employee_id: emp.id,
+    action_type: 'STATUS_UPDATED',
+    description: `Status changed from ${currentStatus} to ${newStatus}`,
+  })
+
+  revalidatePath(`/orders/${orderId}`)
+  revalidatePath('/orders')
+  return { success: true, data: null }
+}
+
+function generateOrderNumber(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  let code = 'ORD-'
+  for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)]
+  return code
+}

@@ -1,0 +1,2 @@
+# Secrets — Claude Code cannot read these
+.env*
