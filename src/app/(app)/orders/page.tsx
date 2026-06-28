@@ -1,19 +1,23 @@
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getOrders } from '@/services/orders'
+import { getOrders, searchOrders } from '@/services/orders'
 import { formatCurrency } from '@/utils/formatCurrency'
 import Link from 'next/link'
+import { OrderSearch } from './OrderSearch'
 
 const STATUS_STYLES: Record<string, string> = {
   received: 'bg-gray-100 text-gray-600', confirmed: 'bg-blue-50 text-blue-700',
   processing: 'bg-yellow-50 text-yellow-700', ready: 'bg-green-50 text-green-700',
-  collected: 'bg-gray-50 text-gray-400', cancelled: 'bg-red-50 text-red-400',
+  collected: 'bg-emerald-50 text-emerald-700', cancelled: 'bg-red-50 text-red-400',
 }
 
-export default async function OrdersPage({ searchParams }: { searchParams: { status?: string } }) {
+export default async function OrdersPage({ searchParams }: { searchParams: { status?: string; q?: string } }) {
   const profile = await getMyProfile()
   if (!profile) return null
 
-  const orders = await getOrders(profile.laundryId, searchParams.status as never)
+  const query = searchParams.q?.trim() ?? ''
+  const orders = query
+    ? await searchOrders(profile.laundryId, query)
+    : await getOrders(profile.laundryId, searchParams.status as never)
 
   const FILTERS = ['all', 'received', 'confirmed', 'processing', 'ready', 'collected']
 
@@ -29,30 +33,52 @@ export default async function OrdersPage({ searchParams }: { searchParams: { sta
         </Link>
       </div>
 
-      {/* Status filters */}
-      <div className="flex gap-1.5 mb-4 flex-wrap">
-        {FILTERS.map(f => (
-          <Link
-            key={f}
-            href={f === 'all' ? '/orders' : `/orders?status=${f}`}
-            className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-colors ${
-              (f === 'all' && !searchParams.status) || f === searchParams.status
-                ? 'bg-gray-900 text-white'
-                : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-400'
-            }`}
-          >
-            {f}
-          </Link>
-        ))}
-      </div>
+      {/* Search */}
+      <OrderSearch defaultValue={query} />
+
+      {/* Status filters — hidden while searching */}
+      {!query && (
+        <div className="flex gap-1.5 mb-4 flex-wrap">
+          {FILTERS.map(f => (
+            <Link
+              key={f}
+              href={f === 'all' ? '/orders' : `/orders?status=${f}`}
+              className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-colors ${
+                (f === 'all' && !searchParams.status) || f === searchParams.status
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-400'
+              }`}
+            >
+              {f}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {query && (
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm text-gray-500">
+            {orders.length === 0 ? 'No results' : `${orders.length} result${orders.length !== 1 ? 's' : ''}`} for <span className="font-medium text-gray-900">&ldquo;{query}&rdquo;</span>
+          </p>
+          <Link href="/orders" className="text-xs text-gray-400 hover:text-gray-700">Clear search</Link>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border border-gray-200">
         {orders.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-sm text-gray-500">No orders found.</p>
-            <Link href="/orders/new" className="text-sm text-gray-900 underline mt-2 inline-block">
-              Create first order
-            </Link>
+            <p className="text-sm text-gray-500">
+              {query
+                ? `No orders matching "${query}".`
+                : searchParams.status
+                  ? `No ${searchParams.status} orders.`
+                  : 'No orders yet.'}
+            </p>
+            {!query && !searchParams.status && (
+              <Link href="/orders/new" className="text-sm text-gray-900 underline mt-2 inline-block">
+                Create first order
+              </Link>
+            )}
           </div>
         ) : (
           <table className="w-full text-sm">

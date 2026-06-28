@@ -42,7 +42,7 @@ export default function CreateLaundryPage() {
           <div className="bg-green-50 border border-green-200 rounded-xl p-6">
             <p className="font-semibold text-green-800 mb-1">Laundry provisioned</p>
             <p className="text-sm text-green-600 mb-4">
-              14-day trial started. Share credentials with the owner.
+              14-day trial started automatically. Share these credentials with the owner.
             </p>
             <div className="bg-white rounded-lg border border-green-200 p-4 space-y-1 font-mono text-sm text-gray-900">
               <p><span className="text-gray-500">Email:</span> {result.ownerEmail}</p>

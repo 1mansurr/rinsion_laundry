@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createOrder, type CreateOrderInput } from '@/services/orders'
 import type { ItemType } from '@/services/items'
@@ -57,8 +57,18 @@ export function CreateOrderForm({ itemTypes, services, prices, customers, branch
       ).slice(0, 8)
     : []
 
+  // Only show items that have at least one active price
+  const pricedItems = itemTypes.filter(t =>
+    t.isActive && prices.some(p => p.itemTypeId === t.id && p.isActive)
+  )
+
   function getUnitPrice(itemTypeId: string, serviceId: string): number {
     return prices.find(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId && p.isActive)?.price ?? 0
+  }
+
+  function getAvailableServices(itemTypeId: string) {
+    if (!itemTypeId) return services.filter(s => s.isActive)
+    return services.filter(s => s.isActive && prices.some(p => p.itemTypeId === itemTypeId && p.serviceId === s.id && p.isActive))
   }
 
   function updateLine(index: number, patch: Partial<LineItem>) {
@@ -66,6 +76,15 @@ export function CreateOrderForm({ itemTypes, services, prices, customers, branch
       const next = prev.map((l, i) => {
         if (i !== index) return l
         const updated = { ...l, ...patch }
+        if (patch.itemTypeId !== undefined) {
+          const available = getAvailableServices(patch.itemTypeId)
+          if (updated.serviceId && !available.some(s => s.id === updated.serviceId)) {
+            updated.serviceId = ''
+          }
+          if (!updated.serviceId && available.length === 1) {
+            updated.serviceId = available[0].id
+          }
+        }
         const unitPrice = (patch.itemTypeId !== undefined || patch.serviceId !== undefined)
           ? getUnitPrice(updated.itemTypeId, updated.serviceId)
           : updated.unitPrice
@@ -161,26 +180,26 @@ export function CreateOrderForm({ itemTypes, services, prices, customers, branch
           {isAdmin && (
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
-              <select
+              <CustomSelect
                 value={branchId}
-                onChange={e => setBranchId(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
-              >
-                {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-              </select>
+                onChange={setBranchId}
+                options={branches.map(b => ({ value: b.id, label: b.name }))}
+                placeholder="Select branch…"
+              />
             </div>
           )}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-            <select
+            <CustomSelect
               value={priority}
-              onChange={e => setPriority(e.target.value as OrderPriority)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
-            >
-              <option value="normal">Normal</option>
-              <option value="express">Express</option>
-              <option value="urgent">Urgent</option>
-            </select>
+              onChange={v => setPriority(v as OrderPriority)}
+              options={[
+                { value: 'normal', label: 'Normal' },
+                { value: 'express', label: 'Express' },
+                { value: 'urgent', label: 'Urgent' },
+              ]}
+              placeholder="Priority…"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Pickup Date</label>
@@ -202,24 +221,21 @@ export function CreateOrderForm({ itemTypes, services, prices, customers, branch
           {lines.map((line, i) => (
             <div key={i} className="grid grid-cols-12 gap-2 items-center">
               <div className="col-span-4">
-                <select
+                <CustomSelect
                   value={line.itemTypeId}
-                  onChange={e => updateLine(i, { itemTypeId: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
-                >
-                  <option value="">Item type…</option>
-                  {itemTypes.filter(t => t.isActive).map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
+                  onChange={v => updateLine(i, { itemTypeId: v })}
+                  options={pricedItems.map(t => ({ value: t.id, label: t.name }))}
+                  placeholder="Item…"
+                />
               </div>
               <div className="col-span-4">
-                <select
+                <CustomSelect
                   value={line.serviceId}
-                  onChange={e => updateLine(i, { serviceId: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
-                >
-                  <option value="">Service…</option>
-                  {services.filter(s => s.isActive).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                </select>
+                  onChange={v => updateLine(i, { serviceId: v })}
+                  options={getAvailableServices(line.itemTypeId).map(s => ({ value: s.id, label: s.name }))}
+                  placeholder="Service…"
+                  disabled={!line.itemTypeId}
+                />
               </div>
               <div className="col-span-2">
                 <input
@@ -269,6 +285,90 @@ export function CreateOrderForm({ itemTypes, services, prices, customers, branch
         </button>
         {!selectedCustomer && <p className="text-xs text-gray-400 text-center mt-2">Select a customer to continue</p>}
       </section>
+    </div>
+  )
+}
+
+// ─── Custom Select ────────────────────────────────────────────────────────────
+
+interface SelectOption { value: string; label: string }
+
+function CustomSelect({
+  value,
+  onChange,
+  options,
+  placeholder,
+  disabled,
+}: {
+  value: string
+  onChange: (v: string) => void
+  options: SelectOption[]
+  placeholder: string
+  disabled?: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    function handle(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handle)
+    return () => document.removeEventListener('mousedown', handle)
+  }, [open])
+
+  const selected = options.find(o => o.value === value)
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => !disabled && setOpen(v => !v)}
+        disabled={disabled}
+        className={`w-full flex items-center justify-between gap-2 border rounded-lg px-3 py-2 text-sm text-left transition-colors ${
+          disabled
+            ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
+            : open
+              ? 'border-gray-900 ring-2 ring-gray-900 bg-white'
+              : 'border-gray-300 bg-white hover:border-gray-400'
+        }`}
+      >
+        <span className={`truncate ${selected ? 'text-gray-900' : 'text-gray-400'}`}>
+          {selected?.label ?? placeholder}
+        </span>
+        <svg
+          className={`w-3.5 h-3.5 text-gray-400 flex-shrink-0 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute z-50 mt-1 w-full min-w-max bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+          <div className="max-h-52 overflow-y-auto py-1">
+            {options.length === 0 ? (
+              <p className="px-3 py-2.5 text-sm text-gray-400">No options available</p>
+            ) : (
+              options.map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => { onChange(opt.value); setOpen(false) }}
+                  className={`w-full text-left px-3 py-2.5 text-sm transition-colors ${
+                    opt.value === value
+                      ? 'bg-gray-900 text-white font-medium'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

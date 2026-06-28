@@ -17,7 +17,7 @@ export async function getServices(laundryId: string): Promise<LaundryService[]> 
     .select('id, name, is_active')
     .eq('laundry_id', laundryId)
     .is('deleted_at', null)
-    .order('name')
+    .order('created_at', { ascending: true })
 
   return (data ?? []).map(r => ({ id: r.id, name: r.name, isActive: r.is_active }))
 }

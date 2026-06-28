@@ -2,10 +2,17 @@ import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/Sidebar'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
+import { createClient } from '@/lib/supabase'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await getMyProfile()
-  if (!profile) redirect('/login')
+  if (!profile) {
+    // Sign out first so the middleware doesn't redirect back to /dashboard,
+    // creating an infinite loop for accounts with no employee record (e.g. internal admins).
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    redirect('/login')
+  }
 
   const subscription = await getActiveSubscription(profile.laundryId)
 

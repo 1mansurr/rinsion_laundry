@@ -8,7 +8,7 @@ import type { OrderStatus } from '@/constants/statuses'
 const STATUS_STYLES: Record<string, string> = {
   received: 'bg-gray-100 text-gray-600', confirmed: 'bg-blue-50 text-blue-700',
   processing: 'bg-yellow-50 text-yellow-700', ready: 'bg-green-50 text-green-700',
-  collected: 'bg-gray-50 text-gray-500', cancelled: 'bg-red-50 text-red-500',
+  collected: 'bg-emerald-50 text-emerald-700', cancelled: 'bg-red-50 text-red-500',
 }
 
 export default async function OrderDetailPage({ params }: { params: { id: string } }) {
@@ -32,6 +32,9 @@ export default async function OrderDetailPage({ params }: { params: { id: string
   }[]).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   const notes = (order.order_notes as { id: string; note: string; created_at: string }[]) ?? []
+  const smsMessages = (order.sms_messages as {
+    id: string; trigger_event: string; status: string; phone: string; created_at: string
+  }[]).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   const amountPaid = payments.reduce((s, p) => s + Number(p.amount), 0)
 
@@ -120,7 +123,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
                   <div key={p.id} className="flex items-center justify-between px-5 py-2.5">
                     <div>
                       <p className="text-sm text-gray-900 capitalize">{p.payment_method.replace('_', ' ')}</p>
-                      <p className="text-xs text-gray-400">{p.created_at.split('T')[0]}</p>
+                      <p className="text-xs text-gray-400">{p.created_at.replace('T', ' ').substring(0, 16)}</p>
                     </div>
                     <span className="text-sm font-medium text-green-700">{formatCurrency(Number(p.amount))}</span>
                   </div>
@@ -146,11 +149,29 @@ export default async function OrderDetailPage({ params }: { params: { id: string
               <div className="space-y-2">
                 {statusHistory.map((h, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs text-gray-500">
-                    <span className="w-1.5 h-1.5 rounded-full bg-gray-300 flex-shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400 flex-shrink-0" />
                     <span>
                       {h.previous_status ? `${h.previous_status} → ` : ''}<strong className="text-gray-700">{h.new_status}</strong>
                     </span>
-                    <span className="text-gray-300 ml-auto">{h.created_at.split('T')[0]}</span>
+                    <span className="text-gray-400 ml-auto">{h.created_at.replace('T', ' ').substring(0, 16)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+          {/* SMS history */}
+          {smsMessages.length > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">SMS</h2>
+              <div className="space-y-2">
+                {smsMessages.map(sms => (
+                  <div key={sms.id} className="flex items-center gap-2 text-xs text-gray-500">
+                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${sms.status === 'sent' ? 'bg-green-400' : 'bg-red-400'}`} />
+                    <span className="capitalize">{sms.trigger_event.replace(/_/g, ' ').toLowerCase()}</span>
+                    <span className="text-gray-300">→ {sms.phone}</span>
+                    <span className="text-gray-400 ml-auto">{sms.created_at.replace('T', ' ').substring(0, 16)}</span>
                   </div>
                 ))}
               </div>

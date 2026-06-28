@@ -2,6 +2,7 @@
 
 import { createAdminClient, createClient } from '@/lib/supabase'
 import { INTERNAL_ADMIN_EMAILS } from '@/constants/internalAdmins'
+import { PLANS, TRIAL_DAYS } from '@/constants/plans'
 import type { ServiceResult } from '@/types/serviceResult'
 
 export interface CreateLaundryInput {
@@ -83,12 +84,39 @@ export async function createLaundry(
 
   if (employeeErr) return { success: false, error: employeeErr.message }
 
-  // 5. Settings (all defaults) — trial is started separately via /internal/laundries
+  // 5. Settings (all defaults)
   const { error: settingsErr } = await admin
     .from('settings')
     .insert({ laundry_id: laundry.id })
 
   if (settingsErr) return { success: false, error: settingsErr.message }
+
+  // 6. Default item types and services — active out of the box, admin can deactivate any
+  await admin.from('item_types').insert(
+    DEFAULT_ITEM_TYPES.map(name => ({ laundry_id: laundry.id, name, is_active: true }))
+  )
+  await admin.from('services').insert(
+    DEFAULT_SERVICES.map(name => ({ laundry_id: laundry.id, name, is_active: true }))
+  )
+
+  // 7. Trial subscription — 14-day trial starts immediately on provisioning
+  const today = new Date().toISOString().split('T')[0]
+  const trialEnd = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split('T')[0]
+
+  const { error: subErr } = await admin
+    .from('subscriptions')
+    .insert({
+      laundry_id: laundry.id,
+      plan: 'trial',
+      status: 'trialing',
+      cycle_start_date: today,
+      cycle_end_date: trialEnd,
+      sms_quota: PLANS.trial.smsQuota,
+    })
+
+  if (subErr) return { success: false, error: subErr.message }
 
   return {
     success: true,
@@ -100,6 +128,30 @@ export async function createLaundry(
     },
   }
 }
+
+const DEFAULT_ITEM_TYPES = [
+  'Shirt',
+  'Trouser',
+  'T-Shirt',
+  'Dress',
+  'Skirt',
+  'Suit (Jacket)',
+  'Jeans',
+  'Coat / Blazer',
+  'Bedsheet',
+  'Pillowcase',
+  'Duvet / Comforter',
+  'Towel',
+  'Uniform',
+  'Curtain',
+]
+
+const DEFAULT_SERVICES = [
+  'Wash Only',
+  'Wash & Iron',
+  'Iron Only',
+  'Dry Clean',
+]
 
 function generateTempPassword(): string {
   // Unambiguous chars (no 0/O, 1/I/l)

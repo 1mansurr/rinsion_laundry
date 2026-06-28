@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { updateOrderStatus } from '@/services/orders'
 import { recordPayment } from '@/services/payments/recordPayment'
+import { resendPickupCodeSms } from '@/services/notifications/resendPickupCodeSms'
 import { ORDER_STATUS_TRANSITIONS, PAYMENT_METHODS, type OrderStatus } from '@/constants/statuses'
 import type { PaymentMethod } from '@/constants/statuses'
 import { formatCurrency } from '@/utils/formatCurrency'
@@ -18,7 +19,6 @@ export function OrderActions({ orderId, currentStatus, total, amountPaid }: Prop
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [showPaymentForm, setShowPaymentForm] = useState(false)
-  const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash')
 
   const nextStatuses = ORDER_STATUS_TRANSITIONS[currentStatus] ?? []
@@ -33,14 +33,12 @@ export function OrderActions({ orderId, currentStatus, total, amountPaid }: Prop
   }
 
   function handleRecordPayment() {
-    const amount = parseFloat(paymentAmount)
-    if (isNaN(amount) || amount <= 0) return
+    if (balance <= 0) return
     setError(null)
     startTransition(async () => {
-      const res = await recordPayment({ orderId, amount, paymentMethod })
+      const res = await recordPayment({ orderId, amount: balance, paymentMethod })
       if (res.success) {
         setShowPaymentForm(false)
-        setPaymentAmount('')
       } else {
         setError(res.error)
       }
@@ -81,7 +79,7 @@ export function OrderActions({ orderId, currentStatus, total, amountPaid }: Prop
           {!showPaymentForm ? (
             balance > 0 && (
               <button
-                onClick={() => { setShowPaymentForm(true); setPaymentAmount(balance.toFixed(2)) }}
+                onClick={() => setShowPaymentForm(true)}
                 className="w-full border border-gray-300 text-gray-700 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors"
               >
                 Record Payment
@@ -89,14 +87,9 @@ export function OrderActions({ orderId, currentStatus, total, amountPaid }: Prop
             )
           ) : (
             <div className="space-y-2">
-              <div className="flex gap-2 items-center">
-                <span className="text-xs text-gray-500">GHS</span>
-                <input
-                  type="number" step="0.01" min="0.01"
-                  value={paymentAmount}
-                  onChange={e => setPaymentAmount(e.target.value)}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
-                />
+              <div className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg">
+                <span className="text-sm text-gray-500">Amount</span>
+                <span className="text-sm font-semibold text-gray-900">{formatCurrency(balance)}</span>
               </div>
               <select
                 value={paymentMethod}
@@ -112,7 +105,7 @@ export function OrderActions({ orderId, currentStatus, total, amountPaid }: Prop
                   onClick={handleRecordPayment} disabled={isPending}
                   className="flex-1 bg-gray-900 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
                 >
-                  {isPending ? 'Saving…' : 'Save Payment'}
+                  {isPending ? 'Saving…' : 'Confirm Payment'}
                 </button>
                 <button
                   onClick={() => setShowPaymentForm(false)}

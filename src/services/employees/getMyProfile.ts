@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { createClient } from '@/lib/supabase'
 import type { EmployeeRole } from '@/constants/statuses'
 
@@ -14,7 +15,9 @@ export interface MyProfile {
   laundryName: string
 }
 
-export async function getMyProfile(): Promise<MyProfile | null> {
+// cache() deduplicates calls within a single request — layout and page both call this,
+// but only the first call hits Supabase auth; subsequent calls return the memoized result.
+export const getMyProfile = cache(async function (): Promise<MyProfile | null> {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
@@ -40,4 +43,4 @@ export async function getMyProfile(): Promise<MyProfile | null> {
     phone: data.phone,
     laundryName: (data.laundries as unknown as { name: string } | null)?.name ?? '',
   }
-}
+})
