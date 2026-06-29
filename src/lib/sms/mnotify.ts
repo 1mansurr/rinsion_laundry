@@ -51,7 +51,7 @@ export class MnotifyProvider implements SmsProvider {
 
       const json = await res.json() as { status: string; code: string; message: string; summary?: { sent: number } }
 
-      if (json.status === 'success' && (json.summary?.sent ?? 0) > 0) {
+      if (json.status === 'success') {
         logger.info('MnotifyProvider: sent', { recipient, code: json.code })
         return { success: true, providerMessageId: json.code }
       }
