@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
+import { computeSmsUsage } from '@/services/notifications/computeSmsUsage'
 import { formatCurrency } from '@/utils/formatCurrency'
 import Link from 'next/link'
 
@@ -18,6 +19,7 @@ export default async function DashboardPage() {
     { data: todayPaymentsData },
     subscription,
   ] = await Promise.all([
+
     supabase.from('orders').select('*', { count: 'exact', head: true })
       .eq('laundry_id', profile.laundryId)
       .gte('created_at', `${today}T00:00:00`)
@@ -38,6 +40,10 @@ export default async function DashboardPage() {
   ])
 
   const todayRevenue = (todayPaymentsData ?? []).reduce((s: number, p: { amount: number }) => s + Number(p.amount), 0)
+
+  const smsUsed = subscription
+    ? await computeSmsUsage(profile.laundryId, subscription.cycleStartDate, subscription.cycleEndDate)
+    : 0
 
   const { data: recentOrders } = await supabase
     .from('orders')
@@ -124,6 +130,25 @@ export default async function DashboardPage() {
                   style={{ width: `${Math.min(100, (subscription.daysLeft / 14) * 100)}%` }}
                 />
               </div>
+            </div>
+          )}
+
+          {subscription && (
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-sm font-semibold text-gray-900">SMS</h2>
+                <Link href="/settings/sms-usage" className="text-xs text-gray-400 hover:text-gray-700">Details</Link>
+              </div>
+              <p className="text-xs text-gray-500 mb-2">{smsUsed} / {subscription.smsQuota} used this cycle</p>
+              <div className="bg-gray-100 rounded-full h-1.5">
+                <div
+                  className={`h-1.5 rounded-full transition-all ${smsUsed / subscription.smsQuota >= 0.7 ? 'bg-amber-400' : 'bg-gray-900'}`}
+                  style={{ width: `${Math.min(100, (smsUsed / subscription.smsQuota) * 100)}%` }}
+                />
+              </div>
+              {smsUsed > subscription.smsQuota && (
+                <p className="text-xs text-amber-600 mt-1">{smsUsed - subscription.smsQuota} overage messages</p>
+              )}
             </div>
           )}
         </div>

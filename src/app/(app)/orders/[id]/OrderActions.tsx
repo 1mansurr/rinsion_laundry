@@ -20,6 +20,7 @@ export function OrderActions({ orderId, currentStatus, total, amountPaid }: Prop
   const [error, setError] = useState<string | null>(null)
   const [showPaymentForm, setShowPaymentForm] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash')
+  const [smsSent, setSmsSent] = useState(false)
 
   const nextStatuses = ORDER_STATUS_TRANSITIONS[currentStatus] ?? []
   const balance = total - amountPaid
@@ -117,6 +118,24 @@ export function OrderActions({ orderId, currentStatus, total, amountPaid }: Prop
             </div>
           )}
         </div>
+      )}
+
+      {/* Resend pickup code */}
+      {currentStatus !== 'cancelled' && currentStatus !== 'collected' && (
+        <button
+          onClick={() => {
+            setError(null)
+            startTransition(async () => {
+              const res = await resendPickupCodeSms(orderId)
+              if (res.success) setSmsSent(true)
+              else setError(res.error)
+            })
+          }}
+          disabled={isPending}
+          className="w-full text-xs text-gray-400 hover:text-gray-700 py-1 transition-colors"
+        >
+          {smsSent ? 'Pickup code sent ✓' : 'Resend pickup code SMS'}
+        </button>
       )}
 
       {/* Status transitions */}
