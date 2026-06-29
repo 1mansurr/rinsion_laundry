@@ -121,15 +121,22 @@ export default async function DashboardPage() {
 
           {subscription && (
             <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <h2 className="text-sm font-semibold text-gray-900 mb-2">Subscription</h2>
-              <p className="text-xs text-gray-500 capitalize">{subscription.plan} plan · {subscription.status}</p>
-              <p className="text-xs text-gray-500 mt-0.5">{subscription.daysLeft} days remaining</p>
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-sm font-semibold text-gray-900">Subscription</h2>
+                <Link href="/settings/subscription" className="text-xs text-gray-400 hover:text-gray-700">Manage</Link>
+              </div>
+              <p className="text-xs text-gray-500 capitalize">{subscription.plan} · {subscription.daysLeft} days left</p>
               <div className="mt-2 bg-gray-100 rounded-full h-1.5">
                 <div
-                  className="bg-gray-900 h-1.5 rounded-full"
-                  style={{ width: `${Math.min(100, (subscription.daysLeft / 14) * 100)}%` }}
+                  className={`h-1.5 rounded-full ${subscription.daysLeft <= 3 ? 'bg-amber-400' : 'bg-gray-900'}`}
+                  style={{ width: `${Math.min(100, (subscription.daysLeft / (subscription.plan === 'trial' ? 14 : 30)) * 100)}%` }}
                 />
               </div>
+              {subscription.daysLeft <= 7 && subscription.plan !== 'trial' && (
+                <p className="text-xs text-amber-600 mt-1">
+                  GHS {subscription.plan === 'growth' ? 180 : 90} to renew
+                </p>
+              )}
             </div>
           )}
 
