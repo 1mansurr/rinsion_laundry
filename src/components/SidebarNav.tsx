@@ -8,6 +8,7 @@ const ADMIN_NAV = [
   { href: '/dashboard',          label: 'Dashboard' },
   { href: '/customers',          label: 'Customers' },
   { href: '/orders',             label: 'Orders' },
+  { href: '/pickup',             label: 'Pickup' },
   { href: '/payments',           label: 'Payments' },
   { href: '/employees',          label: 'Employees' },
   { href: '/items-and-services', label: 'Items & Services' },
@@ -19,6 +20,7 @@ const EMPLOYEE_NAV = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/customers', label: 'Customers' },
   { href: '/orders',    label: 'Orders' },
+  { href: '/pickup',    label: 'Pickup' },
   { href: '/payments',  label: 'Payments' },
 ]
 

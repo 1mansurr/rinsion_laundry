@@ -289,7 +289,7 @@ export async function updateOrderStatus(
 
   const { data: order } = await supabase
     .from('orders')
-    .select('status')
+    .select('status, total')
     .eq('id', orderId)
     .single()
 
@@ -299,6 +299,15 @@ export async function updateOrderStatus(
   const allowed = ORDER_STATUS_TRANSITIONS[currentStatus]
   if (!allowed.includes(newStatus)) {
     return { success: false, error: `Cannot move from ${currentStatus} to ${newStatus}.` }
+  }
+
+  if (newStatus === 'collected') {
+    const { data: pmts } = await supabase.from('payments').select('amount').eq('order_id', orderId)
+    const paid = (pmts ?? []).reduce((s, p) => s + Number(p.amount), 0)
+    if (paid < Number(order.total)) {
+      const bal = (Number(order.total) - paid).toFixed(2)
+      return { success: false, error: `Balance of GHS ${bal} outstanding. Record payment first.` }
+    }
   }
 
   await supabase

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { updateOrderStatus } from '@/services/orders'
+import { verifyAndCollect } from '@/services/orders/verifyAndCollect'
 import { recordPayment } from '@/services/payments/recordPayment'
 import { resendPickupCodeSms } from '@/services/notifications/resendPickupCodeSms'
 import { ORDER_STATUS_TRANSITIONS, PAYMENT_METHODS, type OrderStatus } from '@/constants/statuses'
@@ -21,6 +22,8 @@ export function OrderActions({ orderId, currentStatus, total, amountPaid }: Prop
   const [showPaymentForm, setShowPaymentForm] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash')
   const [smsSent, setSmsSent] = useState(false)
+  const [collectStep, setCollectStep] = useState<'button' | 'verify'>('button')
+  const [collectCode, setCollectCode] = useState('')
 
   const nextStatuses = ORDER_STATUS_TRANSITIONS[currentStatus] ?? []
   const balance = total - amountPaid
@@ -141,16 +144,66 @@ export function OrderActions({ orderId, currentStatus, total, amountPaid }: Prop
       {/* Status transitions */}
       {nextStatuses.length > 0 && (
         <div className="space-y-2">
-          {nextStatuses.map(s => (
-            <button
-              key={s}
-              onClick={() => handleStatusUpdate(s)}
-              disabled={isPending}
-              className={`w-full py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors ${STATUS_STYLES[s] ?? 'border border-gray-300 text-gray-700'}`}
-            >
-              {STATUS_LABELS[s] ?? s}
-            </button>
-          ))}
+          {nextStatuses.map(s => {
+            if (s === 'collected') {
+              if (collectStep === 'button') {
+                return (
+                  <button
+                    key={s}
+                    onClick={() => setCollectStep('verify')}
+                    disabled={isPending}
+                    className={`w-full py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors ${STATUS_STYLES[s] ?? 'border border-gray-300 text-gray-700'}`}
+                  >
+                    {STATUS_LABELS[s]}
+                  </button>
+                )
+              }
+              return (
+                <div key={s} className="space-y-2">
+                  <input
+                    type="text"
+                    value={collectCode}
+                    onChange={e => setCollectCode(e.target.value.toUpperCase())}
+                    placeholder="Customer's pickup code"
+                    maxLength={8}
+                    autoFocus
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono uppercase text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setError(null)
+                        startTransition(async () => {
+                          const res = await verifyAndCollect(orderId, collectCode)
+                          if (!res.success) setError(res.error)
+                        })
+                      }}
+                      disabled={isPending || !collectCode.trim()}
+                      className="flex-1 bg-gray-900 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                    >
+                      {isPending ? 'Verifying…' : 'Confirm Collect'}
+                    </button>
+                    <button
+                      onClick={() => { setCollectStep('button'); setCollectCode('') }}
+                      className="px-3 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              )
+            }
+            return (
+              <button
+                key={s}
+                onClick={() => handleStatusUpdate(s)}
+                disabled={isPending}
+                className={`w-full py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors ${STATUS_STYLES[s] ?? 'border border-gray-300 text-gray-700'}`}
+              >
+                {STATUS_LABELS[s] ?? s}
+              </button>
+            )
+          })}
         </div>
       )}
     </div>
