@@ -22,6 +22,7 @@ export interface ReadyOrder {
   phone: string
   branchName: string
   readySince: string
+  balance: number
 }
 
 export interface ActivityEntry {
@@ -148,8 +149,8 @@ export function DashboardClient({
           <h1 className="text-[26px] font-semibold text-warm-950 leading-tight">{profile.laundryName}</h1>
           <p className="text-body text-warm-600 mt-0.5">{todayDate}</p>
         </div>
-        <Link href="/customers/new">
-          <Button variant="secondary" size="sm">+ New Customer</Button>
+        <Link href="/orders/new">
+          <Button variant="primary" size="sm">+ New Order</Button>
         </Link>
       </div>
 
@@ -212,9 +213,15 @@ export function DashboardClient({
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-caption text-warm-500">{formatReadySince(order.readySince)}</span>
-                      <Button variant="accent" size="sm" onClick={() => openCollect(order)}>
-                        Mark Collected
-                      </Button>
+                      {order.balance > 0 ? (
+                        <Link href={`/orders/${order.id}`}>
+                          <Button variant="accent" size="sm">Record Payment</Button>
+                        </Link>
+                      ) : (
+                        <Button variant="accent" size="sm" onClick={() => openCollect(order)}>
+                          Mark Collected
+                        </Button>
+                      )}
                     </div>
                   </div>
 
@@ -233,9 +240,15 @@ export function DashboardClient({
                       {order.pickupCode}
                     </span>
                     <span className="text-body text-warm-600">{formatReadySince(order.readySince)}</span>
-                    <Button variant="accent" size="sm" onClick={() => openCollect(order)}>
-                      Mark Collected
-                    </Button>
+                    {order.balance > 0 ? (
+                      <Link href={`/orders/${order.id}`}>
+                        <Button variant="accent" size="sm">Record Payment</Button>
+                      </Link>
+                    ) : (
+                      <Button variant="accent" size="sm" onClick={() => openCollect(order)}>
+                        Mark Collected
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}

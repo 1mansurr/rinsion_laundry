@@ -286,19 +286,28 @@ export function OrderDetail({
           {!isCancelled && !isCollected && (
             <div className="flex flex-wrap items-center gap-2">
               {status === 'ready' ? (
-                <Button variant="primary" onClick={() => setCollectOpen(true)} disabled={isPending}>
-                  Mark Collected
-                </Button>
-              ) : STATUS_NEXT[status] ? (
-                <Button variant="primary" onClick={handleAdvanceStatus} isPending={isPending}>
-                  Mark {STEP_LABELS[STATUS_NEXT[status]!]}
-                </Button>
-              ) : null}
-
-              {balance > 0 && (
-                <Button variant="accent" onClick={() => { setPayAmount(balance.toFixed(2)); setPaymentOpen(true) }} disabled={isPending}>
-                  Record Payment
-                </Button>
+                balance > 0 ? (
+                  <Button variant="accent" onClick={() => { setPayAmount(balance.toFixed(2)); setPaymentOpen(true) }} isPending={isPending}>
+                    Record Payment
+                  </Button>
+                ) : (
+                  <Button variant="primary" onClick={() => setCollectOpen(true)} disabled={isPending}>
+                    Mark Collected
+                  </Button>
+                )
+              ) : (
+                <>
+                  {STATUS_NEXT[status] && (
+                    <Button variant="primary" onClick={handleAdvanceStatus} isPending={isPending}>
+                      Mark {STEP_LABELS[STATUS_NEXT[status]!]}
+                    </Button>
+                  )}
+                  {balance > 0 && (
+                    <Button variant="accent" onClick={() => { setPayAmount(balance.toFixed(2)); setPaymentOpen(true) }} disabled={isPending}>
+                      Record Payment
+                    </Button>
+                  )}
+                </>
               )}
 
               <Button variant="secondary" disabled>
@@ -529,7 +538,7 @@ export function OrderDetail({
               Record Payment
             </Button>
           )}
-          {status === 'ready' && (
+          {status === 'ready' && balance <= 0 && (
             <Button variant="primary" className="w-full" onClick={() => setCollectOpen(true)}>
               Mark Collected
             </Button>

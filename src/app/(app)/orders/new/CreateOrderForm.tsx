@@ -3,6 +3,7 @@
 import { useState, useTransition, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createOrder, type CreateOrderInput } from '@/services/orders'
+import { createCustomer } from '@/services/customers'
 import type { ItemType } from '@/services/items'
 import type { LaundryService } from '@/services/services'
 import type { PriceCell } from '@/services/pricing'
@@ -60,6 +61,14 @@ export function CreateOrderForm({
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(preselectedCustomer ?? null)
   const [showDropdown, setShowDropdown] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
+
+  // Inline customer creation
+  const [showInlineCreate, setShowInlineCreate] = useState(false)
+  const [inlineFirst, setInlineFirst] = useState('')
+  const [inlineLast, setInlineLast] = useState('')
+  const [inlinePhone, setInlinePhone] = useState('')
+  const [inlineError, setInlineError] = useState('')
+  const [inlineIsPending, startInlineTransition] = useTransition()
 
   // Order fields
   const [branchId, setBranchId] = useState(defaultBranchId)
@@ -124,6 +133,36 @@ export function CreateOrderForm({
   const validLines = lines.filter(l => l.itemTypeId && l.serviceId && l.quantity > 0)
   const canSubmit = !!selectedCustomer && validLines.length > 0
 
+  function openInlineCreate() {
+    const parts = customerSearch.trim().split(' ')
+    setInlineFirst(parts[0] ?? '')
+    setInlineLast(parts.slice(1).join(' '))
+    setInlinePhone('')
+    setInlineError('')
+    setShowInlineCreate(true)
+    setShowDropdown(false)
+  }
+
+  function handleInlineCreate() {
+    if (!inlineFirst.trim()) { setInlineError('First name is required'); return }
+    if (!inlinePhone.trim()) { setInlineError('Phone number is required'); return }
+    setInlineError('')
+    startInlineTransition(async () => {
+      const res = await createCustomer({
+        firstName: inlineFirst.trim(),
+        lastName: inlineLast.trim(),
+        phone: inlinePhone.trim(),
+      })
+      if (res.success) {
+        setSelectedCustomer(res.data)
+        setCustomerSearch(`${res.data.firstName} ${res.data.lastName}`)
+        setShowInlineCreate(false)
+      } else {
+        setInlineError(res.error)
+      }
+    })
+  }
+
   function handleSubmit() {
     if (!selectedCustomer || !canSubmit) return
     setError(null)
@@ -183,10 +222,10 @@ export function CreateOrderForm({
               <Input
                 placeholder="Search by name or phone…"
                 value={customerSearch}
-                onChange={e => { setCustomerSearch(e.target.value); setShowDropdown(true) }}
-                onFocus={() => setShowDropdown(true)}
+                onChange={e => { setCustomerSearch(e.target.value); setShowDropdown(true); setShowInlineCreate(false) }}
+                onFocus={() => { if (!showInlineCreate) setShowDropdown(true) }}
               />
-              {showDropdown && (
+              {showDropdown && !showInlineCreate && (
                 <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-warm-300 rounded-10 shadow-modal overflow-hidden">
                   {filteredCustomers.length === 0 ? (
                     <div className="px-4 py-3 text-body text-warm-500">No customers found</div>
@@ -215,12 +254,81 @@ export function CreateOrderForm({
                     ))
                   )}
                   <div className="border-t border-warm-200 px-4 py-2.5">
-                    <a
-                      href="/customers/new"
+                    <button
+                      type="button"
                       className="text-caption text-brand hover:text-brand-hover"
+                      onClick={openInlineCreate}
                     >
                       + Add new customer
-                    </a>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Inline customer creation */}
+              {showInlineCreate && (
+                <div className="mt-2 bg-white border border-warm-300 rounded-10 p-4 space-y-3">
+                  <p className="text-label font-semibold text-warm-800">New customer</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-caption font-medium text-warm-700 mb-1 block">
+                        First name <span className="text-error-fg">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={inlineFirst}
+                        onChange={e => setInlineFirst(e.target.value)}
+                        placeholder="Kwame"
+                        autoFocus
+                        className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-caption font-medium text-warm-700 mb-1 block">
+                        Last name <span className="text-warm-400">(optional)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={inlineLast}
+                        onChange={e => setInlineLast(e.target.value)}
+                        placeholder="Asante"
+                        className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-caption font-medium text-warm-700 mb-1 block">
+                      Phone <span className="text-error-fg">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={inlinePhone}
+                      onChange={e => setInlinePhone(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleInlineCreate()}
+                      placeholder="024 123 4567"
+                      className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                    />
+                  </div>
+                  {inlineError && (
+                    <p className="text-caption text-error-fg">{inlineError}</p>
+                  )}
+                  <div className="flex items-center gap-3 pt-1">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={handleInlineCreate}
+                      isPending={inlineIsPending}
+                      disabled={inlineIsPending}
+                    >
+                      Save customer
+                    </Button>
+                    <button
+                      type="button"
+                      className="text-caption text-warm-500 hover:text-warm-800"
+                      onClick={() => setShowInlineCreate(false)}
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </div>
               )}
