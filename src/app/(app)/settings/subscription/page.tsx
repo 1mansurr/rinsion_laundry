@@ -7,6 +7,7 @@ import { generatePaymentReference } from '@/services/subscriptions/generatePayme
 import { claimPaymentSent } from '@/services/subscriptions/claimPaymentSent'
 import { createClient } from '@/lib/supabase'
 import { PLANS } from '@/constants/plans'
+import { formatDate } from '@/utils/formatDate'
 
 const PLAN_LABELS: Record<string, string> = { trial: 'Trial', starter: 'Starter', growth: 'Growth' }
 const STATUS_LABELS: Record<string, string> = {
@@ -172,7 +173,7 @@ export default async function SubscriptionPage({
           <p className="text-xs text-amber-700">
             Your payment claim (ref: <span className="font-mono">{existingClaim.reference_code}</span>, GHS {Number(existingClaim.claimed_amount).toFixed(0)}) is being verified by Rinsion.
           </p>
-          <p className="text-xs text-amber-600 mt-1">Submitted {new Date(existingClaim.claimed_at).toLocaleDateString()}</p>
+          <p className="text-xs text-amber-600 mt-1">Submitted {formatDate(existingClaim.claimed_at)}</p>
         </div>
       )}
 

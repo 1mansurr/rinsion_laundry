@@ -4,6 +4,9 @@ import { useState, useTransition } from 'react'
 import { createItemType, toggleItemType, type ItemType } from '@/services/items'
 import { createService, toggleService, type LaundryService } from '@/services/services'
 import { upsertPrice, togglePrice, type PriceCell } from '@/services/pricing'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 interface Props {
   itemTypes: ItemType[]
@@ -25,6 +28,8 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
   const [selectedServiceId, setSelectedServiceId] = useState<string>(
     initServices.find(s => s.isActive)?.id ?? ''
   )
+  // Mobile: expanded item card in pricing view
+  const [expandedItemId, setExpandedItemId] = useState<string | null>(null)
 
   function addItem() {
     if (!newItemName.trim()) return
@@ -72,7 +77,10 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
       if (res.success) {
         setPrices(prev => {
           const existing = prev.find(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId)
-          if (existing) return prev.map(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId ? { ...p, price: val, isActive: true } : p)
+          if (existing) return prev.map(p =>
+            p.itemTypeId === itemTypeId && p.serviceId === serviceId
+              ? { ...p, price: val, isActive: true } : p
+          )
           return [...prev, { id: '', itemTypeId, serviceId, price: val, isActive: true }]
         })
       }
@@ -85,61 +93,70 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
     if (!cell) return
     startTransition(async () => {
       const res = await togglePrice(cell.id, false)
-      if (res.success) setPrices(prev => prev.map(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId ? { ...p, isActive: false } : p))
+      if (res.success) setPrices(prev =>
+        prev.map(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId ? { ...p, isActive: false } : p)
+      )
     })
   }
 
   const activeItems = items.filter(i => i.isActive)
   const activeServices = services.filter(s => s.isActive)
+  const currentServiceId = activeServices.some(s => s.id === selectedServiceId)
+    ? selectedServiceId
+    : activeServices[0]?.id ?? ''
+
+  const TAB_LABELS = { items: 'Item Types', services: 'Services', pricing: 'Pricing Matrix' }
 
   return (
-    <div>
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-6">
+    <div className="max-w-[1180px] mx-auto px-6 py-6">
+      {/* Tab bar */}
+      <div className="flex border-b border-warm-200 mb-6">
         {(['items', 'services', 'pricing'] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2.5 text-sm font-medium capitalize border-b-2 -mb-px transition-colors ${
-              tab === t ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700'
+            className={`px-4 py-2.5 text-ui font-medium border-b-2 -mb-px transition-colors ${
+              tab === t
+                ? 'border-brand text-warm-950'
+                : 'border-transparent text-warm-500 hover:text-warm-800'
             }`}
           >
-            {t === 'pricing' ? 'Pricing Matrix' : t === 'items' ? 'Item Types' : 'Services'}
+            {TAB_LABELS[t]}
           </button>
         ))}
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700 mb-4">{error}</div>
+        <div className="bg-[#FDF1EF] border border-[#E0BBB6] rounded-7 px-3 py-2 text-ui text-error-fg mb-4">
+          {error}
+        </div>
       )}
 
-      {/* Item Types */}
+      {/* Item Types tab */}
       {tab === 'items' && (
-        <div className="space-y-4">
+        <div className="space-y-4 max-w-lg">
           <div className="flex gap-2">
-            <input
+            <Input
               value={newItemName}
               onChange={e => setNewItemName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && addItem()}
-              placeholder="e.g. Shirt, Trouser, Suit..."
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+              placeholder="e.g. Shirt, Trouser, Suit…"
             />
-            <button
-              onClick={addItem} disabled={isPending || !newItemName.trim()}
-              className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
-            >
-              Add
-            </button>
+            <Button onClick={addItem} disabled={isPending || !newItemName.trim()}>Add</Button>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-50">
-            {items.length === 0 && <p className="text-sm text-gray-400 text-center py-8">No item types yet.</p>}
+          <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+            {items.length === 0 && (
+              <EmptyState headline="No item types yet" body="Add items like Shirt, Trouser, Suit to get started." />
+            )}
             {items.map(item => (
-              <div key={item.id} className="flex items-center justify-between px-5 py-3">
-                <span className={`text-sm ${item.isActive ? 'text-gray-900' : 'text-gray-400 line-through'}`}>{item.name}</span>
+              <div key={item.id} className="flex items-center justify-between px-5 py-3 border-b border-warm-100 last:border-0">
+                <span className={`text-ui ${item.isActive ? 'text-warm-950' : 'text-warm-400 line-through'}`}>
+                  {item.name}
+                </span>
                 <button
                   onClick={() => handleToggleItem(item.id, item.isActive)}
                   disabled={isPending}
-                  className="text-xs text-gray-400 hover:text-gray-700"
+                  className="text-caption text-warm-400 hover:text-warm-700 transition-colors"
                 >
                   {item.isActive ? 'Deactivate' : 'Activate'}
                 </button>
@@ -149,33 +166,31 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
         </div>
       )}
 
-      {/* Services */}
+      {/* Services tab */}
       {tab === 'services' && (
-        <div className="space-y-4">
+        <div className="space-y-4 max-w-lg">
           <div className="flex gap-2">
-            <input
+            <Input
               value={newServiceName}
               onChange={e => setNewServiceName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && addService()}
-              placeholder="e.g. Wash Only, Wash + Iron, Dry Clean..."
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+              placeholder="e.g. Wash Only, Wash + Iron, Dry Clean…"
             />
-            <button
-              onClick={addService} disabled={isPending || !newServiceName.trim()}
-              className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
-            >
-              Add
-            </button>
+            <Button onClick={addService} disabled={isPending || !newServiceName.trim()}>Add</Button>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-50">
-            {services.length === 0 && <p className="text-sm text-gray-400 text-center py-8">No services yet.</p>}
+          <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+            {services.length === 0 && (
+              <EmptyState headline="No services yet" body="Add services like Wash Only, Dry Clean to get started." />
+            )}
             {services.map(svc => (
-              <div key={svc.id} className="flex items-center justify-between px-5 py-3">
-                <span className={`text-sm ${svc.isActive ? 'text-gray-900' : 'text-gray-400 line-through'}`}>{svc.name}</span>
+              <div key={svc.id} className="flex items-center justify-between px-5 py-3 border-b border-warm-100 last:border-0">
+                <span className={`text-ui ${svc.isActive ? 'text-warm-950' : 'text-warm-400 line-through'}`}>
+                  {svc.name}
+                </span>
                 <button
                   onClick={() => handleToggleService(svc.id, svc.isActive)}
                   disabled={isPending}
-                  className="text-xs text-gray-400 hover:text-gray-700"
+                  className="text-caption text-warm-400 hover:text-warm-700 transition-colors"
                 >
                   {svc.isActive ? 'Deactivate' : 'Activate'}
                 </button>
@@ -185,25 +200,26 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
         </div>
       )}
 
-      {/* Pricing Matrix */}
+      {/* Pricing Matrix tab */}
       {tab === 'pricing' && (
         <div>
           {activeItems.length === 0 || activeServices.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-8">
-              Add active item types and services first to build the pricing matrix.
-            </p>
+            <EmptyState
+              headline="Nothing to price yet"
+              body="Add active item types and services first to build the pricing matrix."
+            />
           ) : (
             <div>
-              {/* Service tabs */}
-              <div className="flex gap-1 mb-5 border-b border-gray-200">
+              {/* Service selector tabs */}
+              <div className="flex gap-1 mb-5 border-b border-warm-200 overflow-x-auto">
                 {activeServices.map(svc => (
                   <button
                     key={svc.id}
                     onClick={() => { setSelectedServiceId(svc.id); setEditingCell(null) }}
-                    className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                      selectedServiceId === svc.id
-                        ? 'border-gray-900 text-gray-900'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    className={`px-4 py-2.5 text-ui font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${
+                      currentServiceId === svc.id
+                        ? 'border-brand text-warm-950'
+                        : 'border-transparent text-warm-500 hover:text-warm-800'
                     }`}
                   >
                     {svc.name}
@@ -211,85 +227,157 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                 ))}
               </div>
 
-              {/* Item price list for the selected service */}
-              {(() => {
-                const currentServiceId = activeServices.find(s => s.id === selectedServiceId)
-                  ? selectedServiceId
-                  : activeServices[0]?.id ?? ''
+              {/* Desktop: list view */}
+              <div className="hidden md:block bg-white border border-warm-300 rounded-10 overflow-hidden">
+                <div className="grid px-5 py-2.5 bg-[#F4F0EA] border-b border-warm-200" style={{ gridTemplateColumns: '1fr 180px' }}>
+                  <span className="text-caption font-medium text-warm-500">Item type</span>
+                  <span className="text-caption font-medium text-warm-500 text-right">Price (GHS)</span>
+                </div>
+                {activeItems.map(item => {
+                  const cell = getPrice(item.id, currentServiceId)
+                  const isEditing = editingCell?.itemTypeId === item.id && editingCell?.serviceId === currentServiceId
+                  const hasPrice = cell?.isActive
 
-                return (
-                  <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-50">
-                    {activeItems.map(item => {
-                      const cell = getPrice(item.id, currentServiceId)
-                      const isEditing = editingCell?.itemTypeId === item.id && editingCell?.serviceId === currentServiceId
-                      const hasPrice = cell?.isActive
-
-                      return (
-                        <div key={item.id} className="flex items-center justify-between px-5 py-3.5">
-                          <span className="text-sm text-gray-900">{item.name}</span>
-
-                          <div className="flex items-center gap-3">
-                            {isEditing ? (
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-xs text-gray-500">GHS</span>
-                                <input
-                                  autoFocus
-                                  value={cellPrice}
-                                  onChange={e => setCellPrice(e.target.value)}
-                                  onKeyDown={e => {
-                                    if (e.key === 'Enter') savePrice(item.id, currentServiceId)
-                                    if (e.key === 'Escape') setEditingCell(null)
-                                  }}
-                                  onBlur={() => savePrice(item.id, currentServiceId)}
-                                  className="w-24 border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm text-gray-900 text-right focus:outline-none focus:ring-2 focus:ring-gray-900"
-                                  placeholder="0.00"
-                                />
-                              </div>
-                            ) : hasPrice ? (
-                              <>
-                                <span className="text-sm font-medium text-gray-900 tabular-nums">
-                                  GHS {cell!.price.toFixed(2)}
-                                </span>
-                                <button
-                                  onClick={() => {
-                                    setEditingCell({ itemTypeId: item.id, serviceId: currentServiceId })
-                                    setCellPrice(cell!.price.toString())
-                                  }}
-                                  disabled={isPending}
-                                  className="text-xs text-gray-400 hover:text-gray-700"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => handleDisablePrice(item.id, currentServiceId)}
-                                  disabled={isPending}
-                                  className="text-xs text-gray-400 hover:text-red-500"
-                                >
-                                  Remove
-                                </button>
-                              </>
-                            ) : (
-                              <button
-                                onClick={() => {
-                                  setEditingCell({ itemTypeId: item.id, serviceId: currentServiceId })
-                                  setCellPrice('')
-                                }}
-                                disabled={isPending}
-                                className="text-sm text-gray-300 hover:text-gray-500 transition-colors"
-                              >
-                                — Set price
-                              </button>
-                            )}
+                  return (
+                    <div key={item.id} className="flex items-center justify-between px-5 py-3.5 border-b border-warm-100 last:border-0">
+                      <span className="text-ui text-warm-950">{item.name}</span>
+                      <div className="flex items-center gap-3">
+                        {isEditing ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-caption text-warm-500">GHS</span>
+                            <input
+                              autoFocus
+                              value={cellPrice}
+                              onChange={e => setCellPrice(e.target.value)}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') savePrice(item.id, currentServiceId)
+                                if (e.key === 'Escape') setEditingCell(null)
+                              }}
+                              onBlur={() => savePrice(item.id, currentServiceId)}
+                              className="w-24 border border-brand rounded-7 px-2.5 py-1.5 text-ui text-warm-950 text-right focus:outline-none focus:shadow-focus-ring"
+                              placeholder="0.00"
+                            />
                           </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )
-              })()}
+                        ) : hasPrice ? (
+                          <>
+                            <span className="tnum text-ui font-medium text-warm-950">
+                              {cell!.price.toFixed(2)}
+                            </span>
+                            <button
+                              onClick={() => {
+                                setEditingCell({ itemTypeId: item.id, serviceId: currentServiceId })
+                                setCellPrice(cell!.price.toString())
+                              }}
+                              disabled={isPending}
+                              className="text-caption text-warm-400 hover:text-warm-700"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDisablePrice(item.id, currentServiceId)}
+                              disabled={isPending}
+                              className="text-caption text-warm-400 hover:text-error-fg"
+                            >
+                              Remove
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setEditingCell({ itemTypeId: item.id, serviceId: currentServiceId })
+                              setCellPrice('')
+                            }}
+                            disabled={isPending}
+                            className="text-ui text-warm-300 hover:text-warm-600 transition-colors"
+                          >
+                            — Set price
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
 
-              <p className="text-xs text-gray-400 mt-3">
-                Leave items blank if you don{"'"}t offer that combination. Only priced items appear in order creation.
+              {/* Mobile: expandable item cards */}
+              <div className="md:hidden space-y-2">
+                {activeItems.map(item => {
+                  const isOpen = expandedItemId === item.id
+                  const previewCell = getPrice(item.id, currentServiceId)
+
+                  return (
+                    <div key={item.id} className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+                      <button
+                        type="button"
+                        className="w-full flex items-center justify-between px-4 py-3"
+                        onClick={() => setExpandedItemId(isOpen ? null : item.id)}
+                      >
+                        <span className="text-ui font-medium text-warm-950">{item.name}</span>
+                        <div className="flex items-center gap-2">
+                          {previewCell?.isActive && (
+                            <span className="tnum text-ui text-warm-500">GHS {previewCell.price.toFixed(2)}</span>
+                          )}
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={`text-warm-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+                            <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      </button>
+
+                      {isOpen && (
+                        <div className="border-t border-warm-100 divide-y divide-warm-100">
+                          {activeServices.map(svc => {
+                            const cell = getPrice(item.id, svc.id)
+                            const isEditingThis = editingCell?.itemTypeId === item.id && editingCell?.serviceId === svc.id
+
+                            return (
+                              <div key={svc.id} className="flex items-center justify-between px-4 py-2.5">
+                                <span className="text-ui text-warm-700">{svc.name}</span>
+                                {isEditingThis ? (
+                                  <input
+                                    autoFocus
+                                    value={cellPrice}
+                                    onChange={e => setCellPrice(e.target.value)}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter') savePrice(item.id, svc.id)
+                                      if (e.key === 'Escape') setEditingCell(null)
+                                    }}
+                                    onBlur={() => savePrice(item.id, svc.id)}
+                                    className="w-24 border border-brand rounded-7 px-2.5 py-1.5 text-ui text-right focus:outline-none focus:shadow-focus-ring"
+                                    placeholder="0.00"
+                                  />
+                                ) : cell?.isActive ? (
+                                  <button
+                                    onClick={() => {
+                                      setEditingCell({ itemTypeId: item.id, serviceId: svc.id })
+                                      setCellPrice(cell.price.toString())
+                                    }}
+                                    className="tnum text-ui font-medium text-brand underline underline-offset-2"
+                                  >
+                                    GHS {cell.price.toFixed(2)}
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => {
+                                      setEditingCell({ itemTypeId: item.id, serviceId: svc.id })
+                                      setCellPrice('')
+                                    }}
+                                    className="text-caption text-warm-400 hover:text-brand"
+                                  >
+                                    + Set price
+                                  </button>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+
+              <p className="text-caption text-warm-400 mt-3">
+                Leave items blank if you don&apos;t offer that combination. Only priced items appear in order creation.
               </p>
             </div>
           )}

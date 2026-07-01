@@ -2,14 +2,22 @@ import { getEmployees, getBranches } from '@/services/employees'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
 import { PLANS } from '@/constants/plans'
-import { redirect } from 'next/navigation'
+import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { EmployeesClient } from './EmployeesClient'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
 
 export default async function EmployeesPage() {
   const profile = await getMyProfile()
   if (!profile) return null
-  if (profile.role !== 'admin') redirect('/dashboard')
+
+  if (profile.role !== 'admin') {
+    return (
+      <div className="max-w-[1180px] mx-auto px-7 py-7">
+        <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight mb-[18px]">Team</h1>
+        <RestrictedCard />
+      </div>
+    )
+  }
 
   const [employees, branches, subscription] = await Promise.all([
     getEmployees(),
@@ -22,14 +30,16 @@ export default async function EmployeesPage() {
   const activeCount = employees.filter(e => e.isActive).length
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-[1180px] mx-auto px-7 py-7">
+      <div className="flex items-end justify-between mb-[18px]">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Employees</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{activeCount} of {limit} slots used · {plan} plan</p>
+          <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">Team</h1>
+          <p className="text-ui text-warm-800 mt-1">
+            People with access to Rinsion across your branches.
+          </p>
         </div>
+        <p className="text-label text-warm-600">{activeCount} of {limit} slots used</p>
       </div>
-
       <EmployeesClient
         employees={employees}
         branches={branches}

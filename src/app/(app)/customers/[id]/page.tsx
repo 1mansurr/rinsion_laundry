@@ -1,95 +1,155 @@
-import { getCustomer } from '@/services/customers'
-import { formatCurrency } from '@/utils/formatCurrency'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { getCustomer } from '@/services/customers'
+import { StatusBadge } from '@/components/app/StatusBadge'
+import { formatCurrency } from '@/utils/formatCurrency'
+import { formatDate } from '@/utils/formatDate'
 
 export default async function CustomerDetailPage({ params }: { params: { id: string } }) {
   const customer = await getCustomer(params.id)
   if (!customer) notFound()
 
   const orders = (customer.orders as {
-    id: string; order_number: string; status: string; total: number; created_at: string; pickup_date: string | null
+    id: string; order_number: string; status: string; total: number; created_at: string
   }[]) ?? []
 
-  const totalRevenue = orders
-    .filter(o => o.status !== 'cancelled')
-    .reduce((s, o) => s + Number(o.total), 0)
+  const nonCancelledOrders = orders.filter(o => o.status !== 'cancelled')
+  const totalSpent = nonCancelledOrders.reduce((s, o) => s + Number(o.total), 0)
+  const initials = `${customer.first_name[0] ?? ''}${customer.last_name[0] ?? ''}`.toUpperCase()
+  const memberSince = customer.first_visit_date
+    ? formatDate(customer.first_visit_date)
+    : formatDate(customer.created_at)
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">
+    <div className="max-w-[1180px] mx-auto px-7 py-7">
+      {/* Back link */}
+      <Link href="/customers" className="text-label text-warm-800 hover:text-warm-950 transition-colors">
+        ← Customers
+      </Link>
+
+      {/* Customer header card */}
+      <div className="bg-white border border-warm-300 rounded-10 px-[26px] py-6 mt-2 mb-4 flex items-center gap-5 flex-wrap">
+        <span className="w-16 h-16 shrink-0 rounded-full bg-brand text-[#FAF8F5] flex items-center justify-center text-[22px] font-semibold">
+          {initials}
+        </span>
+        <div className="flex-1 min-w-[200px]">
+          <h1 className="text-[25px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">
             {customer.first_name} {customer.last_name}
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">{customer.phone}</p>
-          <p className="text-xs text-gray-400 font-mono mt-1">{customer.customer_code}</p>
+          <p className="tnum text-ui text-warm-800 mt-1">
+            {customer.phone} · Customer since {memberSince}
+          </p>
         </div>
-        <Link
-          href={`/orders/new?customerId=${customer.id}`}
-          className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
-        >
-          + New Order
-        </Link>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-xs text-gray-500">Total Orders</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{orders.length}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-xs text-gray-500">Lifetime Revenue</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{formatCurrency(totalRevenue)}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-xs text-gray-500">Last Visit</p>
-          <p className="text-lg font-bold text-gray-900 mt-1">{customer.last_visit_date ?? '—'}</p>
+        <div className="flex gap-[9px]">
+          <Link
+            href={`/orders/new?customerId=${customer.id}`}
+            className="inline-flex items-center gap-[7px] bg-brand text-[#FAF8F5] text-ui font-semibold px-[15px] py-[10px] rounded-7 hover:bg-brand-hover transition-colors"
+          >
+            New order
+          </Link>
+          <Link
+            href={`/customers/${customer.id}/edit`}
+            className="inline-flex items-center bg-white text-warm-950 border border-warm-400 text-ui font-semibold px-[15px] py-[10px] rounded-7 hover:bg-warm-50 transition-colors"
+          >
+            Edit
+          </Link>
         </div>
       </div>
 
-      {/* Order history */}
-      <div className="bg-white rounded-xl border border-gray-200">
-        <div className="px-5 py-3.5 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-900">Order History</h2>
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="bg-white border border-warm-300 rounded-10 px-5 py-[18px]">
+          <p className="text-label text-warm-800 font-medium">Total orders</p>
+          <p className="tnum text-[28px] font-bold text-warm-950 mt-1.5">{nonCancelledOrders.length}</p>
         </div>
-        {orders.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-8">No orders yet.</p>
-        ) : (
-          <div className="divide-y divide-gray-50">
-            {orders.map((order) => (
-              <Link
-                key={order.id}
-                href={`/orders/${order.id}`}
-                className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors"
-              >
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{order.order_number}</p>
-                  <p className="text-xs text-gray-400">{order.created_at.split('T')[0]}</p>
-                </div>
-                <div className="text-right">
-                  <StatusBadge status={order.status} />
-                  <p className="text-xs text-gray-500 mt-1">{formatCurrency(Number(order.total))}</p>
-                </div>
-              </Link>
-            ))}
+        <div className="bg-white border border-warm-300 rounded-10 px-5 py-[18px]">
+          <p className="text-label text-warm-800 font-medium">Total spent</p>
+          <p className="tnum text-[28px] font-bold text-warm-950 mt-1.5">{formatCurrency(totalSpent)}</p>
+        </div>
+        <div className="bg-white border border-warm-300 rounded-10 px-5 py-[18px]">
+          <p className="text-label text-warm-800 font-medium">Last order</p>
+          <p className="text-[20px] font-bold text-warm-950 mt-1.5">
+            {customer.last_visit_date ? formatDate(customer.last_visit_date) : '—'}
+          </p>
+        </div>
+      </div>
+
+      {/* Two-column: order history + contact */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-4">
+        {/* Order history */}
+        <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+          <div className="px-5 py-4 border-b border-warm-200">
+            <h2 className="text-h2 font-semibold text-warm-950">Order history</h2>
           </div>
-        )}
+          {/* Desktop column headers */}
+          <div
+            className="hidden min-[720px]:grid px-5 py-2.5 border-b border-warm-100"
+            style={{
+              gridTemplateColumns: '0.7fr 0.7fr 1.1fr 0.9fr 1fr',
+              gap: '12px',
+              background: '#F8F5F0',
+              fontSize: '11.5px',
+              fontWeight: 600,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              color: '#8A8175',
+            }}
+          >
+            <span>Order</span>
+            <span>Pieces</span>
+            <span>Status</span>
+            <span style={{ textAlign: 'right' }}>Total</span>
+            <span style={{ textAlign: 'right' }}>Date</span>
+          </div>
+          {orders.length === 0 ? (
+            <p className="text-ui text-warm-600 text-center py-10">No orders yet.</p>
+          ) : (
+            <div>
+              {orders.map(order => (
+                <Link
+                  key={order.id}
+                  href={`/orders/${order.id}`}
+                  className="block border-b border-[#F4F0EA] last:border-0 hover:bg-warm-50 transition-colors"
+                >
+                  {/* Desktop */}
+                  <div
+                    className="hidden min-[720px]:grid items-center px-5 py-[13px]"
+                    style={{ gridTemplateColumns: '0.7fr 0.7fr 1.1fr 0.9fr 1fr', gap: '12px' }}
+                  >
+                    <span className="tnum text-ui font-bold text-brand">{order.order_number}</span>
+                    <span className="tnum text-label text-warm-900">—</span>
+                    <span><StatusBadge status={order.status as never} /></span>
+                    <span className="tnum text-ui font-semibold text-right">{formatCurrency(Number(order.total))}</span>
+                    <span className="tnum text-label text-warm-800 text-right">{formatDate(order.created_at)}</span>
+                  </div>
+                  {/* Mobile */}
+                  <div className="min-[720px]:hidden flex items-center justify-between px-5 py-3.5 gap-3">
+                    <div>
+                      <p className="text-ui font-semibold text-brand">{order.order_number}</p>
+                      <p className="text-caption text-warm-600">{formatDate(order.created_at)}</p>
+                    </div>
+                    <div className="text-right">
+                      <StatusBadge status={order.status as never} />
+                      <p className="text-caption text-warm-800 mt-1">{formatCurrency(Number(order.total))}</p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right sidebar: contact info */}
+        <div className="flex flex-col gap-4">
+          <div className="bg-white border border-warm-300 rounded-10 px-[22px] py-5">
+            <h3 className="text-h2 font-semibold text-warm-950 mb-3.5">Contact</h3>
+            <p className="text-micro font-semibold text-warm-600 uppercase tracking-[0.06em] mb-1">Phone</p>
+            <p className="tnum text-ui-sm text-warm-950 mb-3.5">{customer.phone}</p>
+            <p className="text-micro font-semibold text-warm-600 uppercase tracking-[0.06em] mb-1">SMS notifications</p>
+            <p className="text-ui-sm font-semibold text-success">Enabled</p>
+          </div>
+        </div>
       </div>
     </div>
-  )
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    received: 'bg-gray-100 text-gray-600', confirmed: 'bg-blue-50 text-blue-700',
-    processing: 'bg-yellow-50 text-yellow-700', ready: 'bg-green-50 text-green-700',
-    collected: 'bg-gray-50 text-gray-400', cancelled: 'bg-red-50 text-red-400',
-  }
-  return (
-    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium capitalize ${styles[status] ?? ''}`}>
-      {status}
-    </span>
   )
 }

@@ -24,6 +24,30 @@ export async function recordPayment(input: {
 
   if (input.amount <= 0) return { success: false, error: 'Amount must be greater than 0.' }
 
+  // Enforce allow_partial_payments setting
+  const { data: settingsRow } = await supabase
+    .from('settings')
+    .select('allow_partial_payments')
+    .eq('laundry_id', emp.laundry_id)
+    .single()
+
+  if (settingsRow && !settingsRow.allow_partial_payments) {
+    const [{ data: orderRow }, { data: existingPayments }] = await Promise.all([
+      supabase.from('orders').select('total').eq('id', input.orderId).single(),
+      supabase.from('payments').select('amount').eq('order_id', input.orderId),
+    ])
+
+    const paid = (existingPayments ?? []).reduce((sum, p) => sum + p.amount, 0)
+    const outstanding = (orderRow?.total ?? 0) - paid
+
+    if (outstanding > 0 && input.amount < outstanding) {
+      return {
+        success: false,
+        error: `This laundry requires full payment. Enter the full outstanding balance of GHS ${outstanding.toFixed(2)}.`,
+      }
+    }
+  }
+
   const { error } = await supabase.from('payments').insert({
     order_id: input.orderId,
     recorded_by_employee_id: emp.id,
