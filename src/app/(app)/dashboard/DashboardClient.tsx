@@ -277,9 +277,9 @@ export function DashboardClient({
                     </span>
                     <span className="text-body text-warm-600">{formatReadySince(order.readySince)}</span>
                     {order.balance > 0 ? (
-                      <Link href={`/orders/${order.id}`}>
-                        <Button variant="accent" size="sm">Record Payment</Button>
-                      </Link>
+                      <Button variant="accent" size="sm" onClick={() => openPay(order)}>
+                        Record Payment
+                      </Button>
                     ) : (
                       <Button variant="accent" size="sm" onClick={() => openCollect(order)}>
                         Mark Collected
