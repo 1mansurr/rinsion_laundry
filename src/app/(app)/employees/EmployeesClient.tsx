@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { createEmployee, toggleEmployee, type Employee } from '@/services/employees'
 
 interface Props {
@@ -92,14 +93,22 @@ export function EmployeesClient({ employees: init, branches, activeCount: initAc
 
       {/* Add employee button / form */}
       {!showForm ? (
-        <button
-          onClick={() => { if (!atLimit) setShowForm(true) }}
-          disabled={atLimit}
-          title={atLimit ? `${employeeLimit}-employee limit reached on your plan` : undefined}
-          className="w-full border-2 border-dashed border-gray-200 rounded-xl py-3 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-        >
-          {atLimit ? `Employee limit reached (${employeeLimit}/${employeeLimit}) — upgrade to add more` : '+ Add Employee'}
-        </button>
+        atLimit ? (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 text-sm text-amber-800">
+            Employee limit reached ({employeeLimit}/{employeeLimit}).{' '}
+            <Link href="/settings/subscription?action=upgrade" className="font-semibold underline">
+              Upgrade to Growth
+            </Link>{' '}
+            to add up to 9 employees.
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowForm(true)}
+            className="w-full border-2 border-dashed border-gray-200 rounded-xl py-3 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors"
+          >
+            + Add Employee
+          </button>
+        )
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
           <h2 className="text-sm font-semibold text-gray-900">New Employee</h2>
