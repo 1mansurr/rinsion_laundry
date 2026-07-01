@@ -4,6 +4,8 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { verifyAndCollect } from '@/services/orders/verifyAndCollect'
+import { recordPayment } from '@/services/payments/recordPayment'
+import { PAYMENT_METHODS, type PaymentMethod } from '@/constants/statuses'
 import { Button } from '@/components/ui/Button'
 import { Banner } from '@/components/ui/Banner'
 import { Modal } from '@/components/ui/Modal'
@@ -65,6 +67,10 @@ export function DashboardClient({
   const [collectCode, setCollectCode] = useState('')
   const [collectError, setCollectError] = useState('')
 
+  const [payingOrder, setPayingOrder] = useState<ReadyOrder | null>(null)
+  const [payMethod, setPayMethod] = useState<PaymentMethod>('mobile_money')
+  const [payError, setPayError] = useState('')
+
   const [smsDismissed, setSmsDismissed] = useState(false)
   const [onboardingDismissed, setOnboardingDismissed] = useState(false)
 
@@ -80,6 +86,36 @@ export function DashboardClient({
     setCollectingOrder(null)
     setCollectCode('')
     setCollectError('')
+  }
+
+  function openPay(order: ReadyOrder) {
+    setPayingOrder(order)
+    setPayMethod('mobile_money')
+    setPayError('')
+  }
+
+  function closePay() {
+    setPayingOrder(null)
+    setPayError('')
+  }
+
+  function handlePayment() {
+    if (!payingOrder) return
+    setPayError('')
+    startTransition(async () => {
+      const res = await recordPayment({
+        orderId: payingOrder.id,
+        amount: payingOrder.balance,
+        paymentMethod: payMethod,
+      })
+      if (res.success) {
+        toast.success('Payment recorded')
+        closePay()
+        router.refresh()
+      } else {
+        setPayError(res.error ?? 'Failed to record payment')
+      }
+    })
   }
 
   function handleCollect() {
@@ -214,9 +250,9 @@ export function DashboardClient({
                     <div className="flex items-center justify-between">
                       <span className="text-caption text-warm-500">{formatReadySince(order.readySince)}</span>
                       {order.balance > 0 ? (
-                        <Link href={`/orders/${order.id}`}>
-                          <Button variant="accent" size="sm">Record Payment</Button>
-                        </Link>
+                        <Button variant="accent" size="sm" onClick={() => openPay(order)}>
+                          Record Payment
+                        </Button>
                       ) : (
                         <Button variant="accent" size="sm" onClick={() => openCollect(order)}>
                           Mark Collected
@@ -367,8 +403,53 @@ export function DashboardClient({
           </div>
         </div>
       </Modal>
+
+      {/* Record Payment modal */}
+      <Modal
+        open={payingOrder !== null}
+        onClose={closePay}
+        title="Record Payment"
+        description={payingOrder ? `${payingOrder.orderNumber} · ${payingOrder.customerName}` : undefined}
+      >
+        {payingOrder && (
+          <div className="space-y-4">
+            {/* Amount — read-only */}
+            <div className="bg-[#F8F5F0] rounded-7 px-4 py-3 flex items-center justify-between">
+              <span className="text-label text-warm-600">Amount due</span>
+              <span className="tnum text-ui font-bold text-error-fg">{formatCurrency(payingOrder.balance)}</span>
+            </div>
+
+            {/* Method select */}
+            <div>
+              <label className="text-label font-medium text-warm-700 mb-1.5 block">Payment method</label>
+              <select
+                value={payMethod}
+                onChange={e => setPayMethod(e.target.value as PaymentMethod)}
+                className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
+              >
+                {PAYMENT_METHODS.map(m => (
+                  <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m] ?? m}</option>
+                ))}
+              </select>
+            </div>
+
+            {payError && <p className="text-caption text-error-fg">{payError}</p>}
+
+            <div className="flex gap-3 justify-end">
+              <Button variant="secondary" onClick={closePay}>Cancel</Button>
+              <Button variant="accent" isPending={isPending} disabled={isPending} onClick={handlePayment}>
+                Confirm Payment
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
+}
+
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  cash: 'Cash', mobile_money: 'Mobile Money', card: 'Card', bank_transfer: 'Bank Transfer',
 }
 
 function activityDotColor(actionType: string): string {

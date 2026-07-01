@@ -102,7 +102,6 @@ export function OrderDetail({
 
   // Payment form
   const balance = total - amountPaid
-  const [payAmount, setPayAmount] = useState(balance.toFixed(2))
   const [payMethod, setPayMethod] = useState<PaymentMethod>('mobile_money')
   const [payError, setPayError] = useState('')
 
@@ -136,11 +135,9 @@ export function OrderDetail({
   }
 
   function handlePayment() {
-    const amount = parseFloat(payAmount)
-    if (!amount || amount <= 0) { setPayError('Enter a valid amount'); return }
     setPayError('')
     startTransition(async () => {
-      const res = await recordPayment({ orderId, amount, paymentMethod: payMethod })
+      const res = await recordPayment({ orderId, amount: balance, paymentMethod: payMethod })
       if (res.success) {
         toast.success('Payment recorded')
         setPaymentOpen(false)
@@ -191,7 +188,6 @@ export function OrderDetail({
     })
   }
 
-  const balanceAfterPayment = balance - (parseFloat(payAmount) || 0)
 
   return (
     <div className="max-w-[1180px] mx-auto px-6 py-6 lg:px-7 lg:py-7">
@@ -287,7 +283,7 @@ export function OrderDetail({
             <div className="flex flex-wrap items-center gap-2">
               {status === 'ready' ? (
                 balance > 0 ? (
-                  <Button variant="accent" onClick={() => { setPayAmount(balance.toFixed(2)); setPaymentOpen(true) }} isPending={isPending}>
+                  <Button variant="accent" onClick={() => setPaymentOpen(true)} isPending={isPending}>
                     Record Payment
                   </Button>
                 ) : (
@@ -303,7 +299,7 @@ export function OrderDetail({
                     </Button>
                   )}
                   {balance > 0 && (
-                    <Button variant="accent" onClick={() => { setPayAmount(balance.toFixed(2)); setPaymentOpen(true) }} disabled={isPending}>
+                    <Button variant="accent" onClick={() => setPaymentOpen(true)} disabled={isPending}>
                       Record Payment
                     </Button>
                   )}
@@ -534,7 +530,7 @@ export function OrderDetail({
           </div>
 
           {isActive && balance > 0 && (
-            <Button variant="accent" className="w-full" onClick={() => { setPayAmount(balance.toFixed(2)); setPaymentOpen(true) }}>
+            <Button variant="accent" className="w-full" onClick={() => setPaymentOpen(true)}>
               Record Payment
             </Button>
           )}
@@ -629,21 +625,10 @@ export function OrderDetail({
             </div>
           </div>
 
-          {/* Amount input */}
-          <div>
-            <label className="text-label font-medium text-warm-700 mb-1.5 block">Amount (GHS)</label>
-            <div className="flex items-center border border-warm-400 rounded-7 overflow-hidden focus-within:border-brand focus-within:shadow-focus-ring">
-              <span className="px-3 text-ui text-warm-500 bg-warm-100 border-r border-warm-300 py-[10px]">GHS</span>
-              <input
-                type="number"
-                min="0.01"
-                step="0.01"
-                value={payAmount}
-                onChange={e => setPayAmount(e.target.value)}
-                className="flex-1 px-3 py-[10px] text-ui text-warm-950 tnum focus:outline-none bg-white"
-                autoFocus
-              />
-            </div>
+          {/* Amount — read-only */}
+          <div className="bg-[#F8F5F0] rounded-7 px-4 py-3 flex items-center justify-between">
+            <span className="text-label text-warm-600">Amount due</span>
+            <span className="tnum text-ui font-bold text-error-fg">{formatCurrency(balance)}</span>
           </div>
 
           {/* Method select */}
@@ -660,24 +645,11 @@ export function OrderDetail({
             </select>
           </div>
 
-          {/* Balance after */}
-          <div className="flex items-center justify-between bg-[#F8F5F0] rounded-7 px-4 py-2.5">
-            <span className="text-label text-warm-600">Balance after payment</span>
-            <span className={`tnum text-ui font-semibold ${balanceAfterPayment <= 0 ? 'text-success-fg' : 'text-error-fg'}`}>
-              {formatCurrency(Math.max(0, balanceAfterPayment))}
-            </span>
-          </div>
-
           {payError && <p className="text-caption text-error-fg">{payError}</p>}
 
           <div className="flex gap-3 justify-end">
             <Button variant="secondary" onClick={() => setPaymentOpen(false)}>Cancel</Button>
-            <Button
-              variant="accent"
-              isPending={isPending}
-              disabled={!payAmount || parseFloat(payAmount) <= 0 || isPending}
-              onClick={handlePayment}
-            >
+            <Button variant="accent" isPending={isPending} disabled={isPending} onClick={handlePayment}>
               Confirm Payment
             </Button>
           </div>
