@@ -3,6 +3,7 @@ import { getItemTypes } from '@/services/items'
 import { getServices } from '@/services/services'
 import { getPricingMatrix } from '@/services/pricing'
 import { getCustomers, getCustomer } from '@/services/customers'
+import { getSettings } from '@/services/settings'
 import { createClient } from '@/lib/supabase'
 import { CreateOrderForm } from './CreateOrderForm'
 
@@ -12,12 +13,13 @@ export default async function NewOrderPage({ searchParams }: { searchParams: { c
 
   const supabase = createClient()
 
-  const [itemTypes, services, prices, customers, branchesRes] = await Promise.all([
+  const [itemTypes, services, prices, customers, branchesRes, settings] = await Promise.all([
     getItemTypes(profile.laundryId),
     getServices(profile.laundryId),
     getPricingMatrix(profile.laundryId),
     getCustomers(profile.laundryId),
     supabase.from('branches').select('id, name').eq('laundry_id', profile.laundryId).order('name'),
+    getSettings(),
   ])
 
   const branches = (branchesRes.data ?? []).map(b => ({ id: b.id, name: b.name }))
@@ -65,6 +67,7 @@ export default async function NewOrderPage({ searchParams }: { searchParams: { c
           isAdmin={profile.role === 'admin'}
           defaultBranchId={profile.branchId}
           preselectedCustomer={preselectedCustomer}
+          allowExpressOrders={settings?.allowExpressOrders ?? true}
         />
       )}
     </div>

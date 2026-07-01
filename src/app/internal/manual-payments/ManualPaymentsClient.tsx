@@ -33,7 +33,7 @@ export default function ManualPaymentsClient({ payments }: { payments: PendingPa
 
   if (pending.length === 0) {
     return (
-      <p className="text-sm text-gray-400 bg-white rounded-xl border border-gray-200 px-5 py-8 text-center">
+      <p className="text-ui text-warm-500 bg-white rounded-10 border border-warm-200 px-5 py-8 text-center">
         No pending payments — queue is clear.
       </p>
     )
@@ -45,34 +45,34 @@ export default function ManualPaymentsClient({ payments }: { payments: PendingPa
         const hoursAgo = Math.floor((Date.now() - new Date(p.claimed_at).getTime()) / 3600000)
         const isLoading = loading === p.id
         return (
-          <div key={p.id} className="bg-white rounded-xl border border-gray-200 p-5">
+          <div key={p.id} className="bg-white rounded-10 border border-warm-200 p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold text-gray-900">{p.laundry_name}</p>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-ui font-semibold text-warm-950">{p.laundry_name}</p>
+                <p className="text-caption text-warm-600 mt-0.5">
                   {p.reference_code} · GHS {p.claimed_amount} · {p.target_plan} {p.payment_type.replace('_', ' ')}
                 </p>
-                <p className="text-xs text-gray-400 mt-0.5">{hoursAgo}h ago · {new Date(p.claimed_at).toLocaleString()}</p>
+                <p className="text-caption text-warm-500 mt-0.5">{hoursAgo}h ago · {new Date(p.claimed_at).toLocaleString()}</p>
               </div>
               <div className="flex gap-2 flex-shrink-0">
                 <button
                   onClick={() => handle(p.id, 'paid')}
                   disabled={isLoading}
-                  className="px-3 py-1.5 text-xs font-medium bg-green-50 text-green-700 rounded-lg hover:bg-green-100 disabled:opacity-50"
+                  className="px-3 py-1.5 text-caption font-medium bg-green-50 text-green-700 rounded-7 hover:bg-green-100 disabled:opacity-50"
                 >
                   {isLoading ? '...' : 'Mark Paid'}
                 </button>
                 <button
                   onClick={() => handle(p.id, 'rejected')}
                   disabled={isLoading}
-                  className="px-3 py-1.5 text-xs font-medium bg-red-50 text-red-700 rounded-lg hover:bg-red-100 disabled:opacity-50"
+                  className="px-3 py-1.5 text-caption font-medium bg-red-50 text-red-700 rounded-7 hover:bg-red-100 disabled:opacity-50"
                 >
                   {isLoading ? '...' : 'Reject'}
                 </button>
               </div>
             </div>
             {errors[p.id] && (
-              <p className="text-xs text-red-600 mt-2">{errors[p.id]}</p>
+              <p className="text-caption text-red-600 mt-2">{errors[p.id]}</p>
             )}
           </div>
         )

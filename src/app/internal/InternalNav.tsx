@@ -22,10 +22,10 @@ export function InternalNav() {
           <Link
             key={href}
             href={href}
-            className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
+            className={`block px-3 py-2 rounded-7 text-ui transition-colors ${
               active
-                ? 'bg-gray-900 text-white font-medium'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                ? 'bg-brand text-[#FAF8F5] font-medium'
+                : 'text-warm-700 hover:bg-warm-100 hover:text-warm-950'
             }`}
           >
             {label}

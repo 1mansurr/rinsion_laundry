@@ -43,52 +43,49 @@ export default async function InternalSubscriptionsPage() {
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-bold text-gray-900">Subscriptions</h1>
-        <span className="text-sm text-gray-500">MRR: <span className="font-bold text-gray-900">GHS {mrr}</span></span>
+        <h1 className="text-h2 font-semibold text-warm-950">Subscriptions</h1>
+        <span className="text-ui text-warm-600">MRR: <span className="tnum font-bold text-warm-950">GHS {mrr}</span></span>
       </div>
 
-      {/* Status counts */}
       <div className="grid grid-cols-3 lg:grid-cols-5 gap-3">
-        <StatBadge label="Trialing" value={counts.trialing} color="blue" />
-        <StatBadge label="Active" value={counts.active} color="green" />
+        <StatBadge label="Trialing"   value={counts.trialing}   color="blue" />
+        <StatBadge label="Active"     value={counts.active}     color="green" />
         <StatBadge label="Soft Block" value={counts.soft_block} color="yellow" />
         <StatBadge label="Hard Block" value={counts.hard_block} color="orange" />
-        <StatBadge label="Locked" value={counts.locked} color="red" />
+        <StatBadge label="Locked"     value={counts.locked}     color="red" />
       </div>
 
-      {/* Plan breakdown */}
-      <div className="bg-white rounded-xl border border-gray-200">
-        <div className="px-5 py-3.5 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-900">By Plan</h2>
+      <div className="bg-white rounded-10 border border-warm-200">
+        <div className="px-5 py-3.5 border-b border-warm-100">
+          <h2 className="text-ui font-semibold text-warm-950">By Plan</h2>
         </div>
-        <div className="divide-y divide-gray-50">
+        <div className="divide-y divide-warm-100">
           {(['trial', 'starter', 'growth'] as const).map(plan => (
             <div key={plan} className="flex justify-between px-5 py-3">
-              <span className="text-sm capitalize text-gray-700">{plan}</span>
-              <span className="text-sm font-medium text-gray-900">{planCounts[plan]}</span>
+              <span className="text-ui capitalize text-warm-800">{plan}</span>
+              <span className="tnum text-ui font-medium text-warm-950">{planCounts[plan]}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Trials expiring in 7 days */}
-      <div className="bg-white rounded-xl border border-gray-200">
-        <div className="px-5 py-3.5 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-900">
+      <div className="bg-white rounded-10 border border-warm-200">
+        <div className="px-5 py-3.5 border-b border-warm-100">
+          <h2 className="text-ui font-semibold text-warm-950">
             Trials Expiring Soon ({(expiringTrials ?? []).length})
           </h2>
         </div>
         {(expiringTrials ?? []).length === 0 ? (
-          <p className="text-sm text-gray-400 px-5 py-4">None in the next 7 days.</p>
+          <p className="text-ui text-warm-500 px-5 py-4">None in the next 7 days.</p>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-warm-100">
             {(expiringTrials ?? []).map(s => {
               const laundry = s.laundries as unknown as { name: string } | null
               const daysLeft = Math.ceil((new Date(s.cycle_end_date).getTime() - Date.now()) / 86400000)
               return (
                 <div key={s.id} className="flex justify-between px-5 py-3">
-                  <span className="text-sm text-gray-900">{laundry?.name ?? s.laundry_id}</span>
-                  <span className={`text-sm font-medium ${daysLeft <= 2 ? 'text-red-600' : 'text-amber-600'}`}>
+                  <span className="text-ui text-warm-950">{laundry?.name ?? s.laundry_id}</span>
+                  <span className={`tnum text-ui font-medium ${daysLeft <= 2 ? 'text-red-600' : 'text-amber-600'}`}>
                     {daysLeft}d left
                   </span>
                 </div>
@@ -110,9 +107,9 @@ function StatBadge({ label, value, color }: { label: string; value: number; colo
     red:    'bg-red-50 text-red-700',
   }
   return (
-    <div className={`rounded-xl p-3 ${colors[color] ?? 'bg-gray-50 text-gray-700'}`}>
-      <p className="text-xl font-bold">{value}</p>
-      <p className="text-xs mt-0.5 font-medium">{label}</p>
+    <div className={`rounded-10 p-3 ${colors[color] ?? 'bg-warm-100 text-warm-700'}`}>
+      <p className="tnum text-xl font-bold">{value}</p>
+      <p className="text-caption mt-0.5 font-medium">{label}</p>
     </div>
   )
 }

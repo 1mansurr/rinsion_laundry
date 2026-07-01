@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/Sidebar'
 import { BottomTabBar } from '@/components/BottomTabBar'
 import { Banner } from '@/components/ui/Banner'
+import { CommandPalette } from '@/components/ui/CommandPalette'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
 import { createClient } from '@/lib/supabase'
@@ -42,6 +43,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </main>
       </div>
       <BottomTabBar role={profile.role} />
+      <CommandPalette />
     </div>
   )
 }

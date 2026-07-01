@@ -23,7 +23,7 @@ export function StartTrialButton({ laundryId }: { laundryId: string }) {
     <button
       onClick={handleClick}
       disabled={isPending}
-      className="px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      className="px-3 py-1.5 bg-brand text-[#FAF8F5] text-caption font-medium rounded-7 hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
     >
       {isPending ? 'Starting…' : 'Start Trial'}
     </button>

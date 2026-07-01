@@ -35,9 +35,8 @@ export default async function SystemHealthPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <h1 className="text-lg font-bold text-gray-900">System Health</h1>
+      <h1 className="text-h2 font-semibold text-warm-950">System Health</h1>
 
-      {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card label="Total Laundries" value={totalLaundries ?? 0} />
         <Card label="SMS Sent (24h)" value={smsSentCount} />
@@ -45,39 +44,37 @@ export default async function SystemHealthPage() {
         <Card label="SMS Success Rate" value={`${successRate}%`} warn={successRate < 90} />
       </div>
 
-      {/* Failed SMS */}
       <Section title={`Failed SMS — last 24h (${smsFailCount})`}>
         {(recentFailedSms ?? []).length === 0 ? (
-          <p className="text-sm text-gray-400 px-5 py-4">No failures.</p>
+          <p className="text-ui text-warm-500 px-5 py-4">No failures.</p>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-warm-100">
             {(recentFailedSms ?? []).map(s => (
               <div key={s.id} className="px-5 py-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono text-gray-500">{s.trigger_event}</span>
-                  <span className="text-xs text-gray-400">{s.created_at.substring(0, 16).replace('T', ' ')}</span>
+                  <span className="text-caption font-mono text-warm-600">{s.trigger_event}</span>
+                  <span className="text-caption text-warm-500">{s.created_at.substring(0, 16).replace('T', ' ')}</span>
                 </div>
-                <p className="text-xs text-red-600 mt-0.5">{s.error_message ?? 'Unknown error'}</p>
-                <p className="text-xs text-gray-400">{s.phone}</p>
+                <p className="text-caption text-red-600 mt-0.5">{s.error_message ?? 'Unknown error'}</p>
+                <p className="text-caption text-warm-500">{s.phone}</p>
               </div>
             ))}
           </div>
         )}
       </Section>
 
-      {/* Recent activity alerts */}
       <Section title="Recent Alerts (SMS failures, hard blocks, locks)">
         {(recentLogs ?? []).length === 0 ? (
-          <p className="text-sm text-gray-400 px-5 py-4">Nothing flagged.</p>
+          <p className="text-ui text-warm-500 px-5 py-4">Nothing flagged.</p>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-warm-100">
             {(recentLogs ?? []).map(log => (
               <div key={log.id} className="flex items-start justify-between px-5 py-3">
                 <div>
-                  <span className="text-xs font-mono text-gray-600">{log.action_type}</span>
-                  <p className="text-xs text-gray-500 mt-0.5">{log.description}</p>
+                  <span className="text-caption font-mono text-warm-700">{log.action_type}</span>
+                  <p className="text-caption text-warm-600 mt-0.5">{log.description}</p>
                 </div>
-                <span className="text-xs text-gray-400 flex-shrink-0 ml-4">
+                <span className="text-caption text-warm-500 flex-shrink-0 ml-4">
                   {log.created_at.substring(0, 16).replace('T', ' ')}
                 </span>
               </div>
@@ -91,18 +88,18 @@ export default async function SystemHealthPage() {
 
 function Card({ label, value, warn }: { label: string; value: number | string; warn?: boolean }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4">
-      <p className="text-xs text-gray-500 mb-1">{label}</p>
-      <p className={`text-xl font-bold ${warn ? 'text-amber-600' : 'text-gray-900'}`}>{value}</p>
+    <div className="bg-white rounded-10 border border-warm-200 p-4">
+      <p className="text-caption text-warm-600 mb-1">{label}</p>
+      <p className={`tnum text-xl font-bold ${warn ? 'text-amber-600' : 'text-warm-950'}`}>{value}</p>
     </div>
   )
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200">
-      <div className="px-5 py-3.5 border-b border-gray-100">
-        <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
+    <div className="bg-white rounded-10 border border-warm-200">
+      <div className="px-5 py-3.5 border-b border-warm-100">
+        <h2 className="text-ui font-semibold text-warm-950">{title}</h2>
       </div>
       {children}
     </div>

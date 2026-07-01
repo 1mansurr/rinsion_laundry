@@ -9,6 +9,10 @@ import type { PriceCell } from '@/services/pricing'
 import type { Customer } from '@/services/customers'
 import type { OrderPriority } from '@/constants/statuses'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
+import { Textarea } from '@/components/ui/Textarea'
 
 interface Branch { id: string; name: string }
 
@@ -29,90 +33,108 @@ interface Props {
   isAdmin: boolean
   defaultBranchId: string
   preselectedCustomer?: Customer | null
+  allowExpressOrders?: boolean
 }
 
 const EMPTY_LINE: LineItem = { itemTypeId: '', serviceId: '', quantity: 1, unitPrice: 0, totalPrice: 0 }
 
-export function CreateOrderForm({ itemTypes, services, prices, customers, branches, isAdmin, defaultBranchId, preselectedCustomer }: Props) {
+const PRIORITY_LABELS: Record<OrderPriority, string> = {
+  normal: 'Normal',
+  express: 'Express',
+  urgent: 'Urgent',
+}
+
+export function CreateOrderForm({
+  itemTypes, services, prices, customers, branches,
+  isAdmin, defaultBranchId, preselectedCustomer,
+  allowExpressOrders = true,
+}: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
+  // Customer selection
   const [customerSearch, setCustomerSearch] = useState(
     preselectedCustomer ? `${preselectedCustomer.firstName} ${preselectedCustomer.lastName}` : ''
   )
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(preselectedCustomer ?? null)
-  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
 
+  // Order fields
   const [branchId, setBranchId] = useState(defaultBranchId)
   const [priority, setPriority] = useState<OrderPriority>('normal')
   const [pickupDate, setPickupDate] = useState('')
   const [notes, setNotes] = useState('')
   const [lines, setLines] = useState<LineItem[]>([{ ...EMPTY_LINE }])
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
   const filteredCustomers = customerSearch.length >= 1
     ? customers.filter(c =>
         `${c.firstName} ${c.lastName}`.toLowerCase().includes(customerSearch.toLowerCase()) ||
         c.phone.includes(customerSearch)
       ).slice(0, 8)
-    : []
+    : customers.slice(0, 5)
 
-  // Only show items that have at least one active price
   const pricedItems = itemTypes.filter(t =>
     t.isActive && prices.some(p => p.itemTypeId === t.id && p.isActive)
   )
 
-  function getUnitPrice(itemTypeId: string, serviceId: string): number {
+  function getUnitPrice(itemTypeId: string, serviceId: string) {
     return prices.find(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId && p.isActive)?.price ?? 0
   }
 
   function getAvailableServices(itemTypeId: string) {
     if (!itemTypeId) return services.filter(s => s.isActive)
-    return services.filter(s => s.isActive && prices.some(p => p.itemTypeId === itemTypeId && p.serviceId === s.id && p.isActive))
+    return services.filter(s =>
+      s.isActive && prices.some(p => p.itemTypeId === itemTypeId && p.serviceId === s.id && p.isActive)
+    )
   }
 
   function updateLine(index: number, patch: Partial<LineItem>) {
-    setLines(prev => {
-      const next = prev.map((l, i) => {
-        if (i !== index) return l
-        const updated = { ...l, ...patch }
-        if (patch.itemTypeId !== undefined) {
-          const available = getAvailableServices(patch.itemTypeId)
-          if (updated.serviceId && !available.some(s => s.id === updated.serviceId)) {
-            updated.serviceId = ''
-          }
-          if (!updated.serviceId && available.length === 1) {
-            updated.serviceId = available[0].id
-          }
-        }
-        const unitPrice = (patch.itemTypeId !== undefined || patch.serviceId !== undefined)
-          ? getUnitPrice(updated.itemTypeId, updated.serviceId)
-          : updated.unitPrice
-        return { ...updated, unitPrice, totalPrice: unitPrice * updated.quantity }
-      })
-      return next
-    })
+    setLines(prev => prev.map((l, i) => {
+      if (i !== index) return l
+      const updated = { ...l, ...patch }
+      if (patch.itemTypeId !== undefined) {
+        const avail = getAvailableServices(patch.itemTypeId)
+        if (updated.serviceId && !avail.some(s => s.id === updated.serviceId)) updated.serviceId = ''
+        if (!updated.serviceId && avail.length === 1) updated.serviceId = avail[0].id
+      }
+      const unitPrice = (patch.itemTypeId !== undefined || patch.serviceId !== undefined)
+        ? getUnitPrice(updated.itemTypeId, updated.serviceId)
+        : updated.unitPrice
+      return { ...updated, unitPrice, totalPrice: unitPrice * updated.quantity }
+    }))
   }
 
   function addLine() { setLines(prev => [...prev, { ...EMPTY_LINE }]) }
-  function removeLine(i: number) { setLines(prev => prev.filter((_, idx) => idx !== i)) }
+  function removeLine(i: number) { if (lines.length > 1) setLines(prev => prev.filter((_, idx) => idx !== i)) }
 
   const total = lines.reduce((s, l) => s + l.totalPrice, 0)
-  const canSubmit = selectedCustomer && lines.every(l => l.itemTypeId && l.serviceId && l.quantity > 0)
+  const validLines = lines.filter(l => l.itemTypeId && l.serviceId && l.quantity > 0)
+  const canSubmit = !!selectedCustomer && validLines.length > 0
 
   function handleSubmit() {
     if (!selectedCustomer || !canSubmit) return
     setError(null)
-
     const input: CreateOrderInput = {
       customerId: selectedCustomer.id,
       branchId,
       priority,
       pickupDate: pickupDate || undefined,
       notes: notes || undefined,
-      items: lines.filter(l => l.itemTypeId && l.serviceId),
+      items: validLines,
     }
-
     startTransition(async () => {
       const res = await createOrder(input)
       if (res.success) {
@@ -124,251 +146,327 @@ export function CreateOrderForm({ itemTypes, services, prices, customers, branch
   }
 
   return (
-    <div className="space-y-6">
+    <div className="relative pb-28">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700">{error}</div>
+        <div className="mb-4 bg-[#FDF1EF] border border-[#E0BBB6] rounded-7 px-4 py-3 text-ui text-error-fg">
+          {error}
+        </div>
       )}
 
-      {/* Customer */}
-      <section className="bg-white rounded-xl border border-gray-200 p-5">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">Customer</h2>
-        {selectedCustomer ? (
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium text-gray-900">{selectedCustomer.firstName} {selectedCustomer.lastName}</p>
-              <p className="text-sm text-gray-500">{selectedCustomer.phone}</p>
+      <div className="space-y-5">
+        {/* Customer block */}
+        <section>
+          <p className="text-label font-medium text-warm-700 mb-2">Customer</p>
+          {selectedCustomer ? (
+            <div className="flex items-center justify-between bg-white border border-warm-300 rounded-10 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-brand text-[#FAF8F5] text-[14px] font-semibold shrink-0">
+                  {selectedCustomer.firstName[0]}{selectedCustomer.lastName[0]}
+                </span>
+                <div>
+                  <p className="text-ui font-medium text-warm-950">
+                    {selectedCustomer.firstName} {selectedCustomer.lastName}
+                  </p>
+                  <p className="text-caption text-warm-500">{selectedCustomer.phone}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setSelectedCustomer(null); setCustomerSearch('') }}
+                className="text-caption text-brand hover:text-brand-hover underline underline-offset-2"
+              >
+                Change
+              </button>
             </div>
-            <button onClick={() => { setSelectedCustomer(null); setCustomerSearch('') }} className="text-xs text-gray-400 hover:text-gray-700">Change</button>
-          </div>
-        ) : (
-          <div className="relative">
-            <input
-              value={customerSearch}
-              onChange={e => { setCustomerSearch(e.target.value); setShowCustomerDropdown(true) }}
-              onFocus={() => setShowCustomerDropdown(true)}
-              placeholder="Search by name or phone…"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
-            />
-            {showCustomerDropdown && filteredCustomers.length > 0 && (
-              <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
-                {filteredCustomers.map(c => (
+          ) : (
+            <div ref={searchRef} className="relative">
+              <Input
+                placeholder="Search by name or phone…"
+                value={customerSearch}
+                onChange={e => { setCustomerSearch(e.target.value); setShowDropdown(true) }}
+                onFocus={() => setShowDropdown(true)}
+              />
+              {showDropdown && (
+                <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-warm-300 rounded-10 shadow-modal overflow-hidden">
+                  {filteredCustomers.length === 0 ? (
+                    <div className="px-4 py-3 text-body text-warm-500">No customers found</div>
+                  ) : (
+                    filteredCustomers.map(c => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-warm-100 text-left"
+                        onClick={() => {
+                          setSelectedCustomer(c)
+                          setCustomerSearch(`${c.firstName} ${c.lastName}`)
+                          setShowDropdown(false)
+                        }}
+                      >
+                        <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-warm-200 text-[12px] font-semibold text-warm-700 shrink-0">
+                          {c.firstName[0]}{c.lastName[0]}
+                        </span>
+                        <div>
+                          <p className="text-ui font-medium text-warm-950">
+                            {c.firstName} {c.lastName}
+                          </p>
+                          <p className="text-caption text-warm-500">{c.phone}</p>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                  <div className="border-t border-warm-200 px-4 py-2.5">
+                    <a
+                      href="/customers/new"
+                      className="text-caption text-brand hover:text-brand-hover"
+                    >
+                      + Add new customer
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
+        {/* Branch (admin only) + Priority */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {isAdmin && (
+            <Select
+              label="Branch"
+              value={branchId}
+              onChange={e => setBranchId(e.target.value)}
+            >
+              {branches.map(b => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </Select>
+          )}
+
+          {allowExpressOrders && (
+            <div className={isAdmin ? '' : 'sm:col-span-2'}>
+              <p className="text-label font-medium text-warm-700 mb-2">Priority</p>
+              <div className="flex rounded-[8px] p-1" style={{ background: '#F1ECE4' }}>
+                {(['normal', 'express', 'urgent'] as const).map(p => (
                   <button
-                    key={c.id}
-                    onMouseDown={() => { setSelectedCustomer(c); setCustomerSearch(`${c.firstName} ${c.lastName}`); setShowCustomerDropdown(false) }}
-                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 border-b border-gray-50 last:border-0"
+                    key={p}
+                    type="button"
+                    onClick={() => setPriority(p)}
+                    className={`flex-1 py-1.5 rounded-[6px] text-[14px] capitalize transition-colors ${
+                      priority === p
+                        ? 'bg-white font-semibold text-warm-950 shadow-sm'
+                        : 'font-medium text-[#6B6259] hover:text-warm-800'
+                    }`}
                   >
-                    <span className="font-medium text-gray-900">{c.firstName} {c.lastName}</span>
-                    <span className="text-gray-400 ml-2">{c.phone}</span>
+                    {PRIORITY_LABELS[p]}
                   </button>
                 ))}
               </div>
-            )}
-            {showCustomerDropdown && customerSearch.length >= 1 && filteredCustomers.length === 0 && (
-              <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg px-4 py-3">
-                <p className="text-sm text-gray-500">No customer found.</p>
-                <a href="/customers/new" className="text-sm text-gray-900 underline">Create new customer →</a>
-              </div>
-            )}
-          </div>
-        )}
-      </section>
-
-      {/* Order info */}
-      <section className="bg-white rounded-xl border border-gray-200 p-5">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">Order Details</h2>
-        <div className="grid grid-cols-2 gap-4">
-          {isAdmin && (
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
-              <CustomSelect
-                value={branchId}
-                onChange={setBranchId}
-                options={branches.map(b => ({ value: b.id, label: b.name }))}
-                placeholder="Select branch…"
-              />
             </div>
           )}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-            <CustomSelect
-              value={priority}
-              onChange={v => setPriority(v as OrderPriority)}
-              options={[
-                { value: 'normal', label: 'Normal' },
-                { value: 'express', label: 'Express' },
-                { value: 'urgent', label: 'Urgent' },
-              ]}
-              placeholder="Priority…"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Pickup Date</label>
-            <input
-              type="date"
-              value={pickupDate}
-              onChange={e => setPickupDate(e.target.value)}
-              min={new Date().toISOString().split('T')[0]}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
-            />
-          </div>
         </div>
-      </section>
 
-      {/* Line items */}
-      <section className="bg-white rounded-xl border border-gray-200 p-5">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">Items</h2>
-        <div className="space-y-2">
-          {lines.map((line, i) => (
-            <div key={i} className="grid grid-cols-12 gap-2 items-center">
-              <div className="col-span-4">
-                <CustomSelect
-                  value={line.itemTypeId}
-                  onChange={v => updateLine(i, { itemTypeId: v })}
-                  options={pricedItems.map(t => ({ value: t.id, label: t.name }))}
-                  placeholder="Item…"
-                />
-              </div>
-              <div className="col-span-4">
-                <CustomSelect
-                  value={line.serviceId}
-                  onChange={v => updateLine(i, { serviceId: v })}
-                  options={getAvailableServices(line.itemTypeId).map(s => ({ value: s.id, label: s.name }))}
-                  placeholder="Service…"
-                  disabled={!line.itemTypeId}
-                />
-              </div>
-              <div className="col-span-2">
-                <input
-                  type="number" min="1" value={line.quantity}
-                  onChange={e => updateLine(i, { quantity: Math.max(1, parseInt(e.target.value) || 1) })}
-                  className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm text-gray-900 text-center focus:outline-none focus:ring-2 focus:ring-gray-900"
-                />
-              </div>
-              <div className="col-span-1 text-right text-xs text-gray-500 tabular-nums">
-                {line.unitPrice > 0 ? formatCurrency(line.totalPrice) : '—'}
-              </div>
-              <div className="col-span-1 text-right">
-                {lines.length > 1 && (
-                  <button onClick={() => removeLine(i)} className="text-gray-300 hover:text-red-400 text-sm">×</button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-        <button onClick={addLine} className="mt-3 text-sm text-gray-500 hover:text-gray-900">+ Add item</button>
+        {/* Pickup date */}
+        <Input
+          type="date"
+          label="Pickup date (optional)"
+          value={pickupDate}
+          onChange={e => setPickupDate(e.target.value)}
+        />
+
+        {/* Line items */}
+        <section>
+          <p className="text-label font-medium text-warm-700 mb-3">Items</p>
+
+          {/* Desktop grid header */}
+          <div
+            className="hidden md:grid items-center mb-1 px-1"
+            style={{ gridTemplateColumns: '1.3fr 1.3fr 0.9fr 1fr 40px', gap: '10px' }}
+          >
+            {['Item type', 'Service', 'Qty', 'Line total', ''].map((h, i) => (
+              <span key={i} className="text-caption text-warm-500 font-medium">{h}</span>
+            ))}
+          </div>
+
+          <div className="space-y-3">
+            {lines.map((line, i) => {
+              const availableServices = getAvailableServices(line.itemTypeId)
+              return (
+                <div key={i}>
+                  {/* Desktop row */}
+                  <div
+                    className="hidden md:grid items-center"
+                    style={{ gridTemplateColumns: '1.3fr 1.3fr 0.9fr 1fr 40px', gap: '10px' }}
+                  >
+                    <select
+                      value={line.itemTypeId}
+                      onChange={e => updateLine(i, { itemTypeId: e.target.value })}
+                      className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring appearance-none"
+                    >
+                      <option value="">Select item…</option>
+                      {pricedItems.map(t => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
+                    <select
+                      value={line.serviceId}
+                      onChange={e => updateLine(i, { serviceId: e.target.value })}
+                      disabled={!line.itemTypeId}
+                      className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring appearance-none disabled:opacity-40"
+                    >
+                      <option value="">Select service…</option>
+                      {availableServices.map(s => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                      ))}
+                    </select>
+                    {/* Qty stepper */}
+                    <div className="inline-flex items-center border border-warm-300 rounded-7 overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => updateLine(i, { quantity: Math.max(1, line.quantity - 1) })}
+                        className="w-9 h-9 flex items-center justify-center text-warm-600 hover:bg-warm-100 text-lg leading-none"
+                      >
+                        −
+                      </button>
+                      <span className="tnum w-8 text-center text-ui font-medium text-warm-950">
+                        {line.quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => updateLine(i, { quantity: line.quantity + 1 })}
+                        className="w-9 h-9 flex items-center justify-center text-warm-600 hover:bg-warm-100 text-lg leading-none"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <span className="tnum text-ui font-medium text-warm-950">
+                      {line.totalPrice > 0 ? formatCurrency(line.totalPrice) : '—'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeLine(i)}
+                      disabled={lines.length === 1}
+                      className="w-8 h-8 flex items-center justify-center text-warm-400 hover:text-error-fg disabled:opacity-0 rounded-6 hover:bg-[#FDF1EF] transition-colors"
+                      aria-label="Remove line"
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  {/* Mobile card */}
+                  <div className="md:hidden bg-white border border-warm-300 rounded-10 p-4 space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-caption text-warm-500 mb-1">Item type</p>
+                        <select
+                          value={line.itemTypeId}
+                          onChange={e => updateLine(i, { itemTypeId: e.target.value })}
+                          className="w-full border border-warm-400 rounded-7 px-2.5 py-2 text-[14px] text-warm-950 bg-white focus:outline-none focus:border-brand"
+                        >
+                          <option value="">Select…</option>
+                          {pricedItems.map(t => (
+                            <option key={t.id} value={t.id}>{t.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <p className="text-caption text-warm-500 mb-1">Service</p>
+                        <select
+                          value={line.serviceId}
+                          onChange={e => updateLine(i, { serviceId: e.target.value })}
+                          disabled={!line.itemTypeId}
+                          className="w-full border border-warm-400 rounded-7 px-2.5 py-2 text-[14px] text-warm-950 bg-white focus:outline-none focus:border-brand disabled:opacity-40"
+                        >
+                          <option value="">Select…</option>
+                          {availableServices.map(s => (
+                            <option key={s.id} value={s.id}>{s.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="inline-flex items-center border border-warm-300 rounded-7 overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => updateLine(i, { quantity: Math.max(1, line.quantity - 1) })}
+                          className="w-8 h-8 flex items-center justify-center text-warm-600 hover:bg-warm-100"
+                        >−</button>
+                        <span className="tnum w-8 text-center text-ui font-medium text-warm-950">{line.quantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => updateLine(i, { quantity: line.quantity + 1 })}
+                          className="w-8 h-8 flex items-center justify-center text-warm-600 hover:bg-warm-100"
+                        >+</button>
+                      </div>
+                      <span className="tnum text-ui font-semibold text-warm-950">
+                        {line.totalPrice > 0 ? formatCurrency(line.totalPrice) : '—'}
+                      </span>
+                      {lines.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeLine(i)}
+                          className="text-caption text-warm-400 hover:text-error-fg"
+                        >Remove</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Add another item */}
+          <button
+            type="button"
+            onClick={addLine}
+            className="mt-3 w-full py-2.5 border border-dashed border-warm-400 rounded-10 text-label font-medium text-warm-600 hover:border-brand hover:text-brand transition-colors"
+          >
+            + Add another item
+          </button>
+        </section>
 
         {/* Notes */}
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
-          <textarea
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder="Special instructions, damage notes…"
-            rows={2}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
-          />
-        </div>
-      </section>
+        <Textarea
+          label="Notes (optional)"
+          placeholder="Special instructions or care notes…"
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          rows={3}
+        />
+      </div>
 
-      {/* Summary + submit */}
-      <section className="bg-white rounded-xl border border-gray-200 p-5">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-sm text-gray-600">{lines.filter(l => l.itemTypeId).length} item(s)</span>
-          <span className="text-lg font-bold text-gray-900">{formatCurrency(total)}</span>
-        </div>
-        <button
-          onClick={handleSubmit}
-          disabled={isPending || !canSubmit}
-          className="w-full bg-gray-900 text-white py-3 rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {isPending ? 'Creating order…' : 'Create Order'}
-        </button>
-        {!selectedCustomer && <p className="text-xs text-gray-400 text-center mt-2">Select a customer to continue</p>}
-      </section>
-    </div>
-  )
-}
-
-// ─── Custom Select ────────────────────────────────────────────────────────────
-
-interface SelectOption { value: string; label: string }
-
-function CustomSelect({
-  value,
-  onChange,
-  options,
-  placeholder,
-  disabled,
-}: {
-  value: string
-  onChange: (v: string) => void
-  options: SelectOption[]
-  placeholder: string
-  disabled?: boolean
-}) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-    function handle(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handle)
-    return () => document.removeEventListener('mousedown', handle)
-  }, [open])
-
-  const selected = options.find(o => o.value === value)
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => !disabled && setOpen(v => !v)}
-        disabled={disabled}
-        className={`w-full flex items-center justify-between gap-2 border rounded-lg px-3 py-2 text-sm text-left transition-colors ${
-          disabled
-            ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
-            : open
-              ? 'border-gray-900 ring-2 ring-gray-900 bg-white'
-              : 'border-gray-300 bg-white hover:border-gray-400'
-        }`}
-      >
-        <span className={`truncate ${selected ? 'text-gray-900' : 'text-gray-400'}`}>
-          {selected?.label ?? placeholder}
-        </span>
-        <svg
-          className={`w-3.5 h-3.5 text-gray-400 flex-shrink-0 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
-          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-
-      {open && (
-        <div className="absolute z-50 mt-1 w-full min-w-max bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
-          <div className="max-h-52 overflow-y-auto py-1">
-            {options.length === 0 ? (
-              <p className="px-3 py-2.5 text-sm text-gray-400">No options available</p>
-            ) : (
-              options.map(opt => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => { onChange(opt.value); setOpen(false) }}
-                  className={`w-full text-left px-3 py-2.5 text-sm transition-colors ${
-                    opt.value === value
-                      ? 'bg-gray-900 text-white font-medium'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
+      {/* Sticky summary footer */}
+      <div className="fixed bottom-0 left-0 right-0 z-10 px-4 pb-4 pointer-events-none">
+        <div className="max-w-[800px] mx-auto pointer-events-auto">
+          <div
+            className="bg-white border border-[#E8E4DD] rounded-10 px-[22px] py-[14px]"
+            style={{ boxShadow: '0 8px 28px rgba(15,61,46,0.10)' }}
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <span className="text-caption text-warm-600">
+                  {validLines.length} item{validLines.length !== 1 ? 's' : ''}
+                </span>
+                {pickupDate && (
+                  <span className="text-caption text-warm-600 ml-3">· Pickup {pickupDate}</span>
+                )}
+              </div>
+              <div className="flex items-center gap-4 shrink-0">
+                <span className="tnum text-[20px] font-semibold text-warm-950">
+                  {formatCurrency(total)}
+                </span>
+                <Button
+                  variant="primary"
+                  isPending={isPending}
+                  disabled={!canSubmit || isPending}
+                  onClick={handleSubmit}
                 >
-                  {opt.label}
-                </button>
-              ))
-            )}
+                  Create Order
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }
