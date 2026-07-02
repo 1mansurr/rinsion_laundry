@@ -33,6 +33,7 @@ export interface ActivityEntry {
   actionType: string
   createdAt: string
   employeeName: string
+  customerName: string
 }
 
 interface Props {
@@ -326,7 +327,7 @@ export function DashboardClient({
                       style={{ background: activityDotColor(activity.actionType) }}
                     />
                     <div>
-                      <p className="text-ui text-warm-900">{activity.description}</p>
+                      <p className="text-ui text-warm-900">{humanizeActivity(activity.description, activity.customerName)}</p>
                       {activity.employeeName && (
                         <p className="text-caption text-warm-500">{activity.employeeName}</p>
                       )}
@@ -450,6 +451,53 @@ export function DashboardClient({
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   cash: 'Cash', mobile_money: 'Mobile Money', card: 'Card', bank_transfer: 'Bank Transfer',
+}
+
+function humanizeActivity(description: string, customerName: string): string {
+  const name = customerName || 'customer'
+
+  // SMS events: "ORDER_READY SMS sent to 0257528042"
+  const smsMatch = description.match(/^(\w+) SMS (sent|failed) to [\d\s]+$/)
+  if (smsMatch) {
+    const [, type, result] = smsMatch
+    if (result === 'failed') {
+      const labels: Record<string, string> = {
+        ORDER_CREATED: `Order confirmation SMS to ${name} failed`,
+        ORDER_READY: `Ready notification SMS to ${name} failed`,
+        PICKUP_CODE_RESEND: `Pickup code SMS to ${name} failed`,
+      }
+      return labels[type] ?? 'SMS notification failed'
+    }
+    const labels: Record<string, string> = {
+      ORDER_CREATED: `Order confirmation sent to ${name}`,
+      ORDER_READY: `${name} notified, order ready for pickup`,
+      PICKUP_CODE_RESEND: `Pickup code resent to ${name}`,
+    }
+    return labels[type] ?? `SMS sent to ${name}`
+  }
+
+  // Status transitions: "Status changed from processing to ready"
+  const statusMatch = description.match(/^Status changed from (\w+) to (\w+)$/)
+  if (statusMatch) {
+    const [, from, to] = statusMatch
+    const transitions: Record<string, string> = {
+      'received→confirmed': 'Order confirmed',
+      'confirmed→processing': 'Washing started',
+      'processing→ready': 'Order ready for pickup',
+      'ready→collected': `${name} collected their order`,
+      'ready→cancelled': 'Order cancelled',
+      'processing→cancelled': 'Order cancelled',
+      'confirmed→cancelled': 'Order cancelled',
+      'received→cancelled': 'Order cancelled',
+    }
+    return transitions[`${from}→${to}`] ?? `Order moved to ${to}`
+  }
+
+  // "Order ORD-XXXXXXX created"
+  if (/^Order \S+ created$/.test(description)) return `New order created for ${name}`
+
+  // "Payment of GHS X.XX recorded" — already readable, pass through
+  return description
 }
 
 function activityDotColor(actionType: string): string {

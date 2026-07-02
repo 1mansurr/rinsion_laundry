@@ -50,7 +50,7 @@ export default async function DashboardPage() {
 
     supabase
       .from('activity_logs')
-      .select('id, action_type, description, created_at, employees(first_name, last_name)')
+      .select('id, action_type, description, created_at, employees(first_name, last_name), orders(customers(first_name, last_name))')
       .eq('laundry_id', profile.laundryId)
       .order('created_at', { ascending: false })
       .limit(8),
@@ -85,12 +85,15 @@ export default async function DashboardPage() {
   // Shape activity log
   const activities: ActivityEntry[] = (activityRes.data ?? []).map(a => {
     const emp = a.employees as unknown as { first_name: string; last_name: string } | null
+    const ord = a.orders as unknown as { customers: { first_name: string; last_name: string } | null } | null
+    const cust = ord?.customers ?? null
     return {
       id: a.id as string,
       description: a.description as string,
       actionType: a.action_type as string,
       createdAt: a.created_at as string,
       employeeName: emp ? `${emp.first_name} ${emp.last_name}` : '',
+      customerName: cust ? `${cust.first_name} ${cust.last_name}`.trim() : '',
     }
   })
 
