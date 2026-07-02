@@ -234,7 +234,7 @@ export function PickupFlow() {
               <div className="space-y-3 pt-2 border-t border-gray-100">
                 <div>
                   <label className="text-xs font-medium text-gray-700 block mb-1.5">
-                    Customer's Pickup Code
+                    Customer&apos;s Pickup Code
                   </label>
                   <input
                     type="text"
