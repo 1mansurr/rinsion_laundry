@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #FAF8F5;
+    color: #1A1A1A;
+    font-family: 'Public Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .tnum { font-variant-numeric: tabular-nums lining-nums; font-feature-settings: 'tnum' 1, 'lnum' 1; }
+  @keyframes rin-spin { to { transform: rotate(360deg); } }
+  @keyframes rin-spin-accel {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(720deg); }
+  }
+  input.rin-field { font-family: inherit; }
+  input.rin-field:focus { outline: none; border-color: #0F3D2E !important; box-shadow: 0 0 0 3px rgba(15,61,46,0.10); }
+</style>
+</helmet>
+
+<div style="max-width: 1080px; margin: 0 auto; padding: 0 32px 120px;">
+
+  <!-- ===================== MASTHEAD ===================== -->
+  <header style="padding: 80px 0 56px; border-bottom: 1px solid #E8E4DD;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 40px;">
+      <svg viewBox="0 0 100 100" width="22" height="22" style="display:block;">
+        <circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="15" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle>
+      </svg>
+      <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #6B6259;">Rinsion · Brand Foundations</span>
+      <span style="margin-left:auto; font-size: 12px; font-weight: 500; color: #9A9088; letter-spacing: 0.04em;">V1 · Light mode</span>
+    </div>
+
+    <!-- The wordmark, large -->
+    <div style="font-weight: 800; font-size: 96px; letter-spacing: -0.045em; line-height: 1; color: #1A1A1A; white-space: nowrap;">
+      <span>R</span>
+      <span style="display:inline-block; vertical-align:baseline; text-align:center; line-height:0; margin:0 0.018em;">
+        <span style="display:block; width:0.18em; height:0.18em; border-radius:999px; background:#0F3D2E; margin:0 auto;"></span>
+        <span style="display:block; width:0.16em; height:0.5em; border-radius:0.03em; background:#1A1A1A; margin:0.055em auto 0;"></span>
+      </span>
+      <span>ns</span>
+      <span style="display:inline-block; vertical-align:baseline; text-align:center; line-height:0; margin:0 0.018em;">
+        <span style="display:block; width:0.18em; height:0.18em; border-radius:999px; background:#0F3D2E; margin:0 auto;"></span>
+        <span style="display:block; width:0.16em; height:0.5em; border-radius:0.03em; background:#1A1A1A; margin:0.055em auto 0;"></span>
+      </span>
+      <span style="display:inline-flex; align-items:center; justify-content:center; width:0.66em; height:0.66em; vertical-align:baseline; transform:translateY(0.02em); margin: 0 0.004em;">
+        <svg viewBox="0 0 100 100" width="100%" height="100%" style="display:block;">
+          <circle cx="50" cy="50" r="36" fill="none" stroke="#0F3D2E" strokeWidth="23" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle>
+        </svg>
+      </span>
+      <span>n</span>
+    </div>
+
+    <p style="max-width: 620px; margin: 32px 0 0; font-size: 19px; line-height: 1.55; color: #43403B; font-weight: 400;">
+      The operating system for Ghanaian laundries. This page is the visual foundation — the wordmark, the living <span style="font-weight:600;">o</span>, the palette, the type, and the components every screen is built from.
+    </p>
+  </header>
+
+  <!-- ===================== THE O ===================== -->
+  <section style="padding: 64px 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">01 — The mark</div>
+    <h2 style="font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">One shape. Every job.</h2>
+    <p style="max-width: 640px; margin: 0 0 40px; font-size: 17px; line-height: 1.55; color: #43403B;">
+      The wordmark carries no separate icon. Instead the <span style="font-weight:600;">o</span> is built heavier than the letters around it, with a single notch cut at the top-right — the rinse notch. Pulled out of the word, that notched ring is unmistakably Rinsion. It prints in pure black, it lifts off to spin, it collapses to a status dot, and it opens up to frame a pickup code.
+    </p>
+
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+      <!-- isolated mark -->
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; padding:28px 20px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:18px;">
+        <svg viewBox="0 0 100 100" width="76" height="76" style="display:block;">
+          <circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="15" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle>
+        </svg>
+        <div>
+          <div style="font-size:14px; font-weight:600;">The icon</div>
+          <div style="font-size:12.5px; color:#6B6259; margin-top:3px;">Favicon · app icon · avatar</div>
+        </div>
+      </div>
+
+      <!-- spinner (live) -->
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; padding:28px 20px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:18px;">
+        <svg viewBox="0 0 100 100" width="76" height="76" style="display:block; animation: rin-spin 0.9s linear infinite; transform-origin: 50% 50%;">
+          <circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="15" strokeLinecap="round" pathLength="100" strokeDasharray="70 30" transform="rotate(-58 50 50)"></circle>
+        </svg>
+        <div>
+          <div style="font-size:14px; font-weight:600;">The spinner</div>
+          <div style="font-size:12.5px; color:#6B6259; margin-top:3px;">Loading · the o, lifted</div>
+        </div>
+      </div>
+
+      <!-- status dot -->
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; padding:28px 20px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:18px;">
+        <div style="height:76px; display:flex; align-items:center;">
+          <span style="display:inline-flex; align-items:center; gap:8px; background:#E3EDE8; color:#0F3D2E; font-weight:600; font-size:14px; padding:7px 14px 7px 11px; border-radius:999px;">
+            <span style="width:9px; height:9px; border-radius:999px; background:#0F3D2E; display:inline-block;"></span>Ready
+          </span>
+        </div>
+        <div>
+          <div style="font-size:14px; font-weight:600;">The status dot</div>
+          <div style="font-size:12.5px; color:#6B6259; margin-top:3px;">A small, filled o</div>
+        </div>
+      </div>
+
+      <!-- pickup frame -->
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; padding:28px 20px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:18px;">
+        <div style="height:76px; display:flex; align-items:center; justify-content:center; position:relative; width:76px;">
+          <svg viewBox="0 0 100 100" width="76" height="76" style="display:block; position:absolute; inset:0;">
+            <circle cx="50" cy="50" r="44" fill="none" stroke="#0F3D2E" strokeWidth="3" pathLength="100" strokeDasharray="92 8" transform="rotate(-77 50 50)"></circle>
+          </svg>
+          <span class="tnum" style="font-size:20px; font-weight:700; letter-spacing:0.04em; color:#0F3D2E;">48217</span>
+        </div>
+        <div>
+          <div style="font-size:14px; font-weight:600;">The code frame</div>
+          <div style="font-size:12.5px; color:#6B6259; margin-top:3px;">Pickup code in a thin o</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- scale + reproduction -->
+    <div style="display:grid; grid-template-columns: 1.3fr 1fr; gap:16px; margin-top:16px;">
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; padding:26px 28px;">
+        <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:22px;">Scale — legible from 96px to 16px</div>
+        <div style="display:flex; align-items:flex-end; gap:30px; flex-wrap:wrap;">
+          <svg viewBox="0 0 100 100" width="64" height="64"><circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="15" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>
+          <svg viewBox="0 0 100 100" width="44" height="44"><circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="15" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>
+          <svg viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="15" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>
+          <svg viewBox="0 0 100 100" width="20" height="20"><circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="16" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>
+          <svg viewBox="0 0 100 100" width="16" height="16"><circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="17" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>
+        </div>
+      </div>
+      <div style="background:#1A1A1A; border:1px solid #1A1A1A; border-radius:8px; padding:26px 28px; display:flex; flex-direction:column; justify-content:space-between;">
+        <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:22px;">Mono · reversed</div>
+        <div style="display:flex; align-items:center; gap:28px;">
+          <svg viewBox="0 0 100 100" width="48" height="48"><circle cx="50" cy="50" r="36" fill="none" stroke="#FAF8F5" strokeWidth="23" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>
+          <div style="font-weight:800; font-size:34px; letter-spacing:-0.045em; line-height:1; color:#FAF8F5; white-space:nowrap;">
+            <span>R</span>
+            <span style="display:inline-block; vertical-align:baseline; text-align:center; line-height:0; margin:0 0.018em;">
+              <span style="display:block; width:0.18em; height:0.18em; border-radius:999px; background:#FAF8F5; margin:0 auto;"></span>
+              <span style="display:block; width:0.16em; height:0.5em; border-radius:0.04em; background:#FAF8F5; margin:0.055em auto 0;"></span>
+            </span>
+            <span>ns</span>
+            <span style="display:inline-block; vertical-align:baseline; text-align:center; line-height:0; margin:0 0.018em;">
+              <span style="display:block; width:0.18em; height:0.18em; border-radius:999px; background:#FAF8F5; margin:0 auto;"></span>
+              <span style="display:block; width:0.16em; height:0.5em; border-radius:0.04em; background:#FAF8F5; margin:0.055em auto 0;"></span>
+            </span>
+            <span style="display:inline-flex; align-items:center; justify-content:center; width:0.66em; height:0.66em; vertical-align:baseline; transform:translateY(0.02em); margin:0 0.004em;"><svg viewBox="0 0 100 100" width="100%" height="100%" style="display:block;"><circle cx="50" cy="50" r="36" fill="none" stroke="#FAF8F5" strokeWidth="23" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg></span>
+            <span>n</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== COLOUR ===================== -->
+  <section style="padding: 64px 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">02 — Colour</div>
+    <h2 style="font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">Deep emerald, warmed by clay.</h2>
+    <p style="max-width: 640px; margin: 0 0 40px; font-size: 17px; line-height: 1.55; color: #43403B;">
+      A green you can build a business on, an accent used so rarely it always means something, and a background warmed just off white — that warmth is where the local feeling lives.
+    </p>
+
+    <!-- primary / accent big swatches -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+      <div style="border-radius:8px; overflow:hidden; border:1px solid #E8E4DD;">
+        <div style="background:#0F3D2E; height:150px; display:flex; align-items:flex-end; padding:18px; color:#FAF8F5;">
+          <span style="font-size:16px; font-weight:600;">Primary — Deep Emerald</span>
+        </div>
+        <div style="display:flex; background:#FFFFFF;">
+          <div style="flex:1; padding:13px 16px; border-right:1px solid #E8E4DD;"><div style="font-size:12px; color:#9A9088;">Base</div><div class="tnum" style="font-size:14px; font-weight:600;">#0F3D2E</div></div>
+          <div style="flex:1; padding:13px 16px;"><div style="font-size:12px; color:#9A9088;">Hover / mid</div><div class="tnum" style="font-size:14px; font-weight:600;">#17604A</div></div>
+        </div>
+      </div>
+      <div style="border-radius:8px; overflow:hidden; border:1px solid #E8E4DD;">
+        <div style="background:#C25A3C; height:150px; display:flex; align-items:flex-end; padding:18px; color:#FFF6F1;">
+          <span style="font-size:16px; font-weight:600;">Accent — Clay</span>
+        </div>
+        <div style="display:flex; background:#FFFFFF;">
+          <div style="flex:1; padding:13px 16px; border-right:1px solid #E8E4DD;"><div style="font-size:12px; color:#9A9088;">Base</div><div class="tnum" style="font-size:14px; font-weight:600;">#C25A3C</div></div>
+          <div style="flex:1; padding:13px 16px;"><div style="font-size:12px; color:#9A9088;">Used sparingly</div><div style="font-size:13px; font-weight:500; color:#C25A3C;">The moments that matter</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- neutrals -->
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:32px;">
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; overflow:hidden;">
+        <div style="height:64px; background:#FAF8F5; border-bottom:1px solid #E8E4DD;"></div>
+        <div style="padding:12px 14px;"><div style="font-size:13px; font-weight:600;">Background</div><div class="tnum" style="font-size:12.5px; color:#6B6259; margin-top:2px;">#FAF8F5</div></div>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; overflow:hidden;">
+        <div style="height:64px; background:#F1ECE4; border-bottom:1px solid #E8E4DD;"></div>
+        <div style="padding:12px 14px;"><div style="font-size:13px; font-weight:600;">Surface tint</div><div class="tnum" style="font-size:12.5px; color:#6B6259; margin-top:2px;">#F1ECE4</div></div>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; overflow:hidden;">
+        <div style="height:64px; background:#E8E4DD; border-bottom:1px solid #E8E4DD;"></div>
+        <div style="padding:12px 14px;"><div style="font-size:13px; font-weight:600;">Border</div><div class="tnum" style="font-size:12.5px; color:#6B6259; margin-top:2px;">#E8E4DD</div></div>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; overflow:hidden;">
+        <div style="height:64px; background:#1A1A1A; border-bottom:1px solid #E8E4DD;"></div>
+        <div style="padding:12px 14px;"><div style="font-size:13px; font-weight:600;">Text — Charcoal</div><div class="tnum" style="font-size:12.5px; color:#6B6259; margin-top:2px;">#1A1A1A</div></div>
+      </div>
+    </div>
+
+    <!-- functional -->
+    <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:14px;">Functional</div>
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:36px;">
+      <div style="background:#E6F0EA; border:1px solid #CFE2D6; border-radius:8px; padding:16px 18px;"><div style="width:22px;height:22px;border-radius:6px;background:#2E7D5B;margin-bottom:12px;"></div><div style="font-size:14px;font-weight:600;color:#1E5C40;">Success</div><div class="tnum" style="font-size:12.5px;color:#3D6B52;margin-top:2px;">#2E7D5B</div></div>
+      <div style="background:#F7EFD9; border:1px solid #EADFBE; border-radius:8px; padding:16px 18px;"><div style="width:22px;height:22px;border-radius:6px;background:#B8801F;margin-bottom:12px;"></div><div style="font-size:14px;font-weight:600;color:#7A5512;">Warning</div><div class="tnum" style="font-size:12.5px;color:#8A6420;margin-top:2px;">#B8801F</div></div>
+      <div style="background:#F4E3E1; border:1px solid #E6CCC8; border-radius:8px; padding:16px 18px;"><div style="width:22px;height:22px;border-radius:6px;background:#B0413A;margin-bottom:12px;"></div><div style="font-size:14px;font-weight:600;color:#8A322C;">Error · Overdue</div><div class="tnum" style="font-size:12.5px;color:#9A463F;margin-top:2px;">#B0413A</div></div>
+      <div style="background:#E4ECF3; border:1px solid #CCDCE9; border-radius:8px; padding:16px 18px;"><div style="width:22px;height:22px;border-radius:6px;background:#2F6F9E;margin-bottom:12px;"></div><div style="font-size:14px;font-weight:600;color:#234F70;">Info</div><div class="tnum" style="font-size:12.5px;color:#356486;margin-top:2px;">#2F6F9E</div></div>
+    </div>
+
+    <!-- status mapping -->
+    <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:14px;">Order status — the most-used colour system</div>
+    <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; padding:24px; display:flex; flex-wrap:wrap; gap:14px; align-items:center;">
+      <span style="display:inline-flex; align-items:center; gap:8px; background:#EEEAE3; color:#5A5249; font-weight:600; font-size:14px; padding:7px 14px 7px 11px; border-radius:999px;"><span style="width:9px;height:9px;border-radius:999px;background:#8C857B;"></span>Received</span>
+      <span style="color:#C7C0B6;">→</span>
+      <span style="display:inline-flex; align-items:center; gap:8px; background:#E4ECF3; color:#234F70; font-weight:600; font-size:14px; padding:7px 14px 7px 11px; border-radius:999px;"><span style="width:9px;height:9px;border-radius:999px;background:#2F6F9E;"></span>Confirmed</span>
+      <span style="color:#C7C0B6;">→</span>
+      <span style="display:inline-flex; align-items:center; gap:8px; background:#F7EFD9; color:#7A5512; font-weight:600; font-size:14px; padding:7px 14px 7px 11px; border-radius:999px;"><span style="width:9px;height:9px;border-radius:999px;background:#B8801F;"></span>Processing</span>
+      <span style="color:#C7C0B6;">→</span>
+      <span style="display:inline-flex; align-items:center; gap:8px; background:#E3EDE8; color:#0F3D2E; font-weight:700; font-size:14px; padding:7px 14px 7px 11px; border-radius:999px; outline:2px solid rgba(15,61,46,0.16); outline-offset:1px;"><span style="width:9px;height:9px;border-radius:999px;background:#0F3D2E;"></span>Ready</span>
+      <span style="color:#C7C0B6;">→</span>
+      <span style="display:inline-flex; align-items:center; gap:8px; background:#EAEDE9; color:#4F6256; font-weight:600; font-size:14px; padding:7px 14px 7px 11px; border-radius:999px;"><span style="width:9px;height:9px;border-radius:999px;background:#5E7A6B;"></span>Collected</span>
+      <span style="margin:0 6px; width:1px; height:22px; background:#E8E4DD;"></span>
+      <span style="display:inline-flex; align-items:center; gap:8px; background:#F4E3E1; color:#8A322C; font-weight:600; font-size:14px; padding:7px 14px 7px 11px; border-radius:999px;"><span style="width:9px;height:9px;border-radius:999px;background:#B0413A;"></span>Cancelled</span>
+    </div>
+    <p style="margin:14px 0 0; font-size:14px; color:#6B6259; max-width:640px;">Ready wears the brand primary on purpose — it's the moment the customer gets the SMS and the laundry has done its job. It should feel like a small win, every time.</p>
+  </section>
+
+  <!-- ===================== TYPOGRAPHY ===================== -->
+  <section style="padding: 64px 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">03 — Typography</div>
+    <h2 style="font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">Public Sans — humanist, with character.</h2>
+    <p style="max-width: 640px; margin: 0 0 40px; font-size: 17px; line-height: 1.55; color: #43403B;">
+      One warm humanist sans does everything: titles, body, labels, and — critically — numbers, set in tabular figures so every price and code lines up down a column.
+    </p>
+
+    <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap:16px;">
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; padding:30px 32px;">
+        <div style="display:flex; align-items:baseline; gap:14px; padding:14px 0; border-bottom:1px solid #F1ECE4;"><span style="width:120px; font-size:12px; color:#9A9088; font-weight:500;">Display · 600</span><span style="font-size:40px; font-weight:600; letter-spacing:-0.02em;">All caught up</span></div>
+        <div style="display:flex; align-items:baseline; gap:14px; padding:14px 0; border-bottom:1px solid #F1ECE4;"><span style="width:120px; font-size:12px; color:#9A9088; font-weight:500;">H1 · 600</span><span style="font-size:26px; font-weight:600; letter-spacing:-0.015em;">Create Order</span></div>
+        <div style="display:flex; align-items:baseline; gap:14px; padding:14px 0; border-bottom:1px solid #F1ECE4;"><span style="width:120px; font-size:12px; color:#9A9088; font-weight:500;">H2 · 600</span><span style="font-size:19px; font-weight:600;">Orders ready for collection</span></div>
+        <div style="display:flex; align-items:baseline; gap:14px; padding:14px 0; border-bottom:1px solid #F1ECE4;"><span style="width:120px; font-size:12px; color:#9A9088; font-weight:500;">Body · 400</span><span style="font-size:16px; font-weight:400; color:#43403B;">New orders appear here as employees create them.</span></div>
+        <div style="display:flex; align-items:baseline; gap:14px; padding:14px 0; border-bottom:1px solid #F1ECE4;"><span style="width:120px; font-size:12px; color:#9A9088; font-weight:500;">Label · 500</span><span style="font-size:13.5px; font-weight:500; letter-spacing:0.01em;">PICKUP DATE</span></div>
+        <div style="display:flex; align-items:baseline; gap:14px; padding:14px 0 0;"><span style="width:120px; font-size:12px; color:#9A9088; font-weight:500;">Caption · 400</span><span style="font-size:12.5px; font-weight:400; color:#6B6259;">Updated by Kojo · 16:30</span></div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; padding:24px 26px;">
+          <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:16px;">Tabular figures align</div>
+          <div class="tnum" style="font-size:18px; line-height:1.9; font-weight:500; text-align:right;">
+            <div style="display:flex; justify-content:space-between;"><span style="color:#6B6259;">Shirt × 3</span><span>GHS&nbsp;&nbsp;45.00</span></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:#6B6259;">Suit × 1</span><span>GHS&nbsp;145.00</span></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:#6B6259;">Bedsheet × 2</span><span>GHS&nbsp;&nbsp;90.00</span></div>
+            <div style="display:flex; justify-content:space-between; border-top:1px solid #E8E4DD; padding-top:8px; margin-top:6px; font-weight:700;"><span>Total</span><span>GHS&nbsp;280.00</span></div>
+          </div>
+        </div>
+        <div style="background:#0F3D2E; border-radius:8px; padding:24px 26px; color:#FAF8F5;">
+          <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#7FA896; margin-bottom:14px;">Pickup code — a moment</div>
+          <div class="tnum" style="font-size:44px; font-weight:700; letter-spacing:0.22em;">48217</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== COMPONENTS ===================== -->
+  <section style="padding: 64px 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">04 — Components</div>
+    <h2 style="font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 40px;">The kit every screen is built from.</h2>
+
+    <!-- Buttons -->
+    <div style="margin-bottom:16px; font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088;">Buttons — verbs, filled icons, never icon-only</div>
+    <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; padding:26px 28px; display:flex; flex-wrap:wrap; gap:14px; align-items:center; margin-bottom:32px;">
+      <button style="font-family:inherit; cursor:pointer; display:inline-flex; align-items:center; gap:8px; background:#0F3D2E; color:#FAF8F5; border:none; font-size:15px; font-weight:600; padding:11px 18px; border-radius:6px;" style-hover="background:#17604A;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#FAF8F5"><path d="M11 5a1 1 0 1 1 2 0v6h6a1 1 0 1 1 0 2h-6v6a1 1 0 1 1-2 0v-6H5a1 1 0 1 1 0-2h6V5Z"></path></svg>
+        Create Order
+      </button>
+      <button style="font-family:inherit; cursor:pointer; background:#FFFFFF; color:#1A1A1A; border:1px solid #CDC7BD; font-size:15px; font-weight:600; padding:11px 18px; border-radius:6px;" style-hover="background:#F1ECE4;">Cancel</button>
+      <button style="font-family:inherit; cursor:pointer; background:transparent; color:#0F3D2E; border:none; font-size:15px; font-weight:600; padding:11px 14px; border-radius:6px;" style-hover="background:#E9F0EC;">View all orders</button>
+      <button style="font-family:inherit; cursor:pointer; display:inline-flex; align-items:center; gap:8px; background:#C25A3C; color:#FFF6F1; border:none; font-size:15px; font-weight:600; padding:11px 18px; border-radius:6px;" style-hover="background:#A94B30;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFF6F1"><path d="M9 16.17 5.53 12.7a1 1 0 0 0-1.42 1.42l4.18 4.17a1 1 0 0 0 1.42 0L20.3 7.88a1 1 0 1 0-1.42-1.42L9 16.17Z"></path></svg>
+        Mark Collected
+      </button>
+      <button style="font-family:inherit; cursor:pointer; background:#FFFFFF; color:#8A322C; border:1px solid #E0BBB6; font-size:15px; font-weight:600; padding:11px 18px; border-radius:6px;" style-hover="background:#F8ECEA;">Cancel Order</button>
+      <button disabled style="font-family:inherit; background:#F1ECE4; color:#B6AFA4; border:none; font-size:15px; font-weight:600; padding:11px 18px; border-radius:6px; cursor:not-allowed;">Create Order</button>
+    </div>
+
+    <!-- Inputs + dropdown -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:32px;">
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; padding:26px 28px;">
+        <div style="margin-bottom:16px; font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088;">Inputs — with help text</div>
+        <label style="display:block; font-size:13.5px; font-weight:500; margin-bottom:7px;">Customer phone</label>
+        <input class="rin-field" value="0244 567 890" style="width:100%; font-size:15px; padding:11px 13px; border:1px solid #CDC7BD; border-radius:6px; background:#FFFFFF; color:#1A1A1A;"></input>
+        <div style="font-size:12.5px; color:#6B6259; margin-top:7px;">Search an existing customer or add a new one.</div>
+
+        <label style="display:block; font-size:13.5px; font-weight:500; margin:20px 0 7px;">Special instructions</label>
+        <input class="rin-field" placeholder="e.g. Handle suit with care — slight stain on collar" style="width:100%; font-size:15px; padding:11px 13px; border:1px solid #CDC7BD; border-radius:6px; background:#FFFFFF; color:#9A9088;"></input>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; padding:26px 28px;">
+        <div style="margin-bottom:16px; font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088;">Dropdown &amp; toggle pills</div>
+        <label style="display:block; font-size:13.5px; font-weight:500; margin-bottom:7px;">Branch</label>
+        <div style="display:flex; align-items:center; justify-content:space-between; font-size:15px; padding:11px 13px; border:1px solid #CDC7BD; border-radius:6px; background:#FFFFFF;">
+          <span>Osu — Oxford Street</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#6B6259"><path d="M12 15.5 5.7 9.2a1 1 0 0 1 1.4-1.4l5.9 5.9 5.9-5.9a1 1 0 1 1 1.4 1.4L12 15.5Z"></path></svg>
+        </div>
+        <label style="display:block; font-size:13.5px; font-weight:500; margin:20px 0 7px;">Priority</label>
+        <div style="display:inline-flex; gap:6px; background:#F1ECE4; padding:4px; border-radius:8px;">
+          <span style="font-size:14px; font-weight:600; padding:7px 16px; border-radius:6px; background:#FFFFFF; color:#1A1A1A;">Normal</span>
+          <span style="font-size:14px; font-weight:500; padding:7px 16px; border-radius:6px; color:#6B6259;">Express</span>
+          <span style="font-size:14px; font-weight:500; padding:7px 16px; border-radius:6px; color:#6B6259;">Urgent</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div style="margin-bottom:16px; font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088;">Table — breathes, emphasises names, glows on overdue</div>
+    <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; overflow:hidden; margin-bottom:18px;">
+      <div style="display:grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 0.8fr; gap:16px; padding:13px 24px; background:#F6F2EC; border-bottom:1px solid #E8E4DD; font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#8A8175;">
+        <span>Customer</span><span>Code</span><span>Status</span><span>Balance</span><span style="text-align:right;">Pickup</span>
+      </div>
+      <div style="display:grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 0.8fr; gap:16px; padding:16px 24px; border-bottom:1px solid #F1ECE4; align-items:center;">
+        <div><div style="font-size:15px; font-weight:600;">Ama Owusu</div><div style="font-size:12.5px; color:#6B6259;" class="tnum">0244 567 890</div></div>
+        <span class="tnum" style="font-size:14px; color:#43403B; letter-spacing:0.06em;">48217</span>
+        <span><span style="display:inline-flex; align-items:center; gap:7px; background:#E3EDE8; color:#0F3D2E; font-weight:600; font-size:13px; padding:5px 11px 5px 9px; border-radius:999px;"><span style="width:8px;height:8px;border-radius:999px;background:#0F3D2E;"></span>Ready</span></span>
+        <span class="tnum" style="font-size:14.5px; font-weight:600; color:#1A1A1A;">GHS 0.00</span>
+        <span class="tnum" style="font-size:13.5px; color:#43403B; text-align:right;">28 Jun</span>
+      </div>
+      <div style="display:grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 0.8fr; gap:16px; padding:16px 24px; border-bottom:1px solid #F1ECE4; align-items:center;">
+        <div><div style="font-size:15px; font-weight:600;">Kwabena Mensah</div><div style="font-size:12.5px; color:#6B6259;" class="tnum">0201 234 567</div></div>
+        <span class="tnum" style="font-size:14px; color:#43403B; letter-spacing:0.06em;">71043</span>
+        <span><span style="display:inline-flex; align-items:center; gap:7px; background:#F7EFD9; color:#7A5512; font-weight:600; font-size:13px; padding:5px 11px 5px 9px; border-radius:999px;"><span style="width:8px;height:8px;border-radius:999px;background:#B8801F;"></span>Processing</span></span>
+        <span class="tnum" style="font-size:14.5px; font-weight:700; color:#B0413A;">GHS 60.00</span>
+        <span class="tnum" style="font-size:13.5px; color:#43403B; text-align:right;">29 Jun</span>
+      </div>
+      <div style="display:grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 0.8fr; gap:16px; padding:16px 24px; align-items:center; background:#FBF4F2;">
+        <div><div style="font-size:15px; font-weight:600;">Akosua Boateng</div><div style="font-size:12.5px; color:#6B6259;" class="tnum">0556 880 145</div></div>
+        <span class="tnum" style="font-size:14px; color:#43403B; letter-spacing:0.06em;">39562</span>
+        <span><span style="display:inline-flex; align-items:center; gap:7px; background:#E4ECF3; color:#234F70; font-weight:600; font-size:13px; padding:5px 11px 5px 9px; border-radius:999px;"><span style="width:8px;height:8px;border-radius:999px;background:#2F6F9E;"></span>Confirmed</span></span>
+        <span class="tnum" style="font-size:14.5px; font-weight:700; color:#B0413A;">GHS 120.00</span>
+        <span class="tnum" style="font-size:13.5px; color:#B0413A; font-weight:600; text-align:right;">Overdue</span>
+      </div>
+    </div>
+    <!-- pagination -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:32px;">
+      <span style="font-size:13px; color:#6B6259;">Showing 1–10 of 47</span>
+      <div style="display:flex; gap:4px; align-items:center;">
+        <span style="font-size:14px; font-weight:600; color:#9A9088; padding:6px 11px;">←</span>
+        <span style="font-size:14px; font-weight:600; color:#FAF8F5; background:#0F3D2E; padding:6px 12px; border-radius:6px;">1</span>
+        <span style="font-size:14px; font-weight:500; color:#43403B; padding:6px 12px;">2</span>
+        <span style="font-size:14px; font-weight:500; color:#43403B; padding:6px 12px;">3</span>
+        <span style="font-size:14px; font-weight:500; color:#43403B; padding:6px 12px;">4</span>
+        <span style="font-size:14px; font-weight:500; color:#43403B; padding:6px 12px;">5</span>
+        <span style="font-size:14px; font-weight:600; color:#0F3D2E; padding:6px 11px;">→</span>
+      </div>
+    </div>
+
+    <!-- Banners -->
+    <div style="margin-bottom:16px; font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088;">Banners — the more existential the issue, the louder</div>
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:32px;">
+      <div style="display:flex; align-items:center; gap:14px; background:#B0413A; color:#FFF1EF; padding:15px 20px; border-radius:8px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFF1EF"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 5a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0V8a1 1 0 0 1 1-1Zm0 9.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Z"></path></svg>
+        <span style="font-size:15px; font-weight:500; flex:1;">Your subscription expired 3 days ago. Restore access by completing payment.</span>
+        <button style="font-family:inherit; cursor:pointer; background:#FFF1EF; color:#8A322C; border:none; font-size:14px; font-weight:600; padding:8px 16px; border-radius:6px;">Pay now</button>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px; background:#F7EFD9; color:#7A5512; padding:15px 20px; border-radius:8px; border:1px solid #EADFBE;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#B8801F"><path d="M12 2 1 21h22L12 2Zm0 6a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0V9a1 1 0 0 1 1-1Zm0 9a1.25 1.25 0 1 1 0 2.5A1.25 1.25 0 0 1 12 17Z"></path></svg>
+        <span style="font-size:15px; font-weight:500; flex:1;">You've used 70% of this month's SMS. Projected overage: <span class="tnum" style="font-weight:700;">GHS 18.00</span>.</span>
+        <button style="font-family:inherit; cursor:pointer; background:transparent; color:#7A5512; border:none; font-size:14px; font-weight:600; padding:8px 10px;">View usage</button>
+      </div>
+    </div>
+
+    <!-- Cards: stat + empty + modal -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+      <!-- empty state -->
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; padding:40px 30px; display:flex; flex-direction:column; align-items:center; text-align:center;">
+        <svg viewBox="0 0 120 120" width="72" height="72" style="margin-bottom:20px;">
+          <circle cx="60" cy="60" r="46" fill="none" stroke="#E8E4DD" strokeWidth="2"></circle>
+          <circle cx="60" cy="60" r="32" fill="none" stroke="#E0DAD0" strokeWidth="2"></circle>
+          <circle cx="60" cy="60" r="11" fill="none" stroke="#0F3D2E" strokeWidth="6" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 60 60)"></circle>
+        </svg>
+        <div style="font-size:19px; font-weight:600; margin-bottom:6px;">No orders yet</div>
+        <div style="font-size:14.5px; color:#6B6259; max-width:280px; line-height:1.5; margin-bottom:20px;">New orders will appear here as employees create them.</div>
+        <button style="font-family:inherit; cursor:pointer; background:#0F3D2E; color:#FAF8F5; border:none; font-size:14.5px; font-weight:600; padding:10px 18px; border-radius:6px;">Create your first order</button>
+      </div>
+      <!-- modal -->
+      <div style="background:#F1ECE4; border:1px solid #E8E4DD; border-radius:8px; padding:28px; display:flex; align-items:center; justify-content:center;">
+        <div style="background:#FFFFFF; border:1px solid #E2DCD2; border-radius:10px; padding:26px 26px 22px; width:100%; max-width:340px;">
+          <div style="font-size:18px; font-weight:600; margin-bottom:8px;">Cancel this order?</div>
+          <div style="font-size:14.5px; color:#43403B; line-height:1.5; margin-bottom:22px;">Akosua Boateng's order will be marked cancelled. The customer won't be notified. This can't be undone.</div>
+          <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button style="font-family:inherit; cursor:pointer; background:#FFFFFF; color:#1A1A1A; border:1px solid #CDC7BD; font-size:14.5px; font-weight:600; padding:10px 16px; border-radius:6px;">Keep order</button>
+            <button style="font-family:inherit; cursor:pointer; background:#B0413A; color:#FFF1EF; border:none; font-size:14.5px; font-weight:600; padding:10px 16px; border-radius:6px;">Cancel order</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ICONOGRAPHY ===================== -->
+  <section style="padding: 64px 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">05 — Iconography</div>
+    <h2 style="font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">Filled. Confident. Supporting text, never replacing it.</h2>
+    <p style="max-width: 640px; margin: 0 0 36px; font-size: 17px; line-height: 1.55; color: #43403B;">Outline icons read light and tentative — the opposite of sharp. These are solid forms with weight.</p>
+    <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; padding:16px; display:grid; grid-template-columns: repeat(8, 1fr); gap:8px;">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M11 5a1 1 0 1 1 2 0v6h6a1 1 0 1 1 0 2h-6v6a1 1 0 1 1-2 0v-6H5a1 1 0 1 1 0-2h6V5Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">New</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M10 3a7 7 0 1 0 4.2 12.6l4.1 4.1a1 1 0 0 0 1.4-1.4l-4.1-4.1A7 7 0 0 0 10 3Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Search</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.5-8 5.5V21a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5c0-3-3.6-5.5-8-5.5Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Customer</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Zm3 3a1 1 0 0 0 0 2h10a1 1 0 1 0 0-2H7Zm0 4a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2H7Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Order</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Zm2 3v9h14V9H5Zm2 5a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2H7Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Payment</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm8.4 4a8.4 8.4 0 0 0-.13-1.45l2-1.55-2-3.46-2.36.95a8.3 8.3 0 0 0-2.5-1.45L14.6 2h-5.2l-.4 2.59a8.3 8.3 0 0 0-2.5 1.45l-2.36-.95-2 3.46 2 1.55a8.5 8.5 0 0 0 0 2.9l-2 1.55 2 3.46 2.36-.95a8.3 8.3 0 0 0 2.5 1.45L9.4 22h5.2l.4-2.59a8.3 8.3 0 0 0 2.5-1.45l2.36.95 2-3.46-2-1.55c.08-.48.13-.96.13-1.45Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Settings</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M12 2a6 6 0 0 0-6 6c0 3.5-1.5 5.5-2.4 6.4A1 1 0 0 0 4.3 16h15.4a1 1 0 0 0 .7-1.6C19.5 13.5 18 11.5 18 8a6 6 0 0 0-6-6Zm0 20a3 3 0 0 0 2.8-2H9.2A3 3 0 0 0 12 22Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Alerts</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M9 16.17 5.53 12.7a1 1 0 0 0-1.42 1.42l4.18 4.17a1 1 0 0 0 1.42 0L20.3 7.88a1 1 0 1 0-1.42-1.42L9 16.17Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Done</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Close</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M7 2h10a2 2 0 0 1 2 2v17a1 1 0 0 1-1.55.83L12 18.2l-5.45 3.63A1 1 0 0 1 5 21V4a2 2 0 0 1 2-2Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Receipt</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1Zm12 7H5v10h14V9Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Date</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M6.6 2.2c.6-.27 1.3-.13 1.76.34l2.4 2.4a1.5 1.5 0 0 1 .3 1.7L10 9a13 13 0 0 0 5 5l1.36-1.06a1.5 1.5 0 0 1 1.7-.3l2.4 2.4c.47.46.6 1.16.34 1.76A4.5 4.5 0 0 1 16.5 19 13.5 13.5 0 0 1 5 7.5 4.5 4.5 0 0 1 6.6 2.2Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Call</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-4 3.5A1 1 0 0 1 3 20V6Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">SMS</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M3 13h2v6h14v-6h2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-6Zm8-11a1 1 0 0 1 1 1v9.6l2.3-2.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.4L11 12.6V3a1 1 0 0 1 1-1Z" transform="rotate(180 12 9)"></path></svg><span style="font-size:11.5px; color:#6B6259;">Export</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M3 5a1 1 0 0 1 1-1h16a1 1 0 0 1 .78 1.63L14 13.05V19a1 1 0 0 1-1.45.9l-3-1.5A1 1 0 0 1 9 17.5v-4.45L3.22 5.63A1 1 0 0 1 3 5Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Filter</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M5 4h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm2 2v4h7V6H7Zm5 6a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Save</span></div>
+    </div>
+  </section>
+
+  <!-- ===================== FORMATS + SMS ===================== -->
+  <section style="padding: 64px 0 0;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">06 — Formats &amp; voice</div>
+    <h2 style="font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">Ghana defaults, from day one.</h2>
+    <p style="max-width: 640px; margin: 0 0 36px; font-size: 17px; line-height: 1.55; color: #43403B;">No dollar signs, no MM/DD dates. And the SMS — the customer's first touch — always leads with the laundry's name, because the sender ID only ever says "Rinsion".</p>
+
+    <div style="display:grid; grid-template-columns: 1fr 1.3fr; gap:16px;">
+      <!-- formats -->
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; padding:8px 28px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 0; border-bottom:1px solid #F1ECE4;"><span style="font-size:14px; color:#6B6259;">Currency</span><span class="tnum" style="font-size:16px; font-weight:600;">GHS 90.00</span></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 0; border-bottom:1px solid #F1ECE4;"><span style="font-size:14px; color:#6B6259;">Date</span><span class="tnum" style="font-size:16px; font-weight:600;">28 June 2026</span></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 0; border-bottom:1px solid #F1ECE4;"><span style="font-size:14px; color:#6B6259;">Compact date</span><span class="tnum" style="font-size:16px; font-weight:600;">28 Jun 2026</span></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 0; border-bottom:1px solid #F1ECE4;"><span style="font-size:14px; color:#6B6259;">Time</span><span class="tnum" style="font-size:16px; font-weight:600;">16:30 · 4:30 pm</span></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 0;"><span style="font-size:14px; color:#6B6259;">Phone</span><span class="tnum" style="font-size:16px; font-weight:600;">0244 567 890</span></div>
+      </div>
+
+      <!-- SMS live preview -->
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:8px; padding:26px 28px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+          <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088;">Live SMS preview</div>
+          <span style="font-size:12px; color:#6B6259;">Sender ID: <span style="font-weight:600; color:#1A1A1A;">Rinsion</span></span>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-bottom:20px;">
+          <div style="flex:1.4;">
+            <label style="display:block; font-size:12.5px; font-weight:500; margin-bottom:6px; color:#43403B;">Laundry display name</label>
+            <input class="rin-field" value="{{ laundry }}" onInput="{{ onLaundry }}" style="width:100%; font-size:14px; padding:9px 11px; border:1px solid #CDC7BD; border-radius:6px;"></input>
+          </div>
+          <div style="flex:1;">
+            <label style="display:block; font-size:12.5px; font-weight:500; margin-bottom:6px; color:#43403B;">Customer</label>
+            <input class="rin-field" value="{{ first }}" onInput="{{ onFirst }}" style="width:100%; font-size:14px; padding:9px 11px; border:1px solid #CDC7BD; border-radius:6px;"></input>
+          </div>
+        </div>
+
+        <!-- order ready bubble -->
+        <div style="background:#F1ECE4; border-radius:10px; padding:14px 16px; margin-bottom:10px;">
+          <div style="font-size:11.5px; color:#8A8175; font-weight:600; margin-bottom:6px; letter-spacing:0.04em;">ORDER READY</div>
+          <div style="font-size:14.5px; line-height:1.5; color:#1A1A1A;">{{ smsReady }}</div>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+          <span style="font-size:12.5px; color:{{ readyColor }}; font-weight:600;">{{ readyCount }} / 160 characters</span>
+          <span style="font-size:12px; color:#9A9088;">{{ readyNote }}</span>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px; border-top:1px solid #F1ECE4; padding-top:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline;"><span style="font-size:13px; color:#6B6259;">Order created</span><span class="tnum" style="font-size:12.5px; color:#6B6259;">{{ createdCount }} chars</span></div>
+          <div style="font-size:13.5px; line-height:1.45; color:#43403B;">{{ smsCreated }}</div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:8px;"><span style="font-size:13px; color:#6B6259;">Code resend</span><span class="tnum" style="font-size:12.5px; color:#6B6259;">{{ resendCount }} chars</span></div>
+          <div style="font-size:13.5px; line-height:1.45; color:#43403B;">{{ smsResend }}</div>
+        </div>
+      </div>
+    </div>
+
+    <p style="margin:28px 0 0; font-size:13.5px; color:#9A9088; text-align:center;">Rinsion — Brand Foundations V1 · Next: the five hero screens.</p>
+  </section>
+
+  <!-- ===================== HANDOFF NOTES ===================== -->
+  <section style="padding: 72px 0 0; border-top: 1px solid #E8E4DD;">
+    <div style="font-size:13px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:#6B6259; margin-bottom:14px;">Handoff notes · For the build phase</div>
+    <h2 style="font-size:30px; font-weight:700; letter-spacing:-0.02em; margin:0 0 14px;">Deliberate deviations from the brief.</h2>
+    <p style="max-width:640px; margin:0 0 36px; font-size:17px; line-height:1.55; color:#43403B;">
+      Where the build differs from the written brief on purpose. Keep these as designed — they are not oversights to "correct" back to spec.
+    </p>
+
+    <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:14px; padding:24px 26px; display:flex; gap:18px; align-items:flex-start;">
+      <span style="flex-shrink:0; width:34px; height:34px; border-radius:9px; background:#F1ECE4; display:flex; align-items:center; justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F3D2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><rect x="7" y="11" width="3" height="6"></rect><rect x="13" y="7" width="3" height="10"></rect></svg>
+      </span>
+      <div>
+        <div style="font-size:17px; font-weight:700; letter-spacing:-0.01em; margin-bottom:6px;">Reports — keep the bar charts</div>
+        <p style="margin:0 0 10px; font-size:14.5px; line-height:1.6; color:#43403B;">
+          The brief specifies <em>"stats and tables in v1; no charts"</em> for the Reports screen. The build intentionally adds three lightweight CSS bar charts — <strong>revenue this week</strong>, <strong>revenue by branch</strong>, and <strong>orders by status</strong>. They are pure HTML/CSS (no charting library, no new dependency) and were reviewed and approved as a deliberate deviation because they make the data scannable at a glance.
+        </p>
+        <p style="margin:0; font-size:13.5px; line-height:1.55; color:#8A8175;">
+          <strong style="color:#6B6259;">Build action:</strong> ship the charts as designed. Do not strip Reports back to plain tables.
+        </p>
+      </div>
+    </div>
+
+    <p style="margin:28px 0 0; font-size:13.5px; color:#9A9088;">Approved 29 Jun 2026 · Mobile back buttons also bumped to 44×44 to meet the brief's primary-navigation hit-target minimum.</p>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1080,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = { laundry: 'Clean Pro Laundry', first: 'Ama', code: '48217' };
+
+  renderVals() {
+    const L = (this.state.laundry || '').trim() || 'Your Laundry';
+    const F = (this.state.first || '').trim() || 'there';
+    const C = this.state.code;
+
+    const smsCreated = `${L}: Hi ${F}, your order is in. Pickup code: ${C}. We'll text you when it's ready.`;
+    const smsReady = `${L}: Hi ${F}, your order is ready for pickup. Pickup code: ${C}. See you soon.`;
+    const smsResend = `${L}: Hi ${F}, your pickup code is ${C}.`;
+
+    const readyCount = smsReady.length;
+    const over = readyCount > 160;
+    const warn = readyCount > 140;
+
+    return {
+      laundry: this.state.laundry,
+      first: this.state.first,
+      onLaundry: (e) => this.setState({ laundry: e.target.value }),
+      onFirst: (e) => this.setState({ first: e.target.value }),
+      smsCreated, smsReady, smsResend,
+      createdCount: smsCreated.length,
+      resendCount: smsResend.length,
+      readyCount,
+      readyColor: over ? '#B0413A' : (warn ? '#7A5512' : '#1E5C40'),
+      readyNote: over ? 'Too long — shorten the name' : (warn ? 'Getting long' : 'Fits comfortably'),
+    };
+  }
+}
+</script>
+</body>
+</html>
