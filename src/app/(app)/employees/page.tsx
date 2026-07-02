@@ -4,10 +4,11 @@ import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { EmployeesClient } from './EmployeesClient'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
+import type { Employee } from '@/services/employees'
 
 type PageData = {
   restricted?: boolean
-  employees: any[]
+  employees: Employee[]
   branches: { id: string; name: string }[]
   plan: SubscriptionPlan
   limit: number

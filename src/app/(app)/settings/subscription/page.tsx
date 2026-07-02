@@ -26,12 +26,40 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: 'text-gray-500 bg-gray-100',
 }
 
+type SubscriptionRow = {
+  id: string; plan: string; status: string; cycleStartDate: string
+  cycleEndDate: string; smsQuota: number; daysLeft: number
+}
+
+type RecentPayment = {
+  id: string; amount: number; payment_type: string; plan_at_payment: string; paid_at: string
+}
+
+type PendingClaim = {
+  id: string; reference_code: string; claimed_amount: number; target_plan: string; claimed_at: string
+}
+
+type SubscriptionPageData = {
+  subscription: SubscriptionRow | null
+  recentPayments: RecentPayment[]
+  existingClaim: PendingClaim | null
+  action: string | null
+  selectedPlan: string | null
+  paymentType: string | null
+  targetPlan: string | null
+  paymentAmount: number
+  newCycleStart: string
+  newCycleEnd: string
+  referenceCode: string
+  momoNumber: string
+}
+
 function SubscriptionContent() {
   const searchParams = useSearchParams()
   const action = searchParams.get('action') ?? undefined
   const planParam = searchParams.get('plan') ?? undefined
 
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<SubscriptionPageData | null>(null)
 
   useEffect(() => {
     const params = new URLSearchParams()
@@ -271,7 +299,7 @@ function SubscriptionContent() {
             <h2 className="text-sm font-semibold text-gray-900">Recent payments</h2>
           </div>
           <div className="divide-y divide-gray-50">
-            {recentPayments!.map((p: any) => (
+            {recentPayments!.map((p: RecentPayment) => (
               <div key={p.id} className="flex items-center justify-between px-5 py-3">
                 <div>
                   <p className="text-sm text-gray-900">GHS {Number(p.amount).toFixed(0)}</p>

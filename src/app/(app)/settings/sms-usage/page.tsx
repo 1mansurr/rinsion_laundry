@@ -13,8 +13,21 @@ const TRIGGER_LABELS: Record<string, string> = {
   RENEWAL_REMINDER_DAY_OF:  'Renewal reminder (today)',
 }
 
+type SmsMessage = {
+  id: string; trigger_event: string; status: string; phone: string
+  counts_toward_cap: boolean; created_at: string; error_message: string | null
+}
+
+type SmsPageData = {
+  subscription: { cycleStartDate: string; cycleEndDate: string; smsQuota: number } | null
+  smsUsed: number
+  messages: SmsMessage[]
+  quota: number
+  usagePct: number
+}
+
 export default function SmsUsagePage() {
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<SmsPageData | null>(null)
 
   useEffect(() => {
     fetch('/api/settings/sms-usage').then(r => r.json()).then(setData)
@@ -67,7 +80,7 @@ export default function SmsUsagePage() {
           <p className="text-sm text-gray-400 text-center py-8">No SMS messages sent yet.</p>
         ) : (
           <div className="divide-y divide-gray-50">
-            {(messages ?? []).map((sms: any) => (
+            {(messages ?? []).map((sms: SmsMessage) => (
               <div key={sms.id} className="flex items-start justify-between px-5 py-3">
                 <div className="flex items-center gap-2.5">
                   <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1 ${sms.status === 'sent' ? 'bg-green-400' : 'bg-red-400'}`} />

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { formatCurrency } from '@/utils/formatCurrency'
+import type { RevenueReport, OrdersReport, EmployeeActivityItem } from '@/services/reports'
 
 const STATUS_LABELS: Record<string, string> = {
   received:   'Received',
@@ -22,8 +23,17 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled:  '#B0413A',
 }
 
+type ReportsData = {
+  restricted?: boolean
+  reports: {
+    revenue: RevenueReport
+    orders: OrdersReport
+    employeeActivity: EmployeeActivityItem[]
+  }
+}
+
 export default function ReportsPage() {
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<ReportsData | null>(null)
 
   useEffect(() => {
     fetch('/api/reports').then(r => r.json()).then(setData)
@@ -135,8 +145,8 @@ export default function ReportsPage() {
             <p className="text-ui text-warm-600 text-center py-10">No activity this month.</p>
           ) : (
             <div>
-              {employeeActivity.map((e: any) => {
-                const initials = e.name.split(' ').map((p: string) => p[0] ?? '').join('').toUpperCase().slice(0, 2)
+              {employeeActivity.map((e: EmployeeActivityItem) => {
+                const initials = e.name.split(' ').map(p => p[0] ?? '').join('').toUpperCase().slice(0, 2)
                 return (
                   <div
                     key={e.employeeId}

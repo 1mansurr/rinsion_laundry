@@ -3,11 +3,28 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { CreateOrderForm } from './CreateOrderForm'
+import type { PriceCell } from '@/services/pricing'
+import type { Customer } from '@/services/customers'
+
+type ItemType = { id: string; name: string; isActive: boolean }
+type Service = { id: string; name: string; isActive: boolean }
+
+type FormData = {
+  itemTypes: ItemType[]
+  services: Service[]
+  prices: PriceCell[]
+  customers: Customer[]
+  branches: { id: string; name: string }[]
+  settings: { allowExpressOrders: boolean } | null
+  preselectedCustomer: Customer | null
+  isAdmin: boolean
+  defaultBranchId: string
+}
 
 function NewOrderContent() {
   const searchParams = useSearchParams()
   const customerId = searchParams.get('customerId') ?? undefined
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<FormData | null>(null)
 
   useEffect(() => {
     const params = new URLSearchParams()
@@ -19,7 +36,7 @@ function NewOrderContent() {
 
   if (!data) return <PageSkeleton rows={3} />
 
-  const hasSetup = data.itemTypes.some((i: any) => i.isActive) && data.services.some((s: any) => s.isActive)
+  const hasSetup = data.itemTypes.some(i => i.isActive) && data.services.some(s => s.isActive)
 
   return (
     <div className="p-6 max-w-2xl mx-auto">

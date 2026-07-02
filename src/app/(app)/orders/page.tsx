@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { useProfile } from '@/contexts/ProfileContext'
 import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { StatusBadge } from '@/components/app/StatusBadge'
 import { UrlPagination } from '@/components/ui/UrlPagination'
@@ -15,7 +14,6 @@ import type { OrderListRow } from '@/services/orders/getOrdersList'
 const PER_PAGE = 30
 
 function OrdersContent() {
-  const profile = useProfile()
   const searchParams = useSearchParams()
   const q = searchParams.get('q') ?? ''
   const status = searchParams.get('status') ?? ''

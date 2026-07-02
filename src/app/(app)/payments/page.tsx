@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { useProfile } from '@/contexts/ProfileContext'
 import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { UrlPagination } from '@/components/ui/UrlPagination'
 import { PaymentsFilterBar } from './PaymentsFilterBar'
@@ -42,7 +41,6 @@ function MethodPill({ method }: { method: string }) {
 }
 
 function PaymentsContent() {
-  const profile = useProfile()
   const searchParams = useSearchParams()
   const q = searchParams.get('q') ?? ''
   const method = searchParams.get('method') ?? ''

@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { useProfile } from '@/contexts/ProfileContext'
 import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { UrlPagination } from '@/components/ui/UrlPagination'
 import { CustomersFilterBar } from './CustomersFilterBar'
@@ -14,7 +13,6 @@ import type { CustomerListRow } from '@/services/customers/getCustomersList'
 const PER_PAGE = 30
 
 function CustomersContent() {
-  const profile = useProfile()
   const searchParams = useSearchParams()
   const q = searchParams.get('q') ?? ''
   const page = Math.max(1, Number(searchParams.get('page') ?? '1'))

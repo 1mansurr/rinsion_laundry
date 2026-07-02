@@ -6,7 +6,7 @@ import { BranchesClient } from './BranchesClient'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
 
 export default function BranchesPage() {
-  const [data, setData] = useState<{ branches: any[]; plan: SubscriptionPlan; branchLimit: number } | null>(null)
+  const [data, setData] = useState<{ branches: { id: string; name: string }[]; plan: SubscriptionPlan; branchLimit: number } | null>(null)
 
   useEffect(() => {
     fetch('/api/settings/branches').then(r => r.json()).then(setData)

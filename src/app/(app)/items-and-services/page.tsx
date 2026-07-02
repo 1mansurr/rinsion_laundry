@@ -3,9 +3,20 @@ import { useEffect, useState } from 'react'
 import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { ItemsServicesClient } from './ItemsServicesClient'
+import type { PriceCell } from '@/services/pricing'
+
+type ItemType = { id: string; name: string; isActive: boolean }
+type Service = { id: string; name: string; isActive: boolean }
+
+type ItemsPageData = {
+  restricted?: boolean
+  itemTypes: ItemType[]
+  services: Service[]
+  prices: PriceCell[]
+}
 
 export default function ItemsAndServicesPage() {
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<ItemsPageData | null>(null)
 
   useEffect(() => {
     fetch('/api/items-and-services').then(r => r.json()).then(setData)
