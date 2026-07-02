@@ -1,15 +1,19 @@
-import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getItemTypes } from '@/services/items'
-import { getServices } from '@/services/services'
-import { getPricingMatrix } from '@/services/pricing'
-import { ItemsServicesClient } from './ItemsServicesClient'
+'use client'
+import { useEffect, useState } from 'react'
+import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
+import { ItemsServicesClient } from './ItemsServicesClient'
 
-export default async function ItemsAndServicesPage() {
-  const profile = await getMyProfile()
-  if (!profile) return null
+export default function ItemsAndServicesPage() {
+  const [data, setData] = useState<any>(null)
 
-  if (profile.role !== 'admin') {
+  useEffect(() => {
+    fetch('/api/items-and-services').then(r => r.json()).then(setData)
+  }, [])
+
+  if (!data) return <PageSkeleton />
+
+  if (data.restricted) {
     return (
       <div className="max-w-[1180px] mx-auto px-7 py-7">
         <div className="mb-[18px]">
@@ -21,19 +25,13 @@ export default async function ItemsAndServicesPage() {
     )
   }
 
-  const [itemTypes, services, prices] = await Promise.all([
-    getItemTypes(profile.laundryId),
-    getServices(profile.laundryId),
-    getPricingMatrix(profile.laundryId),
-  ])
-
   return (
     <div className="max-w-[1180px] mx-auto px-7 py-7">
       <div className="mb-[18px]">
         <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">Items &amp; Services</h1>
         <p className="text-ui text-warm-800 mt-1">The garment types and services your team picks from when creating orders.</p>
       </div>
-      <ItemsServicesClient itemTypes={itemTypes} services={services} prices={prices} />
+      <ItemsServicesClient itemTypes={data.itemTypes} services={data.services} prices={data.prices} />
     </div>
   )
 }

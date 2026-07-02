@@ -1,10 +1,15 @@
+'use client'
+
+import { Suspense, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getPayments, getPaymentsSummary } from '@/services/payments/getPayments'
+import { useProfile } from '@/contexts/ProfileContext'
+import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { UrlPagination } from '@/components/ui/UrlPagination'
 import { PaymentsFilterBar } from './PaymentsFilterBar'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { formatDate } from '@/utils/formatDate'
+import type { PaymentListRow, PaymentsSummary } from '@/services/payments/getPayments'
 
 const PER_PAGE = 30
 
@@ -36,23 +41,29 @@ function MethodPill({ method }: { method: string }) {
   )
 }
 
-export default async function PaymentsPage({
-  searchParams,
-}: {
-  searchParams: { q?: string; method?: string; page?: string }
-}) {
-  const profile = await getMyProfile()
-  if (!profile) return null
+function PaymentsContent() {
+  const profile = useProfile()
+  const searchParams = useSearchParams()
+  const q = searchParams.get('q') ?? ''
+  const method = searchParams.get('method') ?? ''
+  const page = Math.max(1, Number(searchParams.get('page') ?? '1'))
 
-  const q = searchParams.q?.trim() ?? ''
-  const method = searchParams.method ?? ''
-  const page = Math.max(1, parseInt(searchParams.page ?? '1', 10))
+  const [data, setData] = useState<{ rows: PaymentListRow[]; total: number; summary: PaymentsSummary; role: string } | null>(null)
 
-  const [{ rows, total }, summary] = await Promise.all([
-    getPayments(profile.laundryId, { q, method, page, perPage: PER_PAGE }),
-    getPaymentsSummary(profile.laundryId),
-  ])
+  useEffect(() => {
+    setData(null)
+    const params = new URLSearchParams()
+    if (q) params.set('q', q)
+    if (method) params.set('method', method)
+    params.set('page', String(page))
+    fetch(`/api/payments?${params}`)
+      .then(r => r.json())
+      .then(setData)
+  }, [q, method, page])
 
+  if (!data) return <PageSkeleton />
+
+  const { rows, total, summary } = data
   const totalPages = Math.ceil(total / PER_PAGE)
   const from = total === 0 ? 0 : (page - 1) * PER_PAGE + 1
   const to = Math.min(page * PER_PAGE, total)
@@ -68,7 +79,7 @@ export default async function PaymentsPage({
         <div>
           <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">Payments</h1>
           <p className="text-ui text-warm-800 mt-1">
-            {profile.role === 'admin' ? 'All branches' : 'Your branch'}
+            {data.role === 'admin' ? 'All branches' : 'Your branch'}
           </p>
         </div>
       </div>
@@ -189,5 +200,13 @@ export default async function PaymentsPage({
         </>
       )}
     </div>
+  )
+}
+
+export default function PaymentsPage() {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <PaymentsContent />
+    </Suspense>
   )
 }

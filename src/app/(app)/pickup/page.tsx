@@ -1,8 +1,10 @@
-import { getMyProfile } from '@/services/employees/getMyProfile'
+'use client'
+
+import { useProfile } from '@/contexts/ProfileContext'
 import { PickupFlow } from './PickupFlow'
 
-export default async function PickupPage() {
-  const profile = await getMyProfile()
+export default function PickupPage() {
+  const profile = useProfile()
   if (!profile) return null
 
   return (

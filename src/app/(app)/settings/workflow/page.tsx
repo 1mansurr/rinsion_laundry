@@ -1,16 +1,18 @@
-import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getSettings } from '@/services/settings'
-import { redirect } from 'next/navigation'
+'use client'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { WorkflowToggles } from './WorkflowToggles'
+import type { LaundrySettings } from '@/services/settings'
 
-export default async function WorkflowSettingsPage() {
-  const profile = await getMyProfile()
-  if (!profile) return null
-  if (profile.role !== 'admin') redirect('/dashboard')
+export default function WorkflowSettingsPage() {
+  const [data, setData] = useState<{ settings: LaundrySettings } | null>(null)
 
-  const settings = await getSettings()
-  if (!settings) return null
+  useEffect(() => {
+    fetch('/api/settings/workflow').then(r => r.json()).then(setData)
+  }, [])
+
+  if (!data) return <PageSkeleton rows={2} />
 
   return (
     <div className="p-6 max-w-xl mx-auto">
@@ -23,7 +25,7 @@ export default async function WorkflowSettingsPage() {
       <div className="bg-white rounded-xl border border-gray-200 p-5">
         <h2 className="text-sm font-semibold text-gray-900 mb-1">Workflow Settings</h2>
         <p className="text-xs text-gray-400 mb-5">Changes apply immediately to all staff.</p>
-        <WorkflowToggles settings={settings} />
+        <WorkflowToggles settings={data.settings} />
       </div>
     </div>
   )

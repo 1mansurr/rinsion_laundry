@@ -1,9 +1,11 @@
+'use client'
+
 import Link from 'next/link'
-import { getMyProfile } from '@/services/employees/getMyProfile'
+import { useProfile } from '@/contexts/ProfileContext'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 
-export default async function SettingsPage() {
-  const profile = await getMyProfile()
+export default function SettingsPage() {
+  const profile = useProfile()
   if (!profile) return null
 
   if (profile.role !== 'admin') {

@@ -1,24 +1,36 @@
+'use client'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import { getCustomer } from '@/services/customers'
+import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { StatusBadge } from '@/components/app/StatusBadge'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { formatDate } from '@/utils/formatDate'
 
-export default async function CustomerDetailPage({ params }: { params: { id: string } }) {
-  const customer = await getCustomer(params.id)
-  if (!customer) notFound()
+type CustomerData = {
+  id: string
+  firstName: string
+  lastName: string
+  phone: string
+  firstVisitDate: string | null
+  lastVisitDate: string | null
+  createdAt: string
+  orders: { id: string; order_number: string; status: string; total: number; created_at: string }[]
+}
 
-  const orders = (customer.orders as {
-    id: string; order_number: string; status: string; total: number; created_at: string
-  }[]) ?? []
+export default function CustomerDetailPage({ params }: { params: { id: string } }) {
+  const [data, setData] = useState<CustomerData | null>(null)
 
+  useEffect(() => {
+    fetch(`/api/customers/${params.id}`).then(r => r.json()).then(setData)
+  }, [params.id])
+
+  if (!data) return <PageSkeleton rows={5} />
+
+  const orders = data.orders ?? []
   const nonCancelledOrders = orders.filter(o => o.status !== 'cancelled')
   const totalSpent = nonCancelledOrders.reduce((s, o) => s + Number(o.total), 0)
-  const initials = `${customer.first_name[0] ?? ''}${customer.last_name[0] ?? ''}`.toUpperCase()
-  const memberSince = customer.first_visit_date
-    ? formatDate(customer.first_visit_date)
-    : formatDate(customer.created_at)
+  const initials = `${data.firstName[0] ?? ''}${data.lastName[0] ?? ''}`.toUpperCase()
+  const memberSince = data.firstVisitDate ? formatDate(data.firstVisitDate) : formatDate(data.createdAt)
 
   return (
     <div className="max-w-[1180px] mx-auto px-7 py-7">
@@ -34,21 +46,21 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
         </span>
         <div className="flex-1 min-w-[200px]">
           <h1 className="text-[25px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">
-            {customer.first_name} {customer.last_name}
+            {data.firstName} {data.lastName}
           </h1>
           <p className="tnum text-ui text-warm-800 mt-1">
-            {customer.phone} · Customer since {memberSince}
+            {data.phone} · Customer since {memberSince}
           </p>
         </div>
         <div className="flex gap-[9px]">
           <Link
-            href={`/orders/new?customerId=${customer.id}`}
+            href={`/orders/new?customerId=${data.id}`}
             className="inline-flex items-center gap-[7px] bg-brand text-[#FAF8F5] text-ui font-semibold px-[15px] py-[10px] rounded-7 hover:bg-brand-hover transition-colors"
           >
             New order
           </Link>
           <Link
-            href={`/customers/${customer.id}/edit`}
+            href={`/customers/${data.id}/edit`}
             className="inline-flex items-center bg-white text-warm-950 border border-warm-400 text-ui font-semibold px-[15px] py-[10px] rounded-7 hover:bg-warm-50 transition-colors"
           >
             Edit
@@ -69,7 +81,7 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
         <div className="bg-white border border-warm-300 rounded-10 px-5 py-[18px]">
           <p className="text-label text-warm-800 font-medium">Last order</p>
           <p className="text-[20px] font-bold text-warm-950 mt-1.5">
-            {customer.last_visit_date ? formatDate(customer.last_visit_date) : '—'}
+            {data.lastVisitDate ? formatDate(data.lastVisitDate) : '—'}
           </p>
         </div>
       </div>
@@ -144,7 +156,7 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
           <div className="bg-white border border-warm-300 rounded-10 px-[22px] py-5">
             <h3 className="text-h2 font-semibold text-warm-950 mb-3.5">Contact</h3>
             <p className="text-micro font-semibold text-warm-600 uppercase tracking-[0.06em] mb-1">Phone</p>
-            <p className="tnum text-ui-sm text-warm-950 mb-3.5">{customer.phone}</p>
+            <p className="tnum text-ui-sm text-warm-950 mb-3.5">{data.phone}</p>
             <p className="text-micro font-semibold text-warm-600 uppercase tracking-[0.06em] mb-1">SMS notifications</p>
             <p className="text-ui-sm font-semibold text-success">Enabled</p>
           </div>

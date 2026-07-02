@@ -1,16 +1,30 @@
-import { getEmployees, getBranches } from '@/services/employees'
-import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getActiveSubscription } from '@/services/subscriptions/getActive'
-import { PLANS } from '@/constants/plans'
+'use client'
+import { useEffect, useState } from 'react'
+import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { EmployeesClient } from './EmployeesClient'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
 
-export default async function EmployeesPage() {
-  const profile = await getMyProfile()
-  if (!profile) return null
+type PageData = {
+  restricted?: boolean
+  employees: any[]
+  branches: { id: string; name: string }[]
+  plan: SubscriptionPlan
+  limit: number
+  activeCount: number
+  currentEmployeeId: string
+}
 
-  if (profile.role !== 'admin') {
+export default function EmployeesPage() {
+  const [data, setData] = useState<PageData | null>(null)
+
+  useEffect(() => {
+    fetch('/api/employees').then(r => r.json()).then(setData)
+  }, [])
+
+  if (!data) return <PageSkeleton />
+
+  if (data.restricted) {
     return (
       <div className="max-w-[1180px] mx-auto px-7 py-7">
         <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight mb-[18px]">Team</h1>
@@ -19,33 +33,21 @@ export default async function EmployeesPage() {
     )
   }
 
-  const [employees, branches, subscription] = await Promise.all([
-    getEmployees(),
-    getBranches(),
-    getActiveSubscription(profile.laundryId),
-  ])
-
-  const plan = (subscription?.plan ?? 'starter') as SubscriptionPlan
-  const limit = PLANS[plan as keyof typeof PLANS]?.employeeLimit ?? PLANS.starter.employeeLimit
-  const activeCount = employees.filter(e => e.isActive).length
-
   return (
     <div className="max-w-[1180px] mx-auto px-7 py-7">
       <div className="flex items-end justify-between mb-[18px]">
         <div>
           <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">Team</h1>
-          <p className="text-ui text-warm-800 mt-1">
-            People with access to Rinsion across your branches.
-          </p>
+          <p className="text-ui text-warm-800 mt-1">People with access to Rinsion across your branches.</p>
         </div>
-        <p className="text-label text-warm-600">{activeCount} of {limit} slots used</p>
+        <p className="text-label text-warm-600">{data.activeCount} of {data.limit} slots used</p>
       </div>
       <EmployeesClient
-        employees={employees}
-        branches={branches}
-        activeCount={activeCount}
-        employeeLimit={limit}
-        currentEmployeeId={profile.id}
+        employees={data.employees}
+        branches={data.branches}
+        activeCount={data.activeCount}
+        employeeLimit={data.limit}
+        currentEmployeeId={data.currentEmployeeId}
       />
     </div>
   )

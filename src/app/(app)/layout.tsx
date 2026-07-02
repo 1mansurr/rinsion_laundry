@@ -3,6 +3,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { BottomTabBar } from '@/components/BottomTabBar'
 import { Banner } from '@/components/ui/Banner'
 import { CommandPalette } from '@/components/ui/CommandPalette'
+import { ProfileProvider } from '@/contexts/ProfileContext'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
 import { createClient } from '@/lib/supabase'
@@ -30,20 +31,22 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   })()
 
   return (
-    <div className="flex h-screen bg-canvas">
-      <Sidebar profile={profile} />
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {bannerConfig && (
-          <div className="border-b border-warm-200 px-4 py-2.5">
-            <Banner variant={bannerConfig.variant}>{bannerConfig.text}</Banner>
-          </div>
-        )}
-        <main className="flex-1 overflow-auto pb-[60px] min-[720px]:pb-0">
-          {children}
-        </main>
+    <ProfileProvider profile={profile}>
+      <div className="flex h-screen bg-canvas">
+        <Sidebar profile={profile} />
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {bannerConfig && (
+            <div className="border-b border-warm-200 px-4 py-2.5">
+              <Banner variant={bannerConfig.variant}>{bannerConfig.text}</Banner>
+            </div>
+          )}
+          <main className="flex-1 overflow-auto pb-[60px] min-[720px]:pb-0">
+            {children}
+          </main>
+        </div>
+        <BottomTabBar role={profile.role} />
+        <CommandPalette />
       </div>
-      <BottomTabBar role={profile.role} />
-      <CommandPalette />
-    </div>
+    </ProfileProvider>
   )
 }

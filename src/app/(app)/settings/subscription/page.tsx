@@ -1,11 +1,10 @@
-import { redirect } from 'next/navigation'
+'use client'
+import { useEffect, useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getActiveSubscription } from '@/services/subscriptions/getActive'
-import { computeProrateAmount } from '@/services/subscriptions/computeProrateAmount'
-import { generatePaymentReference } from '@/services/subscriptions/generatePaymentReference'
+import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { claimPaymentSent } from '@/services/subscriptions/claimPaymentSent'
-import { createClient } from '@/lib/supabase'
+import { computeProrateAmount } from '@/services/subscriptions/computeProrateAmount'
 import { PLANS } from '@/constants/plans'
 import { formatDate } from '@/utils/formatDate'
 
@@ -27,78 +26,23 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: 'text-gray-500 bg-gray-100',
 }
 
-export default async function SubscriptionPage({
-  searchParams,
-}: {
-  searchParams: { action?: string; plan?: string }
-}) {
-  const profile = await getMyProfile()
-  if (!profile) return null
-  if (profile.role !== 'admin') redirect('/dashboard')
+function SubscriptionContent() {
+  const searchParams = useSearchParams()
+  const action = searchParams.get('action') ?? undefined
+  const planParam = searchParams.get('plan') ?? undefined
 
-  const supabase = createClient()
-  const subscription = await getActiveSubscription(profile.laundryId)
+  const [data, setData] = useState<any>(null)
 
-  // Recent payments
-  const { data: recentPayments } = await supabase
-    .from('subscription_payments')
-    .select('id, amount, plan_at_payment, payment_type, cycle_start_date, cycle_end_date, paid_at')
-    .eq('laundry_id', profile.laundryId)
-    .order('paid_at', { ascending: false })
-    .limit(3)
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (action) params.set('action', action)
+    if (planParam) params.set('plan', planParam)
+    fetch(`/api/settings/subscription?${params}`).then(r => r.json()).then(setData)
+  }, [action, planParam])
 
-  // Existing unresolved claim
-  const { data: existingClaim } = await supabase
-    .from('pending_payments')
-    .select('id, reference_code, claimed_amount, target_plan, claimed_at')
-    .eq('laundry_id', profile.laundryId)
-    .is('resolved_at', null)
-    .order('claimed_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  if (!data) return <PageSkeleton rows={3} />
 
-  const action = searchParams.action
-  const selectedPlan = searchParams.plan as 'starter' | 'growth' | undefined
-
-  const momoNumber = process.env.RINSION_MOMO_NUMBER ?? 'Contact Rinsion for MoMo number'
-
-  // Payment instruction details
-  let paymentType: 'cycle_renewal' | 'upgrade_prorate' | 'trial_conversion' | null = null
-  let targetPlan: 'trial' | 'starter' | 'growth' | null = null
-  let paymentAmount = 0
-  let newCycleStart = ''
-  let newCycleEnd = ''
-  let referenceCode = ''
-
-  if (subscription && (action === 'renew' || action === 'upgrade' || action === 'convert')) {
-    const today = new Date()
-
-    if (action === 'convert' && selectedPlan) {
-      paymentType = 'trial_conversion'
-      targetPlan = selectedPlan
-      paymentAmount = PLANS[selectedPlan].price
-      newCycleStart = today.toISOString().split('T')[0]
-      const end = new Date(today); end.setDate(end.getDate() + 30)
-      newCycleEnd = end.toISOString().split('T')[0]
-      referenceCode = generatePaymentReference(profile.laundryId, 'trial_conversion')
-    } else if (action === 'upgrade' && subscription.plan === 'starter') {
-      paymentType = 'upgrade_prorate'
-      targetPlan = 'growth'
-      paymentAmount = computeProrateAmount(subscription.daysLeft)
-      newCycleStart = subscription.cycleStartDate
-      newCycleEnd = subscription.cycleEndDate
-      referenceCode = generatePaymentReference(profile.laundryId, 'upgrade_prorate')
-    } else if (action === 'renew') {
-      paymentType = 'cycle_renewal'
-      targetPlan = subscription.plan === 'trial' ? 'starter' : subscription.plan
-      paymentAmount = PLANS[targetPlan].price
-      newCycleStart = today.toISOString().split('T')[0]
-      const end = new Date(today); end.setDate(end.getDate() + 30)
-      newCycleEnd = end.toISOString().split('T')[0]
-      referenceCode = generatePaymentReference(profile.laundryId, 'cycle_renewal')
-    }
-  }
-
+  const { subscription, recentPayments, existingClaim, paymentType, targetPlan, paymentAmount, newCycleStart, newCycleEnd, referenceCode, momoNumber } = data
   const cycleDays = subscription?.plan === 'trial' ? 14 : 30
 
   return (
@@ -327,7 +271,7 @@ export default async function SubscriptionPage({
             <h2 className="text-sm font-semibold text-gray-900">Recent payments</h2>
           </div>
           <div className="divide-y divide-gray-50">
-            {recentPayments!.map(p => (
+            {recentPayments!.map((p: any) => (
               <div key={p.id} className="flex items-center justify-between px-5 py-3">
                 <div>
                   <p className="text-sm text-gray-900">GHS {Number(p.amount).toFixed(0)}</p>
@@ -340,5 +284,13 @@ export default async function SubscriptionPage({
         </div>
       )}
     </div>
+  )
+}
+
+export default function SubscriptionPage() {
+  return (
+    <Suspense fallback={<PageSkeleton rows={3} />}>
+      <SubscriptionContent />
+    </Suspense>
   )
 }

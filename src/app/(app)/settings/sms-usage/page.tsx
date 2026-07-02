@@ -1,9 +1,7 @@
-import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getActiveSubscription } from '@/services/subscriptions/getActive'
-import { computeSmsUsage } from '@/services/notifications/computeSmsUsage'
-import { createClient } from '@/lib/supabase'
-import { redirect } from 'next/navigation'
+'use client'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { PageSkeleton } from '@/components/ui/PageSkeleton'
 
 const TRIGGER_LABELS: Record<string, string> = {
   ORDER_CREATED:            'Order created',
@@ -15,27 +13,16 @@ const TRIGGER_LABELS: Record<string, string> = {
   RENEWAL_REMINDER_DAY_OF:  'Renewal reminder (today)',
 }
 
-export default async function SmsUsagePage() {
-  const profile = await getMyProfile()
-  if (!profile) return null
-  if (profile.role !== 'admin') redirect('/dashboard')
+export default function SmsUsagePage() {
+  const [data, setData] = useState<any>(null)
 
-  const supabase = createClient()
-  const subscription = await getActiveSubscription(profile.laundryId)
+  useEffect(() => {
+    fetch('/api/settings/sms-usage').then(r => r.json()).then(setData)
+  }, [])
 
-  const smsUsed = subscription
-    ? await computeSmsUsage(profile.laundryId, subscription.cycleStartDate, subscription.cycleEndDate)
-    : 0
+  if (!data) return <PageSkeleton rows={5} />
 
-  const { data: messages } = await supabase
-    .from('sms_messages')
-    .select('id, trigger_event, status, phone, counts_toward_cap, created_at, error_message')
-    .eq('laundry_id', profile.laundryId)
-    .order('created_at', { ascending: false })
-    .limit(100)
-
-  const quota = subscription?.smsQuota ?? 0
-  const usagePct = quota > 0 ? Math.min(100, Math.round((smsUsed / quota) * 100)) : 0
+  const { subscription, smsUsed, messages, quota, usagePct } = data
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
@@ -80,7 +67,7 @@ export default async function SmsUsagePage() {
           <p className="text-sm text-gray-400 text-center py-8">No SMS messages sent yet.</p>
         ) : (
           <div className="divide-y divide-gray-50">
-            {(messages ?? []).map(sms => (
+            {(messages ?? []).map((sms: any) => (
               <div key={sms.id} className="flex items-start justify-between px-5 py-3">
                 <div className="flex items-center gap-2.5">
                   <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1 ${sms.status === 'sent' ? 'bg-green-400' : 'bg-red-400'}`} />

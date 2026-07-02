@@ -1,5 +1,6 @@
-import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getAllReports } from '@/services/reports'
+'use client'
+import { useEffect, useState } from 'react'
+import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { formatCurrency } from '@/utils/formatCurrency'
 
@@ -21,11 +22,16 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled:  '#B0413A',
 }
 
-export default async function ReportsPage() {
-  const profile = await getMyProfile()
-  if (!profile) return null
+export default function ReportsPage() {
+  const [data, setData] = useState<any>(null)
 
-  if (profile.role !== 'admin') {
+  useEffect(() => {
+    fetch('/api/reports').then(r => r.json()).then(setData)
+  }, [])
+
+  if (!data) return <PageSkeleton />
+
+  if (data.restricted) {
     return (
       <div className="max-w-[1180px] mx-auto px-7 py-7">
         <div className="mb-[18px]">
@@ -36,10 +42,7 @@ export default async function ReportsPage() {
     )
   }
 
-  const reports = await getAllReports()
-  if (!reports) return null
-
-  const { revenue, orders, employeeActivity } = reports
+  const { revenue, orders, employeeActivity } = data.reports
 
   const thisMonthLabel = new Date().toLocaleString('en-GB', { month: 'long', year: 'numeric' })
   const totalOrders = orders.totalAllTime || 1
@@ -132,8 +135,8 @@ export default async function ReportsPage() {
             <p className="text-ui text-warm-600 text-center py-10">No activity this month.</p>
           ) : (
             <div>
-              {employeeActivity.map(e => {
-                const initials = e.name.split(' ').map(p => p[0] ?? '').join('').toUpperCase().slice(0, 2)
+              {employeeActivity.map((e: any) => {
+                const initials = e.name.split(' ').map((p: string) => p[0] ?? '').join('').toUpperCase().slice(0, 2)
                 return (
                   <div
                     key={e.employeeId}
