@@ -2,6 +2,22 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { INTERNAL_ADMIN_EMAILS } from '@/constants/internalAdmins'
 
+// Builds a pass-through response that forwards the verified user ID to server
+// components via a request header, avoiding a second auth.getUser() call there.
+// Copies any Supabase session cookies from the base response so token refreshes
+// aren't lost.
+function withUserId(base: NextResponse, request: NextRequest, userId: string): NextResponse {
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.delete('x-user-id') // strip any client-supplied value
+  requestHeaders.set('x-user-id', userId)
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } })
+  base.cookies.getAll().forEach(({ name, value, ...rest }) => {
+    response.cookies.set(name, value, rest)
+  })
+  return response
+}
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -37,7 +53,7 @@ export async function middleware(request: NextRequest) {
     if (!INTERNAL_ADMIN_EMAILS.includes(user.email ?? '')) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
-    return supabaseResponse
+    return withUserId(supabaseResponse, request, user.id)
   }
 
   if (pathname.startsWith('/login')) {
@@ -56,7 +72,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  return supabaseResponse
+  return withUserId(supabaseResponse, request, user.id)
 }
 
 export const config = {
