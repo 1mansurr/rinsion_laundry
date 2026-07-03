@@ -3,12 +3,17 @@
 import { useState, useTransition, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createOrder, type CreateOrderInput } from '@/services/orders'
+import { recordPayment } from '@/services/payments/recordPayment'
 import { createCustomer } from '@/services/customers'
 import type { ItemType } from '@/services/items'
 import type { LaundryService } from '@/services/services'
 import type { PriceCell } from '@/services/pricing'
 import type { Customer } from '@/services/customers'
-import type { OrderPriority, PricingMode } from '@/constants/statuses'
+import { PAYMENT_METHODS, type OrderPriority, type PaymentMethod, type PricingMode } from '@/constants/statuses'
+
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  cash: 'Cash', mobile_money: 'Mobile Money', card: 'Card', bank_transfer: 'Bank Transfer', other: 'Other',
+}
 import { formatCurrency } from '@/utils/formatCurrency'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -37,6 +42,7 @@ interface Props {
   defaultBranchId: string
   preselectedCustomer?: Customer | null
   allowExpressOrders?: boolean
+  isMultiBranch?: boolean
 }
 
 const EMPTY_LINE: LineItem = { itemTypeId: '', serviceId: '', quantity: 1, unitPrice: 0, totalPrice: 0, pricingMode: 'per_item' }
@@ -50,7 +56,7 @@ const PRIORITY_LABELS: Record<OrderPriority, string> = {
 export function CreateOrderForm({
   itemTypes, services, prices, customers, branches,
   isAdmin, defaultBranchId, preselectedCustomer,
-  allowExpressOrders = true,
+  allowExpressOrders = true, isMultiBranch = false,
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -78,6 +84,10 @@ export function CreateOrderForm({
   const [pickupDate, setPickupDate] = useState('')
   const [notes, setNotes] = useState('')
   const [lines, setLines] = useState<LineItem[]>([{ ...EMPTY_LINE }])
+
+  // Pay in advance
+  const [payInAdvance, setPayInAdvance] = useState(false)
+  const [advanceMethod, setAdvanceMethod] = useState<PaymentMethod>('mobile_money')
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -182,11 +192,11 @@ export function CreateOrderForm({
     }
     startTransition(async () => {
       const res = await createOrder(input)
-      if (res.success) {
-        router.push(`/orders/${res.data.orderId}`)
-      } else {
-        setError(res.error)
+      if (!res.success) { setError(res.error); return }
+      if (payInAdvance && total > 0) {
+        await recordPayment({ orderId: res.data.orderId, amount: total, paymentMethod: advanceMethod })
       }
+      router.push(`/orders/${res.data.orderId}`)
     })
   }
 
@@ -344,7 +354,7 @@ export function CreateOrderForm({
 
         {/* Branch (admin only) + Priority */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {isAdmin && (
+          {isAdmin && isMultiBranch && (
             <Select
               label="Branch"
               value={branchId}
@@ -575,6 +585,42 @@ export function CreateOrderForm({
           rows={3}
         />
       </div>
+
+      {/* Pay in advance */}
+      <section className="bg-white border border-warm-300 rounded-10 px-5 py-4">
+        <label className="flex items-center justify-between cursor-pointer">
+          <div>
+            <p className="text-ui font-medium text-warm-950">Customer is paying now</p>
+            <p className="text-caption text-warm-600 mt-0.5">
+              {payInAdvance ? `${formatCurrency(total)} will be recorded on order creation` : 'Payment recorded at collection'}
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={payInAdvance}
+            onClick={() => setPayInAdvance(p => !p)}
+            className={`relative flex-shrink-0 w-10 rounded-full transition-colors duration-200 ${payInAdvance ? 'bg-brand' : 'bg-warm-300'}`}
+            style={{ minWidth: '2.5rem', height: '1.375rem' }}
+          >
+            <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${payInAdvance ? 'translate-x-4' : 'translate-x-0'}`} />
+          </button>
+        </label>
+        {payInAdvance && (
+          <div className="mt-3 pt-3 border-t border-warm-200">
+            <label className="text-label font-medium text-warm-700 mb-1.5 block">Payment method</label>
+            <select
+              value={advanceMethod}
+              onChange={e => setAdvanceMethod(e.target.value as PaymentMethod)}
+              className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
+            >
+              {PAYMENT_METHODS.map(m => (
+                <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m] ?? m}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </section>
 
       {/* Sticky summary footer */}
       <div className="fixed bottom-0 left-0 right-0 z-10 px-4 pb-4 pointer-events-none">
