@@ -5,11 +5,6 @@ import { updateSettings, type LaundrySettings } from '@/services/settings'
 
 const TOGGLES: { key: keyof LaundrySettings; label: string; description: string }[] = [
   {
-    key: 'allowPartialPayments',
-    label: 'Allow Partial Payments',
-    description: 'Staff can record payments below the order total. The balance remains outstanding until collected.',
-  },
-  {
     key: 'allowExpressOrders',
     label: 'Allow Express Orders',
     description: 'Staff can mark orders as express priority at intake. Does not change pricing.',
