@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase'
 import { revalidatePath } from 'next/cache'
+import { generateJoinPin } from '@/utils/generateJoinPin'
 import type { ServiceResult } from '@/types/serviceResult'
 import type { PricingModel } from '@/constants/statuses'
 
@@ -80,7 +81,7 @@ export async function updateSettings(patch: Partial<LaundrySettings>): Promise<S
   return { success: true, data: null }
 }
 
-export async function getLaundry(): Promise<{ id: string; name: string; laundryCode: string } | null> {
+export async function getLaundry(): Promise<{ id: string; name: string; laundryCode: string; joinPin: string } | null> {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
@@ -94,12 +95,43 @@ export async function getLaundry(): Promise<{ id: string; name: string; laundryC
 
   const { data } = await supabase
     .from('laundries')
-    .select('id, name, laundry_code')
+    .select('id, name, laundry_code, join_pin')
     .eq('id', emp.laundry_id)
     .single()
 
   if (!data) return null
-  return { id: data.id, name: data.name, laundryCode: data.laundry_code }
+  return { id: data.id, name: data.name, laundryCode: data.laundry_code, joinPin: data.join_pin }
+}
+
+export async function regenerateJoinPin(): Promise<ServiceResult<{ joinPin: string }>> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Not authenticated.' }
+
+  const { data: emp } = await supabase
+    .from('employees')
+    .select('id, laundry_id, role')
+    .eq('auth_user_id', user.id)
+    .single()
+  if (!emp || emp.role !== 'admin') return { success: false, error: 'Admin only.' }
+
+  const joinPin = generateJoinPin()
+  const { error } = await supabase
+    .from('laundries')
+    .update({ join_pin: joinPin, updated_at: new Date().toISOString() })
+    .eq('id', emp.laundry_id)
+
+  if (error) return { success: false, error: error.message }
+
+  await supabase.from('activity_logs').insert({
+    laundry_id: emp.laundry_id,
+    employee_id: emp.id,
+    action_type: 'SETTINGS_UPDATED',
+    description: 'Join PIN regenerated',
+  })
+
+  revalidatePath('/settings')
+  return { success: true, data: { joinPin } }
 }
 
 export async function updateLaundryName(name: string): Promise<ServiceResult<null>> {

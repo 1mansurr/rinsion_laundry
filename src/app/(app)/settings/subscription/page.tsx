@@ -1,10 +1,11 @@
 'use client'
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, useTransition, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { claimPaymentSent } from '@/services/subscriptions/claimPaymentSent'
 import { computeProrateAmount } from '@/services/subscriptions/computeProrateAmount'
+import { startTrial } from '@/services/subscriptions/startTrial'
 import { PLANS } from '@/constants/plans'
 import { formatDate } from '@/utils/formatDate'
 
@@ -60,6 +61,17 @@ function SubscriptionContent() {
   const planParam = searchParams.get('plan') ?? undefined
 
   const [data, setData] = useState<SubscriptionPageData | null>(null)
+  const [startingTrial, startTrialTransition] = useTransition()
+  const [trialError, setTrialError] = useState<string | null>(null)
+
+  function handleStartTrial() {
+    setTrialError(null)
+    startTrialTransition(async () => {
+      const res = await startTrial()
+      if (res.success) window.location.reload()
+      else setTrialError(res.error)
+    })
+  }
 
   useEffect(() => {
     const params = new URLSearchParams()
@@ -119,8 +131,16 @@ function SubscriptionContent() {
 
       {/* ── No subscription ── */}
       {!subscription && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-5 mb-4 text-sm text-yellow-800">
-          No active subscription. Contact Rinsion to activate your account.
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-5 mb-4 text-sm text-yellow-800 space-y-3">
+          <p>No active subscription yet. Start your 14-day free trial to unlock orders, payments, and SMS.</p>
+          {trialError && <p className="text-red-700">{trialError}</p>}
+          <button
+            onClick={handleStartTrial}
+            disabled={startingTrial}
+            className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
+          >
+            {startingTrial ? 'Starting…' : 'Start free trial'}
+          </button>
         </div>
       )}
 

@@ -2,14 +2,16 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { updateLaundrySetup } from './actions'
+import { updateLaundrySetup, completeOnboarding } from './actions'
 import { createService, setServicePricing } from '@/services/services'
 import { createItemType } from '@/services/items'
 import { upsertPrice } from '@/services/pricing'
 import { updateSettings } from '@/services/settings'
+import { startTrial } from '@/services/subscriptions/startTrial'
 import { PRICING_MODELS, type PricingModel } from '@/constants/statuses'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Modal } from '@/components/ui/Modal'
 import { Wordmark } from '@/components/ui/Wordmark'
 
 const PRICING_MODEL_LABELS: Record<PricingModel, { label: string; description: string }> = {
@@ -62,6 +64,11 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
   const [createdItemIds, setCreatedItemIds] = useState<{ name: string; id: string }[]>([])
   const [pricingGrid, setPricingGrid] = useState<Record<string, Record<string, string>>>({})
   const [kgRates, setKgRates] = useState<Record<string, string>>({})
+
+  // Trial-start confirmation, shown once onboarding is done
+  const [showTrialModal, setShowTrialModal] = useState(false)
+  const [startingTrial, startTrialTransition] = useTransition()
+  const [trialError, setTrialError] = useState('')
 
   const smsPreview = buildSmsPreview(laundryName, branchName)
   const smsLen = smsPreview.length
@@ -137,8 +144,26 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
         }
       }
       await Promise.all(entries)
+      await finishOnboarding()
+    })
+  }
+
+  async function finishOnboarding() {
+    await completeOnboarding()
+    setShowTrialModal(true)
+  }
+
+  function handleStartTrial() {
+    setTrialError('')
+    startTrialTransition(async () => {
+      const res = await startTrial()
+      if (!res.success) { setTrialError(res.error); return }
       router.push('/dashboard')
     })
+  }
+
+  function handleSkipTrial() {
+    router.push('/dashboard')
   }
 
   function toggleService(name: string) {
@@ -407,7 +432,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => router.push('/dashboard')}
+                    onClick={() => startTransition(finishOnboarding)}
                     className="text-caption text-warm-500 hover:text-warm-800 underline underline-offset-2"
                   >
                     I&apos;ll do this later
@@ -419,6 +444,28 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
           )}
         </div>
       </div>
+
+      <Modal
+        open={showTrialModal}
+        onClose={handleSkipTrial}
+        title="Start your 14-day free trial?"
+        description="Full access to orders, payments, and SMS notifications — free for 14 days."
+      >
+        <div className="space-y-4">
+          {trialError && <p className="text-caption text-error-fg">{trialError}</p>}
+          <p className="text-body text-warm-600">
+            You can start it later from Settings → Subscription if you&apos;re not ready yet.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <Button variant="secondary" onClick={handleSkipTrial} disabled={startingTrial}>
+              Not yet
+            </Button>
+            <Button variant="primary" isPending={startingTrial} disabled={startingTrial} onClick={handleStartTrial}>
+              Start free trial
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

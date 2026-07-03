@@ -63,6 +63,13 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse
   }
 
+  // Signup is reachable both signed-out (the initial form) and signed-in but
+  // not yet an employee (choose/add-laundry/join-laundry) — each page checks
+  // its own precondition and redirects, so just let it through here.
+  if (pathname.startsWith('/signup')) {
+    return supabaseResponse
+  }
+
   // Let / through — app/page.tsx handles the redirect
   if (pathname === '/') {
     return supabaseResponse

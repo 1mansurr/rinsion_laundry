@@ -25,7 +25,7 @@ function ChevronIcon({ open }: { open: boolean }) {
 }
 
 function LaundryPanel({ open }: { open: boolean }) {
-  const [data, setData] = useState<{ laundry: { name: string; laundryCode: string } } | null>(null)
+  const [data, setData] = useState<{ laundry: { name: string; laundryCode: string; joinPin: string } } | null>(null)
   useEffect(() => {
     if (open && !data) fetch('/api/settings/laundry').then(r => r.json()).then(setData)
   }, [open, data])
@@ -37,7 +37,7 @@ function LaundryPanel({ open }: { open: boolean }) {
           <span className="text-caption text-warm-500">Loading…</span>
         </div>
       ) : (
-        <LaundryForm currentName={data.laundry.name} laundryCode={data.laundry.laundryCode} />
+        <LaundryForm currentName={data.laundry.name} laundryCode={data.laundry.laundryCode} joinPin={data.laundry.joinPin} />
       )}
     </div>
   )

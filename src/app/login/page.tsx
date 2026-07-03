@@ -1,6 +1,7 @@
 'use client'
 
 import { useFormState, useFormStatus } from 'react-dom'
+import Link from 'next/link'
 import { signIn } from './actions'
 import { Wordmark } from '@/components/ui/Wordmark'
 
@@ -57,6 +58,13 @@ export default function LoginPage() {
           </div>
 
           <SubmitButton />
+
+          <p className="text-center text-caption text-warm-500">
+            New here?{' '}
+            <Link href="/signup" className="text-brand hover:text-brand-hover underline underline-offset-2">
+              Create an account
+            </Link>
+          </p>
         </form>
       </div>
     </main>

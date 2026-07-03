@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getEmployees, getBranches } from '@/services/employees'
+import { getPendingJoinRequests } from '@/services/laundries/joinRequests'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
 import { PLANS } from '@/constants/plans'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
@@ -15,10 +16,11 @@ export async function GET() {
     return NextResponse.json({ restricted: true })
   }
 
-  const [employees, branches, subscription] = await Promise.all([
+  const [employees, branches, subscription, pendingRequests] = await Promise.all([
     getEmployees(),
     getBranches(),
     getActiveSubscription(profile.laundryId),
+    getPendingJoinRequests(),
   ])
 
   const plan = (subscription?.plan ?? 'starter') as SubscriptionPlan
@@ -31,6 +33,7 @@ export async function GET() {
     plan,
     limit,
     activeCount,
+    pendingRequests,
     currentEmployeeId: profile.id,
     isMultiBranch: branches.length > 1,
   })

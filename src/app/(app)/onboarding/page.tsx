@@ -12,15 +12,15 @@ export default async function OnboardingPage() {
 
   const supabase = createClient()
 
-  // Check if already set up
-  const { count: itemCount } = await supabase
-    .from('item_types')
-    .select('*', { count: 'exact', head: true })
+  // Check if already set up — item_types alone isn't a reliable signal since
+  // every laundry-creation path inserts default item types immediately.
+  const { data: settingsRow } = await supabase
+    .from('settings')
+    .select('onboarding_completed_at')
     .eq('laundry_id', profile.laundryId)
-    .eq('is_active', true)
+    .single()
 
-  // Already set up — send to dashboard
-  if ((itemCount ?? 0) > 0) redirect('/dashboard')
+  if (settingsRow?.onboarding_completed_at) redirect('/dashboard')
 
   // Fetch current laundry + branch names for pre-filling Step 1
   const [{ data: laundry }, { data: branches }] = await Promise.all([

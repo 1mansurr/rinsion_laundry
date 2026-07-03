@@ -5,6 +5,7 @@ import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { EmployeesClient } from './EmployeesClient'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
 import type { Employee } from '@/services/employees'
+import type { PendingJoinRequest } from '@/services/laundries/joinRequests'
 
 type PageData = {
   restricted?: boolean
@@ -13,6 +14,7 @@ type PageData = {
   plan: SubscriptionPlan
   limit: number
   activeCount: number
+  pendingRequests: PendingJoinRequest[]
   currentEmployeeId: string
   isMultiBranch: boolean
 }
@@ -49,6 +51,7 @@ export default function EmployeesPage() {
         branches={data.branches}
         activeCount={data.activeCount}
         employeeLimit={data.limit}
+        pendingRequests={data.pendingRequests}
         currentEmployeeId={data.currentEmployeeId}
         isMultiBranch={data.isMultiBranch}
       />

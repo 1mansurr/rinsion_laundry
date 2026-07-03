@@ -3,23 +3,75 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { createEmployee, toggleEmployee, type Employee } from '@/services/employees'
+import { approveJoinRequest, rejectJoinRequest, type PendingJoinRequest } from '@/services/laundries/joinRequests'
 
 interface Props {
   employees: Employee[]
   branches: { id: string; name: string }[]
   activeCount: number
   employeeLimit: number
+  pendingRequests: PendingJoinRequest[]
   currentEmployeeId: string
   isMultiBranch?: boolean
 }
 
-export function EmployeesClient({ employees: init, branches, activeCount: initActiveCount, employeeLimit, currentEmployeeId, isMultiBranch = false }: Props) {
+export function EmployeesClient({ employees: init, branches, activeCount: initActiveCount, employeeLimit, pendingRequests: initRequests, currentEmployeeId, isMultiBranch = false }: Props) {
   const [employees, setEmployees] = useState(init)
   const [activeCount, setActiveCount] = useState(initActiveCount)
   const [showForm, setShowForm] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [newCreds, setNewCreds] = useState<{ email: string; password: string } | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  // Pending join requests
+  const [requests, setRequests] = useState(initRequests)
+  const [requestError, setRequestError] = useState<string | null>(null)
+  const [resolvingId, setResolvingId] = useState<string | null>(null)
+  const [approveRole, setApproveRole] = useState<Record<string, 'admin' | 'employee'>>({})
+  const [approveBranch, setApproveBranch] = useState<Record<string, string>>({})
+
+  function roleFor(id: string) { return approveRole[id] ?? 'employee' }
+  function branchFor(id: string) { return approveBranch[id] ?? branches[0]?.id ?? '' }
+
+  function handleApprove(request: PendingJoinRequest) {
+    setRequestError(null)
+    setResolvingId(request.id)
+    startTransition(async () => {
+      const res = await approveJoinRequest(request.id, roleFor(request.id), branchFor(request.id))
+      if (res.success) {
+        setRequests(prev => prev.filter(r => r.id !== request.id))
+        setActiveCount(c => c + 1)
+        setEmployees(prev => [...prev, {
+          id: crypto.randomUUID(),
+          firstName: request.firstName,
+          lastName: request.lastName,
+          email: request.email,
+          phone: request.phone,
+          role: roleFor(request.id),
+          branchId: branchFor(request.id),
+          branchName: branches.find(b => b.id === branchFor(request.id))?.name ?? '',
+          isActive: true,
+        }])
+      } else {
+        setRequestError(res.error)
+      }
+      setResolvingId(null)
+    })
+  }
+
+  function handleReject(requestId: string) {
+    setRequestError(null)
+    setResolvingId(requestId)
+    startTransition(async () => {
+      const res = await rejectJoinRequest(requestId)
+      if (res.success) {
+        setRequests(prev => prev.filter(r => r.id !== requestId))
+      } else {
+        setRequestError(res.error)
+      }
+      setResolvingId(null)
+    })
+  }
 
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -89,6 +141,59 @@ export function EmployeesClient({ employees: init, branches, activeCount: initAc
             <p><span className="text-gray-500">Password:</span> <strong>{newCreds.password}</strong></p>
           </div>
           <button onClick={() => setNewCreds(null)} className="mt-3 text-xs text-green-700 underline">Dismiss</button>
+        </div>
+      )}
+
+      {/* Pending join requests */}
+      {requests.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-50">
+          <p className="px-5 py-3 text-sm font-semibold text-gray-900">
+            Pending Requests <span className="font-normal text-gray-400">({requests.length})</span>
+          </p>
+          {requestError && (
+            <p className="px-5 py-2 text-sm text-red-600">{requestError}</p>
+          )}
+          {requests.map(req => (
+            <div key={req.id} className="px-5 py-3.5 space-y-2.5">
+              <div>
+                <p className="text-sm font-medium text-gray-900">{req.firstName} {req.lastName}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{req.email} · {req.phone}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  value={roleFor(req.id)}
+                  onChange={e => setApproveRole(prev => ({ ...prev, [req.id]: e.target.value as 'admin' | 'employee' }))}
+                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                >
+                  <option value="employee">Employee</option>
+                  <option value="admin">Admin</option>
+                </select>
+                {isMultiBranch && (
+                  <select
+                    value={branchFor(req.id)}
+                    onChange={e => setApproveBranch(prev => ({ ...prev, [req.id]: e.target.value }))}
+                    className="border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  >
+                    {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
+                )}
+                <button
+                  onClick={() => handleApprove(req)}
+                  disabled={isPending && resolvingId === req.id}
+                  className="px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                >
+                  Approve
+                </button>
+                <button
+                  onClick={() => handleReject(req.id)}
+                  disabled={isPending && resolvingId === req.id}
+                  className="px-3 py-1.5 border border-gray-300 text-xs text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Reject
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

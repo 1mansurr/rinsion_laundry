@@ -48,8 +48,14 @@ export function createClient() {
 
 /**
  * Returns a Supabase client using the service-role key.
- * Bypasses RLS — use ONLY in services/admin/ after the email allowlist check.
- * Never expose this client to browser code or non-admin service functions.
+ * Bypasses RLS — only for privileged operations where the acting user's
+ * identity/authorization has already been verified via createClient() first:
+ *   - services/admin/ (internal Rinsion staff, gated by the email allowlist)
+ *   - bootstrapping a brand new tenant (self-serve laundry creation, joining
+ *     by PIN) where no laundry_id exists yet for tenant-scoped RLS to key off
+ *   - creating a new employee's auth user (admin-privileged, not self-serve)
+ * Never expose this client to browser code, and never use it before verifying
+ * the caller via the regular session client.
  *
  * Spec reference: Rinsion_Technical_Overview.md §21 (Developer Dashboard implementation notes)
  */

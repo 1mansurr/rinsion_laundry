@@ -22,3 +22,24 @@ export async function updateLaundrySetup(
 
   return { success: true }
 }
+
+export async function completeOnboarding(): Promise<{ success: true } | { success: false; error: string }> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Not authenticated.' }
+
+  const { data: emp } = await supabase
+    .from('employees')
+    .select('laundry_id')
+    .eq('auth_user_id', user.id)
+    .single()
+  if (!emp) return { success: false, error: 'Employee not found.' }
+
+  const { error } = await supabase
+    .from('settings')
+    .update({ onboarding_completed_at: new Date().toISOString() })
+    .eq('laundry_id', emp.laundry_id)
+
+  if (error) return { success: false, error: error.message }
+  return { success: true }
+}

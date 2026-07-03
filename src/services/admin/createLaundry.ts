@@ -3,6 +3,8 @@
 import { createAdminClient, createClient } from '@/lib/supabase'
 import { INTERNAL_ADMIN_EMAILS } from '@/constants/internalAdmins'
 import { PLANS, TRIAL_DAYS } from '@/constants/plans'
+import { DEFAULT_ITEM_TYPES, DEFAULT_SERVICES } from '@/constants/defaultCatalog'
+import { generateJoinPin } from '@/utils/generateJoinPin'
 import type { ServiceResult } from '@/types/serviceResult'
 
 export interface CreateLaundryInput {
@@ -37,7 +39,7 @@ export async function createLaundry(
   // 1. Laundry
   const { data: laundry, error: laundryErr } = await admin
     .from('laundries')
-    .insert({ name: input.laundryName, laundry_code: input.laundryCode })
+    .insert({ name: input.laundryName, laundry_code: input.laundryCode, join_pin: generateJoinPin() })
     .select('id')
     .single()
 
@@ -128,30 +130,6 @@ export async function createLaundry(
     },
   }
 }
-
-const DEFAULT_ITEM_TYPES = [
-  'Shirt',
-  'Trouser',
-  'T-Shirt',
-  'Dress',
-  'Skirt',
-  'Suit (Jacket)',
-  'Jeans',
-  'Coat / Blazer',
-  'Bedsheet',
-  'Pillowcase',
-  'Duvet / Comforter',
-  'Towel',
-  'Uniform',
-  'Curtain',
-]
-
-const DEFAULT_SERVICES = [
-  'Wash Only',
-  'Wash & Iron',
-  'Iron Only',
-  'Dry Clean',
-]
 
 function generateTempPassword(): string {
   // Unambiguous chars (no 0/O, 1/I/l)

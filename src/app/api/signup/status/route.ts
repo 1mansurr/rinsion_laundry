@@ -1,11 +1,10 @@
-import { redirect } from 'next/navigation'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase'
 
-export default async function HomePage() {
+export async function GET() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) redirect('/login')
+  if (!user) return NextResponse.json({ authenticated: false, hasEmployee: false })
 
   const { data: emp } = await supabase
     .from('employees')
@@ -13,6 +12,5 @@ export default async function HomePage() {
     .eq('auth_user_id', user.id)
     .maybeSingle()
 
-  // Signed up but hasn't finished Add Laundry / Join Laundry yet
-  redirect(emp ? '/dashboard' : '/signup/choose')
+  return NextResponse.json({ authenticated: true, hasEmployee: !!emp })
 }
