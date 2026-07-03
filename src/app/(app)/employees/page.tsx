@@ -14,6 +14,7 @@ type PageData = {
   limit: number
   activeCount: number
   currentEmployeeId: string
+  isMultiBranch: boolean
 }
 
 export default function EmployeesPage() {
@@ -49,6 +50,7 @@ export default function EmployeesPage() {
         activeCount={data.activeCount}
         employeeLimit={data.limit}
         currentEmployeeId={data.currentEmployeeId}
+        isMultiBranch={data.isMultiBranch}
       />
     </div>
   )

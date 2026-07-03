@@ -32,5 +32,6 @@ export async function GET() {
     limit,
     activeCount,
     currentEmployeeId: profile.id,
+    isMultiBranch: branches.length > 1,
   })
 }

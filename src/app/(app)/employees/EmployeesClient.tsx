@@ -10,9 +10,10 @@ interface Props {
   activeCount: number
   employeeLimit: number
   currentEmployeeId: string
+  isMultiBranch?: boolean
 }
 
-export function EmployeesClient({ employees: init, branches, activeCount: initActiveCount, employeeLimit, currentEmployeeId }: Props) {
+export function EmployeesClient({ employees: init, branches, activeCount: initActiveCount, employeeLimit, currentEmployeeId, isMultiBranch = false }: Props) {
   const [employees, setEmployees] = useState(init)
   const [activeCount, setActiveCount] = useState(initActiveCount)
   const [showForm, setShowForm] = useState(false)
@@ -128,16 +129,18 @@ export function EmployeesClient({ employees: init, branches, activeCount: initAc
                 <option value="admin">Admin</option>
               </select>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Branch</label>
-              <select
-                value={branchId}
-                onChange={e => setBranchId(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
-              >
-                {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-              </select>
-            </div>
+            {isMultiBranch && (
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Branch</label>
+                <select
+                  value={branchId}
+                  onChange={e => setBranchId(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                >
+                  {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                </select>
+              </div>
+            )}
           </div>
           <div className="flex gap-2 pt-1">
             <button
@@ -175,7 +178,7 @@ export function EmployeesClient({ employees: init, branches, activeCount: initAc
                 </span>
                 {!emp.isActive && <span className="text-xs text-gray-400">· Inactive</span>}
               </div>
-              <p className="text-xs text-gray-400 mt-0.5">{emp.email} · {emp.phone} · {emp.branchName}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{emp.email} · {emp.phone}{isMultiBranch ? ` · ${emp.branchName}` : ''}</p>
             </div>
             {emp.id !== currentEmployeeId && (
               <button
