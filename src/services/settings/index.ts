@@ -3,12 +3,14 @@
 import { createClient } from '@/lib/supabase'
 import { revalidatePath } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
+import type { PricingModel } from '@/constants/statuses'
 
 export interface LaundrySettings {
   allowPartialPayments: boolean
   allowExpressOrders: boolean
   requirePickupCode: boolean
   allowCustomerSubmissions: boolean
+  pricingModel: PricingModel
 }
 
 export async function getSettings(): Promise<LaundrySettings | null> {
@@ -25,7 +27,7 @@ export async function getSettings(): Promise<LaundrySettings | null> {
 
   const { data } = await supabase
     .from('settings')
-    .select('allow_partial_payments, allow_express_orders, require_pickup_code, allow_customer_submissions')
+    .select('allow_partial_payments, allow_express_orders, require_pickup_code, allow_customer_submissions, pricing_model')
     .eq('laundry_id', emp.laundry_id)
     .single()
 
@@ -35,6 +37,7 @@ export async function getSettings(): Promise<LaundrySettings | null> {
     allowExpressOrders: data.allow_express_orders,
     requirePickupCode: data.require_pickup_code,
     allowCustomerSubmissions: data.allow_customer_submissions,
+    pricingModel: data.pricing_model,
   }
 }
 
@@ -55,6 +58,7 @@ export async function updateSettings(patch: Partial<LaundrySettings>): Promise<S
   if (patch.allowExpressOrders !== undefined) dbPatch.allow_express_orders = patch.allowExpressOrders
   if (patch.requirePickupCode !== undefined) dbPatch.require_pickup_code = patch.requirePickupCode
   if (patch.allowCustomerSubmissions !== undefined) dbPatch.allow_customer_submissions = patch.allowCustomerSubmissions
+  if (patch.pricingModel !== undefined) dbPatch.pricing_model = patch.pricingModel
 
   const { error } = await supabase
     .from('settings')
@@ -72,6 +76,7 @@ export async function updateSettings(patch: Partial<LaundrySettings>): Promise<S
   })
 
   revalidatePath('/settings/workflow')
+  revalidatePath('/items-and-services')
   return { success: true, data: null }
 }
 

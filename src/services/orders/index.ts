@@ -29,7 +29,8 @@ export interface CreateOrderInput {
   pickupDate?: string
   notes?: string
   items: {
-    itemTypeId: string
+    /** Absent for per_kg lines — weight-based services aren't priced per item type */
+    itemTypeId?: string
     serviceId: string
     /** Piece count when pricingMode is 'per_item', weight in kg when 'per_kg' */
     quantity: number
@@ -131,7 +132,7 @@ export async function createOrder(input: CreateOrderInput): Promise<ServiceResul
   await supabase.from('order_items').insert(
     input.items.map(item => ({
       order_id: order.id,
-      item_type_id: item.itemTypeId,
+      item_type_id: item.itemTypeId ?? null,
       service_id: item.serviceId,
       quantity: item.quantity,
       unit_price: item.unitPrice,

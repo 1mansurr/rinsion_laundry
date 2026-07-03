@@ -3,7 +3,9 @@
 import { useState, useTransition } from 'react'
 import { updateSettings, type LaundrySettings } from '@/services/settings'
 
-const TOGGLES: { key: keyof LaundrySettings; label: string; description: string }[] = [
+type BooleanSettingKey = { [K in keyof LaundrySettings]: LaundrySettings[K] extends boolean ? K : never }[keyof LaundrySettings]
+
+const TOGGLES: { key: BooleanSettingKey; label: string; description: string }[] = [
   {
     key: 'allowExpressOrders',
     label: 'Allow Express Orders',
@@ -24,10 +26,10 @@ const TOGGLES: { key: keyof LaundrySettings; label: string; description: string 
 export function WorkflowToggles({ settings: init }: { settings: LaundrySettings }) {
   const [settings, setSettings] = useState(init)
   const [isPending, startTransition] = useTransition()
-  const [saving, setSaving] = useState<keyof LaundrySettings | null>(null)
+  const [saving, setSaving] = useState<BooleanSettingKey | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  function handleToggle(key: keyof LaundrySettings) {
+  function handleToggle(key: BooleanSettingKey) {
     const newValue = !settings[key]
     setSettings(prev => ({ ...prev, [key]: newValue }))
     setSaving(key)

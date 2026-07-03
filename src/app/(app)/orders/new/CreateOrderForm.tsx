@@ -107,38 +107,48 @@ export function CreateOrderForm({
       ).slice(0, 8)
     : customers.slice(0, 5)
 
-  const pricedItems = itemTypes.filter(t =>
-    t.isActive && prices.some(p => p.itemTypeId === t.id && p.isActive)
-  )
+  // A service is only offered at intake once it's actually priced: a per_kg
+  // service needs a rate set, a per_item service needs at least one priced item type.
+  const usableServices = services.filter(s => s.isActive && (
+    s.pricingMode === 'per_kg'
+      ? s.kgRate !== null
+      : itemTypes.some(t => t.isActive && prices.some(p => p.itemTypeId === t.id && p.serviceId === s.id && p.isActive))
+  ))
 
-  function getUnitPrice(itemTypeId: string, serviceId: string) {
-    return prices.find(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId && p.isActive)?.price ?? 0
+  function getService(serviceId: string) {
+    return services.find(s => s.id === serviceId)
   }
 
-  function getPricingMode(itemTypeId: string, serviceId: string): PricingMode {
-    return prices.find(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId && p.isActive)?.pricingMode ?? 'per_item'
-  }
-
-  function getAvailableServices(itemTypeId: string) {
-    if (!itemTypeId) return services.filter(s => s.isActive)
-    return services.filter(s =>
-      s.isActive && prices.some(p => p.itemTypeId === itemTypeId && p.serviceId === s.id && p.isActive)
+  function getAvailableItemTypes(serviceId: string) {
+    if (!serviceId) return []
+    return itemTypes.filter(t =>
+      t.isActive && prices.some(p => p.itemTypeId === t.id && p.serviceId === serviceId && p.isActive)
     )
+  }
+
+  function getUnitPrice(itemTypeId: string, serviceId: string, mode: PricingMode) {
+    if (mode === 'per_kg') return getService(serviceId)?.kgRate ?? 0
+    return prices.find(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId && p.isActive)?.price ?? 0
   }
 
   function updateLine(index: number, patch: Partial<LineItem>) {
     setLines(prev => prev.map((l, i) => {
       if (i !== index) return l
       const updated = { ...l, ...patch }
-      if (patch.itemTypeId !== undefined) {
-        const avail = getAvailableServices(patch.itemTypeId)
-        if (updated.serviceId && !avail.some(s => s.id === updated.serviceId)) updated.serviceId = ''
-        if (!updated.serviceId && avail.length === 1) updated.serviceId = avail[0].id
+      if (patch.serviceId !== undefined) {
+        const svc = getService(updated.serviceId)
+        updated.pricingMode = svc?.pricingMode ?? 'per_item'
+        if (updated.pricingMode === 'per_kg') {
+          updated.itemTypeId = ''
+        } else {
+          const avail = getAvailableItemTypes(updated.serviceId)
+          if (!avail.some(t => t.id === updated.itemTypeId)) {
+            updated.itemTypeId = avail.length === 1 ? avail[0].id : ''
+          }
+        }
       }
-      const modeChanged = patch.itemTypeId !== undefined || patch.serviceId !== undefined
-      const unitPrice = modeChanged ? getUnitPrice(updated.itemTypeId, updated.serviceId) : updated.unitPrice
-      const pricingMode = modeChanged ? getPricingMode(updated.itemTypeId, updated.serviceId) : updated.pricingMode
-      return { ...updated, unitPrice, pricingMode, totalPrice: unitPrice * updated.quantity }
+      const unitPrice = getUnitPrice(updated.itemTypeId, updated.serviceId, updated.pricingMode)
+      return { ...updated, unitPrice, totalPrice: unitPrice * updated.quantity }
     }))
   }
 
@@ -146,7 +156,9 @@ export function CreateOrderForm({
   function removeLine(i: number) { if (lines.length > 1) setLines(prev => prev.filter((_, idx) => idx !== i)) }
 
   const total = lines.reduce((s, l) => s + l.totalPrice, 0)
-  const validLines = lines.filter(l => l.itemTypeId && l.serviceId && l.quantity > 0)
+  const validLines = lines.filter(l =>
+    l.serviceId && (l.pricingMode === 'per_kg' || l.itemTypeId) && l.quantity > 0
+  )
   const canSubmit = !!selectedCustomer && validLines.length > 0
 
   function openInlineCreate() {
@@ -188,7 +200,7 @@ export function CreateOrderForm({
       priority,
       pickupDate: pickupDate || undefined,
       notes: notes || undefined,
-      items: validLines,
+      items: validLines.map(l => ({ ...l, itemTypeId: l.itemTypeId || undefined })),
     }
     startTransition(async () => {
       const res = await createOrder(input)
@@ -406,14 +418,14 @@ export function CreateOrderForm({
             className="hidden md:grid items-center mb-1 px-1"
             style={{ gridTemplateColumns: '1.3fr 1.3fr 0.9fr 1fr 40px', gap: '10px' }}
           >
-            {['Item type', 'Service', 'Qty / kg', 'Line total', ''].map((h, i) => (
+            {['Service', 'Item type', 'Qty / kg', 'Line total', ''].map((h, i) => (
               <span key={i} className="text-caption text-warm-500 font-medium">{h}</span>
             ))}
           </div>
 
           <div className="space-y-3">
             {lines.map((line, i) => {
-              const availableServices = getAvailableServices(line.itemTypeId)
+              const availableItemTypes = getAvailableItemTypes(line.serviceId)
               return (
                 <div key={i}>
                   {/* Desktop row */}
@@ -422,26 +434,30 @@ export function CreateOrderForm({
                     style={{ gridTemplateColumns: '1.3fr 1.3fr 0.9fr 1fr 40px', gap: '10px' }}
                   >
                     <select
-                      value={line.itemTypeId}
-                      onChange={e => updateLine(i, { itemTypeId: e.target.value })}
-                      className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring appearance-none"
-                    >
-                      <option value="">Select item…</option>
-                      {pricedItems.map(t => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                      ))}
-                    </select>
-                    <select
                       value={line.serviceId}
                       onChange={e => updateLine(i, { serviceId: e.target.value })}
-                      disabled={!line.itemTypeId}
-                      className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring appearance-none disabled:opacity-40"
+                      className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring appearance-none"
                     >
                       <option value="">Select service…</option>
-                      {availableServices.map(s => (
+                      {usableServices.map(s => (
                         <option key={s.id} value={s.id}>{s.name}</option>
                       ))}
                     </select>
+                    {line.pricingMode === 'per_kg' ? (
+                      <span className="text-caption text-warm-400 italic">Priced by weight</span>
+                    ) : (
+                      <select
+                        value={line.itemTypeId}
+                        onChange={e => updateLine(i, { itemTypeId: e.target.value })}
+                        disabled={!line.serviceId}
+                        className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring appearance-none disabled:opacity-40"
+                      >
+                        <option value="">Select item…</option>
+                        {availableItemTypes.map(t => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
+                        ))}
+                      </select>
+                    )}
                     {/* Qty stepper (per_item) or weight input (per_kg) */}
                     {line.pricingMode === 'per_kg' ? (
                       <div className="flex items-center gap-1.5">
@@ -494,31 +510,35 @@ export function CreateOrderForm({
                   <div className="md:hidden bg-white border border-warm-300 rounded-10 p-4 space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <p className="text-caption text-warm-500 mb-1">Item type</p>
-                        <select
-                          value={line.itemTypeId}
-                          onChange={e => updateLine(i, { itemTypeId: e.target.value })}
-                          className="w-full border border-warm-400 rounded-7 px-2.5 py-2 text-[14px] text-warm-950 bg-white focus:outline-none focus:border-brand"
-                        >
-                          <option value="">Select…</option>
-                          {pricedItems.map(t => (
-                            <option key={t.id} value={t.id}>{t.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
                         <p className="text-caption text-warm-500 mb-1">Service</p>
                         <select
                           value={line.serviceId}
                           onChange={e => updateLine(i, { serviceId: e.target.value })}
-                          disabled={!line.itemTypeId}
-                          className="w-full border border-warm-400 rounded-7 px-2.5 py-2 text-[14px] text-warm-950 bg-white focus:outline-none focus:border-brand disabled:opacity-40"
+                          className="w-full border border-warm-400 rounded-7 px-2.5 py-2 text-[14px] text-warm-950 bg-white focus:outline-none focus:border-brand"
                         >
                           <option value="">Select…</option>
-                          {availableServices.map(s => (
+                          {usableServices.map(s => (
                             <option key={s.id} value={s.id}>{s.name}</option>
                           ))}
                         </select>
+                      </div>
+                      <div>
+                        <p className="text-caption text-warm-500 mb-1">Item type</p>
+                        {line.pricingMode === 'per_kg' ? (
+                          <p className="text-[14px] text-warm-400 italic py-2">Priced by weight</p>
+                        ) : (
+                          <select
+                            value={line.itemTypeId}
+                            onChange={e => updateLine(i, { itemTypeId: e.target.value })}
+                            disabled={!line.serviceId}
+                            className="w-full border border-warm-400 rounded-7 px-2.5 py-2 text-[14px] text-warm-950 bg-white focus:outline-none focus:border-brand disabled:opacity-40"
+                          >
+                            <option value="">Select…</option>
+                            {availableItemTypes.map(t => (
+                              <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                          </select>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center justify-between">

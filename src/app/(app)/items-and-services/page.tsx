@@ -4,15 +4,17 @@ import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { ItemsServicesClient } from './ItemsServicesClient'
 import type { PriceCell } from '@/services/pricing'
+import type { PricingModel, PricingMode } from '@/constants/statuses'
 
 type ItemType = { id: string; name: string; isActive: boolean }
-type Service = { id: string; name: string; isActive: boolean }
+type Service = { id: string; name: string; isActive: boolean; pricingMode: PricingMode; kgRate: number | null }
 
 type ItemsPageData = {
   restricted?: boolean
   itemTypes: ItemType[]
   services: Service[]
   prices: PriceCell[]
+  pricingModel: PricingModel
 }
 
 export default function ItemsAndServicesPage() {
@@ -42,7 +44,12 @@ export default function ItemsAndServicesPage() {
         <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">Items &amp; Services</h1>
         <p className="text-ui text-warm-800 mt-1">The garment types and services your team picks from when creating orders.</p>
       </div>
-      <ItemsServicesClient itemTypes={data.itemTypes} services={data.services} prices={data.prices} />
+      <ItemsServicesClient
+        itemTypes={data.itemTypes}
+        services={data.services}
+        prices={data.prices}
+        pricingModel={data.pricingModel}
+      />
     </div>
   )
 }

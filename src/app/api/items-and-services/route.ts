@@ -3,6 +3,7 @@ import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getItemTypes } from '@/services/items'
 import { getServices } from '@/services/services'
 import { getPricingMatrix } from '@/services/pricing'
+import { getSettings } from '@/services/settings'
 
 export async function GET() {
   const profile = await getMyProfile()
@@ -14,11 +15,12 @@ export async function GET() {
     return NextResponse.json({ restricted: true })
   }
 
-  const [itemTypes, services, prices] = await Promise.all([
+  const [itemTypes, services, prices, settings] = await Promise.all([
     getItemTypes(profile.laundryId),
     getServices(profile.laundryId),
     getPricingMatrix(profile.laundryId),
+    getSettings(),
   ])
 
-  return NextResponse.json({ itemTypes, services, prices })
+  return NextResponse.json({ itemTypes, services, prices, pricingModel: settings?.pricingModel ?? 'per_item' })
 }

@@ -5,9 +5,10 @@ import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { CreateOrderForm } from './CreateOrderForm'
 import type { PriceCell } from '@/services/pricing'
 import type { Customer } from '@/services/customers'
+import type { PricingMode } from '@/constants/statuses'
 
 type ItemType = { id: string; name: string; isActive: boolean }
-type Service = { id: string; name: string; isActive: boolean }
+type Service = { id: string; name: string; isActive: boolean; pricingMode: PricingMode; kgRate: number | null }
 
 type FormData = {
   itemTypes: ItemType[]

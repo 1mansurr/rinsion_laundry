@@ -47,3 +47,7 @@ export type EmployeeRole = (typeof EMPLOYEE_ROLES)[number]
 
 export const PRICING_MODES = ['per_item', 'per_kg'] as const
 export type PricingMode = (typeof PRICING_MODES)[number]
+
+/** Laundry-level choice: 'mixed' lets each service independently be per_item or per_kg */
+export const PRICING_MODELS = ['per_item', 'per_kg', 'mixed'] as const
+export type PricingModel = (typeof PRICING_MODELS)[number]

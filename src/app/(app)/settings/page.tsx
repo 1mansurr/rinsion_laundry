@@ -7,10 +7,11 @@ import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { LaundryForm } from './laundry/LaundryForm'
 import { WorkflowToggles } from './workflow/WorkflowToggles'
 import { BranchesClient } from './branches/BranchesClient'
+import { PricingModelForm } from './pricing-model/PricingModelForm'
 import type { LaundrySettings } from '@/services/settings'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
 
-type PanelKey = 'laundry' | 'workflow' | 'branches'
+type PanelKey = 'laundry' | 'workflow' | 'branches' | 'pricingModel'
 
 function ChevronIcon({ open }: { open: boolean }) {
   return (
@@ -61,6 +62,25 @@ function WorkflowPanel({ open }: { open: boolean }) {
   )
 }
 
+function PricingModelPanel({ open }: { open: boolean }) {
+  const [data, setData] = useState<{ settings: LaundrySettings } | null>(null)
+  useEffect(() => {
+    if (open && !data) fetch('/api/settings/workflow').then(r => r.json()).then(setData)
+  }, [open, data])
+  if (!open) return null
+  return (
+    <div className="px-[22px] py-5 border-t border-warm-100">
+      {!data ? (
+        <div className="h-16 flex items-center justify-center">
+          <span className="text-caption text-warm-500">Loading…</span>
+        </div>
+      ) : (
+        <PricingModelForm pricingModel={data.settings.pricingModel} />
+      )}
+    </div>
+  )
+}
+
 function BranchesPanel({ open }: { open: boolean }) {
   const [data, setData] = useState<{ branches: { id: string; name: string }[]; plan: SubscriptionPlan; branchLimit: number } | null>(null)
   useEffect(() => {
@@ -81,9 +101,10 @@ function BranchesPanel({ open }: { open: boolean }) {
 }
 
 const ACCORDION_ITEMS: { key: PanelKey; label: string; desc: string }[] = [
-  { key: 'laundry',   label: 'Laundry',   desc: 'Business name and laundry code' },
-  { key: 'branches',  label: 'Branches',  desc: 'Manage branch locations and plan limits' },
-  { key: 'workflow',  label: 'Workflow',  desc: 'Express orders, pickup code and customer submissions' },
+  { key: 'laundry',      label: 'Laundry',       desc: 'Business name and laundry code' },
+  { key: 'branches',     label: 'Branches',      desc: 'Manage branch locations and plan limits' },
+  { key: 'pricingModel', label: 'Pricing Model', desc: 'Per item, per weight, or a mix of both' },
+  { key: 'workflow',     label: 'Workflow',      desc: 'Express orders, pickup code and customer submissions' },
 ]
 
 const NAV_ITEMS = [
@@ -134,9 +155,10 @@ export default function SettingsPage() {
               </div>
               <ChevronIcon open={open === key} />
             </button>
-            {key === 'laundry'  && <LaundryPanel  open={open === 'laundry'} />}
-            {key === 'branches' && <BranchesPanel open={open === 'branches'} />}
-            {key === 'workflow' && <WorkflowPanel open={open === 'workflow'} />}
+            {key === 'laundry'      && <LaundryPanel      open={open === 'laundry'} />}
+            {key === 'branches'     && <BranchesPanel     open={open === 'branches'} />}
+            {key === 'pricingModel' && <PricingModelPanel open={open === 'pricingModel'} />}
+            {key === 'workflow'     && <WorkflowPanel     open={open === 'workflow'} />}
           </div>
         ))}
 

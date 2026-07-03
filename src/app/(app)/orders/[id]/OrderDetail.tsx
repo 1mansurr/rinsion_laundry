@@ -463,8 +463,12 @@ export function OrderDetail({
                     className="grid px-5 py-3"
                     style={{ gridTemplateColumns: '1.4fr 1.1fr 60px 1fr', gap: '12px' }}
                   >
-                    <span className="text-ui text-warm-950">{item.itemTypeName}</span>
-                    <span className="text-ui text-warm-600">{item.serviceName}</span>
+                    <span className="text-ui text-warm-950">
+                      {item.pricingMode === 'per_kg' ? item.serviceName : item.itemTypeName}
+                    </span>
+                    <span className="text-ui text-warm-600">
+                      {item.pricingMode === 'per_kg' ? 'Priced by weight' : item.serviceName}
+                    </span>
                     <span className="tnum text-ui text-warm-600">
                       {item.quantity}{item.pricingMode === 'per_kg' ? ' kg' : ''}
                     </span>
@@ -492,9 +496,13 @@ export function OrderDetail({
                 <div key={item.id} className="px-4 py-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-ui text-warm-950">{item.itemTypeName}</p>
+                      <p className="text-ui text-warm-950">
+                        {item.pricingMode === 'per_kg' ? item.serviceName : item.itemTypeName}
+                      </p>
                       <p className="text-caption text-warm-500">
-                        {item.serviceName} × {item.quantity}{item.pricingMode === 'per_kg' ? ' kg' : ''}
+                        {item.pricingMode === 'per_kg'
+                          ? `${item.quantity} kg`
+                          : `${item.serviceName} × ${item.quantity}`}
                       </p>
                     </div>
                     <span className="tnum text-ui font-medium text-warm-950">{formatCurrency(item.totalPrice)}</span>
@@ -818,7 +826,7 @@ export function OrderDetail({
           <Modal
             open
             onClose={() => setPiecesModalItemId(null)}
-            title={`Contents — ${activeItem.itemTypeName} (${activeItem.quantity} kg)`}
+            title={`Contents — ${activeItem.serviceName} (${activeItem.quantity} kg)`}
             description="Optional — track what's inside this batch. Doesn't affect price."
           >
             <div className="space-y-3">
