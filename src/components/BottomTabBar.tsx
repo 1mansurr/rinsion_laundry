@@ -23,7 +23,6 @@ const EMPLOYEE_TABS: TabConfig[] = [
   { href: '/orders',    label: 'Orders' },
   { href: '/customers', label: 'Customers' },
   { href: '/payments',  label: 'Payments' },
-  { href: '/pickup',    label: 'Pickup' },
 ]
 
 function TabSvg({ label, active }: { label: string; active: boolean }) {

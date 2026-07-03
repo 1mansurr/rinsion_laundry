@@ -11,7 +11,6 @@ const ADMIN_NAV: NavItem[] = [
   { href: '/orders',             label: 'Orders' },
   { href: '/customers',          label: 'Customers' },
   { href: '/payments',           label: 'Payments' },
-  { href: '/pickup',             label: 'Pickup' },
   null,
   { href: '/employees',          label: 'Team' },
   { href: '/items-and-services', label: 'Items & Services' },
@@ -24,7 +23,6 @@ const EMPLOYEE_NAV: NavItem[] = [
   { href: '/orders',    label: 'Orders' },
   { href: '/customers', label: 'Customers' },
   { href: '/payments',  label: 'Payments' },
-  { href: '/pickup',    label: 'Pickup' },
 ]
 
 export function SidebarNav({ role }: { role: EmployeeRole }) {
