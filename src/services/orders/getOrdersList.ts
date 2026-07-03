@@ -9,7 +9,10 @@ export interface OrderListRow {
   customerInitials: string
   customerPhone: string
   branchName: string
+  /** Sum of per_item order line quantities */
   pieces: number
+  /** Sum of per_kg order line quantities */
+  kg: number
   status: string
   total: number
   balance: number
@@ -43,7 +46,7 @@ export async function getOrdersList(
       `id, order_number, status, total, created_at,
        customers!inner(first_name, last_name, phone),
        branches(name),
-       order_items(quantity),
+       order_items(quantity, pricing_mode),
        payments(amount)`,
       { count: 'exact' }
     )
@@ -70,7 +73,7 @@ export async function getOrdersList(
   const rows = (data ?? []).map(o => {
     const cust = o.customers as unknown as { first_name: string; last_name: string; phone: string } | null
     const branch = o.branches as unknown as { name: string } | null
-    const items = (o.order_items as unknown as { quantity: number }[]) ?? []
+    const items = (o.order_items as unknown as { quantity: number; pricing_mode: 'per_item' | 'per_kg' }[]) ?? []
     const pmts = (o.payments as unknown as { amount: number }[]) ?? []
     const fn = cust?.first_name ?? ''
     const ln = cust?.last_name ?? ''
@@ -81,7 +84,8 @@ export async function getOrdersList(
       customerInitials: `${fn[0] ?? ''}${ln[0] ?? ''}`.toUpperCase(),
       customerPhone: cust?.phone ?? '',
       branchName: branch?.name ?? '',
-      pieces: items.reduce((s, i) => s + (i.quantity ?? 0), 0),
+      pieces: items.filter(i => i.pricing_mode !== 'per_kg').reduce((s, i) => s + (i.quantity ?? 0), 0),
+      kg: items.filter(i => i.pricing_mode === 'per_kg').reduce((s, i) => s + (i.quantity ?? 0), 0),
       status: o.status,
       total: Number(o.total),
       balance: Math.max(0, Number(o.total) - pmts.reduce((s, p) => s + Number(p.amount), 0)),

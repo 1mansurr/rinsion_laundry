@@ -44,3 +44,6 @@ export type PaymentMethod = (typeof PAYMENT_METHODS)[number]
 
 export const EMPLOYEE_ROLES = ['admin', 'employee'] as const
 export type EmployeeRole = (typeof EMPLOYEE_ROLES)[number]
+
+export const PRICING_MODES = ['per_item', 'per_kg'] as const
+export type PricingMode = (typeof PRICING_MODES)[number]

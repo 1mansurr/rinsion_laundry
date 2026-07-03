@@ -27,6 +27,7 @@ type OrderData = {
   cancelledAt: string | null
   previousStatusOnCancel: string | null
   items: OrderDetailItem[]
+  itemTypes: { id: string; name: string }[]
   payments: OrderDetailPayment[]
   notes: OrderDetailNote[]
   activities: OrderDetailActivity[]

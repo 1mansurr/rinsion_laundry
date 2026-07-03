@@ -13,6 +13,12 @@ import type { OrderListRow } from '@/services/orders/getOrdersList'
 
 const PER_PAGE = 30
 
+function formatPieces(row: Pick<OrderListRow, 'pieces' | 'kg'>): string {
+  if (row.pieces > 0 && row.kg > 0) return `${row.pieces} pcs, ${row.kg} kg`
+  if (row.kg > 0) return `${row.kg} kg`
+  return `${row.pieces}`
+}
+
 function OrdersContent() {
   const searchParams = useSearchParams()
   const q = searchParams.get('q') ?? ''
@@ -111,7 +117,7 @@ function OrdersContent() {
             >
               <span>Order</span>
               <span>Customer</span>
-              <span>Pieces</span>
+              <span>Qty</span>
               <span>Status</span>
               <span style={{ textAlign: 'right' }}>Total</span>
               <span style={{ textAlign: 'right' }}>Balance</span>
@@ -139,7 +145,7 @@ function OrdersContent() {
                       <div className="text-caption text-warm-600">{o.branchName}</div>
                     </div>
                   </div>
-                  <span className="tnum text-ui text-warm-900">{o.pieces}</span>
+                  <span className="tnum text-ui text-warm-900">{formatPieces(o)}</span>
                   <span><StatusBadge status={o.status as never} /></span>
                   <span className="tnum text-ui font-semibold text-warm-950 text-right">{formatCurrency(o.total)}</span>
                   <span className={`tnum text-ui font-semibold text-right ${o.balance > 0 ? 'text-error' : 'text-warm-600'}`}>

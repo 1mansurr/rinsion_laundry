@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { generatePickupCode } from '@/utils/generatePickupCode'
 import { WRITE_BLOCKED_STATUSES } from '@/constants/subscriptionStatuses'
 import { ORDER_STATUS_TRANSITIONS } from '@/constants/statuses'
-import type { OrderStatus, OrderPriority } from '@/constants/statuses'
+import type { OrderStatus, OrderPriority, PricingMode } from '@/constants/statuses'
 import type { SubscriptionStatus } from '@/constants/subscriptionStatuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -31,9 +31,11 @@ export interface CreateOrderInput {
   items: {
     itemTypeId: string
     serviceId: string
+    /** Piece count when pricingMode is 'per_item', weight in kg when 'per_kg' */
     quantity: number
     unitPrice: number
     totalPrice: number
+    pricingMode: PricingMode
   }[]
 }
 
@@ -134,6 +136,7 @@ export async function createOrder(input: CreateOrderInput): Promise<ServiceResul
       quantity: item.quantity,
       unit_price: item.unitPrice,
       total_price: item.totalPrice,
+      pricing_mode: item.pricingMode,
     }))
   )
 
@@ -185,9 +188,10 @@ export async function getOrder(id: string) {
       customers(id, first_name, last_name, phone),
       branches(name),
       order_items(
-        id, quantity, unit_price, total_price,
+        id, quantity, unit_price, total_price, pricing_mode,
         item_types(name),
-        services(name)
+        services(name),
+        order_item_pieces(id, item_type_id, quantity, item_types(name))
       ),
       payments(id, amount, payment_method, created_at),
       order_notes(id, note, created_at, created_by_type),

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { createItemType, toggleItemType, type ItemType } from '@/services/items'
 import { createService, toggleService, type LaundryService } from '@/services/services'
 import { upsertPrice, togglePrice, type PriceCell } from '@/services/pricing'
+import type { PricingMode } from '@/constants/statuses'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -25,6 +26,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
   const [error, setError] = useState<string | null>(null)
   const [editingCell, setEditingCell] = useState<{ itemTypeId: string; serviceId: string } | null>(null)
   const [cellPrice, setCellPrice] = useState('')
+  const [cellMode, setCellMode] = useState<PricingMode>('per_item')
   const [selectedServiceId, setSelectedServiceId] = useState<string>(
     initServices.find(s => s.isActive)?.id ?? ''
   )
@@ -72,20 +74,47 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
   function savePrice(itemTypeId: string, serviceId: string) {
     const val = parseFloat(cellPrice)
     if (isNaN(val) || val < 0) { setEditingCell(null); return }
+    const mode = cellMode
     startTransition(async () => {
-      const res = await upsertPrice(itemTypeId, serviceId, val)
+      const res = await upsertPrice(itemTypeId, serviceId, val, mode)
       if (res.success) {
         setPrices(prev => {
           const existing = prev.find(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId)
           if (existing) return prev.map(p =>
             p.itemTypeId === itemTypeId && p.serviceId === serviceId
-              ? { ...p, price: val, isActive: true } : p
+              ? { ...p, price: val, pricingMode: mode, isActive: true } : p
           )
-          return [...prev, { id: '', itemTypeId, serviceId, price: val, isActive: true }]
+          return [...prev, { id: '', itemTypeId, serviceId, price: val, pricingMode: mode, isActive: true }]
         })
       }
       setEditingCell(null)
     })
+  }
+
+  function startEditingCell(itemTypeId: string, serviceId: string, cell?: PriceCell) {
+    setEditingCell({ itemTypeId, serviceId })
+    setCellPrice(cell ? cell.price.toString() : '')
+    setCellMode(cell?.pricingMode ?? 'per_item')
+  }
+
+  function ModeToggle({ value, onChange }: { value: PricingMode; onChange: (m: PricingMode) => void }) {
+    return (
+      <div className="inline-flex rounded-7 border border-warm-300 overflow-hidden text-[11px] shrink-0">
+        {(['per_item', 'per_kg'] as const).map(m => (
+          <button
+            key={m}
+            type="button"
+            onMouseDown={e => e.preventDefault()}
+            onClick={() => onChange(m)}
+            className={`px-2 py-1 font-medium transition-colors ${
+              value === m ? 'bg-brand text-[#FAF8F5]' : 'text-warm-500 hover:bg-warm-100'
+            }`}
+          >
+            {m === 'per_item' ? 'item' : 'kg'}
+          </button>
+        ))}
+      </div>
+    )
   }
 
   function handleDisablePrice(itemTypeId: string, serviceId: string) {
@@ -257,17 +286,18 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                               className="w-24 border border-brand rounded-7 px-2.5 py-1.5 text-ui text-warm-950 text-right focus:outline-none focus:shadow-focus-ring"
                               placeholder="0.00"
                             />
+                            <ModeToggle value={cellMode} onChange={setCellMode} />
                           </div>
                         ) : hasPrice ? (
                           <>
                             <span className="tnum text-ui font-medium text-warm-950">
-                              {cell!.price.toFixed(2)}
+                              {cell!.price.toFixed(2)}{' '}
+                              <span className="text-caption text-warm-400 font-normal">
+                                / {cell!.pricingMode === 'per_kg' ? 'kg' : 'item'}
+                              </span>
                             </span>
                             <button
-                              onClick={() => {
-                                setEditingCell({ itemTypeId: item.id, serviceId: currentServiceId })
-                                setCellPrice(cell!.price.toString())
-                              }}
+                              onClick={() => startEditingCell(item.id, currentServiceId, cell)}
                               disabled={isPending}
                               className="text-caption text-warm-400 hover:text-warm-700"
                             >
@@ -283,10 +313,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                           </>
                         ) : (
                           <button
-                            onClick={() => {
-                              setEditingCell({ itemTypeId: item.id, serviceId: currentServiceId })
-                              setCellPrice('')
-                            }}
+                            onClick={() => startEditingCell(item.id, currentServiceId)}
                             disabled={isPending}
                             className="text-ui text-warm-300 hover:text-warm-600 transition-colors"
                           >
@@ -315,7 +342,9 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                         <span className="text-ui font-medium text-warm-950">{item.name}</span>
                         <div className="flex items-center gap-2">
                           {previewCell?.isActive && (
-                            <span className="tnum text-ui text-warm-500">GHS {previewCell.price.toFixed(2)}</span>
+                            <span className="tnum text-ui text-warm-500">
+                              GHS {previewCell.price.toFixed(2)} / {previewCell.pricingMode === 'per_kg' ? 'kg' : 'item'}
+                            </span>
                           )}
                           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={`text-warm-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}>
                             <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -333,34 +362,31 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                               <div key={svc.id} className="flex items-center justify-between px-4 py-2.5">
                                 <span className="text-ui text-warm-700">{svc.name}</span>
                                 {isEditingThis ? (
-                                  <input
-                                    autoFocus
-                                    value={cellPrice}
-                                    onChange={e => setCellPrice(e.target.value)}
-                                    onKeyDown={e => {
-                                      if (e.key === 'Enter') savePrice(item.id, svc.id)
-                                      if (e.key === 'Escape') setEditingCell(null)
-                                    }}
-                                    onBlur={() => savePrice(item.id, svc.id)}
-                                    className="w-24 border border-brand rounded-7 px-2.5 py-1.5 text-ui text-right focus:outline-none focus:shadow-focus-ring"
-                                    placeholder="0.00"
-                                  />
+                                  <div className="flex items-center gap-1.5">
+                                    <input
+                                      autoFocus
+                                      value={cellPrice}
+                                      onChange={e => setCellPrice(e.target.value)}
+                                      onKeyDown={e => {
+                                        if (e.key === 'Enter') savePrice(item.id, svc.id)
+                                        if (e.key === 'Escape') setEditingCell(null)
+                                      }}
+                                      onBlur={() => savePrice(item.id, svc.id)}
+                                      className="w-20 border border-brand rounded-7 px-2.5 py-1.5 text-ui text-right focus:outline-none focus:shadow-focus-ring"
+                                      placeholder="0.00"
+                                    />
+                                    <ModeToggle value={cellMode} onChange={setCellMode} />
+                                  </div>
                                 ) : cell?.isActive ? (
                                   <button
-                                    onClick={() => {
-                                      setEditingCell({ itemTypeId: item.id, serviceId: svc.id })
-                                      setCellPrice(cell.price.toString())
-                                    }}
+                                    onClick={() => startEditingCell(item.id, svc.id, cell)}
                                     className="tnum text-ui font-medium text-brand underline underline-offset-2"
                                   >
-                                    GHS {cell.price.toFixed(2)}
+                                    GHS {cell.price.toFixed(2)} / {cell.pricingMode === 'per_kg' ? 'kg' : 'item'}
                                   </button>
                                 ) : (
                                   <button
-                                    onClick={() => {
-                                      setEditingCell({ itemTypeId: item.id, serviceId: svc.id })
-                                      setCellPrice('')
-                                    }}
+                                    onClick={() => startEditingCell(item.id, svc.id)}
                                     className="text-caption text-warm-400 hover:text-brand"
                                   >
                                     + Set price

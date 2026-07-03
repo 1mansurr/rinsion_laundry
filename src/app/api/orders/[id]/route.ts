@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getOrder } from '@/services/orders'
+import { getItemTypes } from '@/services/items'
 import { createClient } from '@/lib/supabase'
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
@@ -67,16 +68,28 @@ export async function GET(request: Request, { params }: { params: { id: string }
   const branch = order.branches as unknown as { name: string } | null
 
   const items = ((order.order_items as unknown as {
-    id: string; quantity: number; unit_price: number; total_price: number;
+    id: string; quantity: number; unit_price: number; total_price: number; pricing_mode: 'per_item' | 'per_kg';
     item_types: { name: string } | null; services: { name: string } | null
+    order_item_pieces: { id: string; item_type_id: string; quantity: number; item_types: { name: string } | null }[] | null
   }[]) ?? []).map(item => ({
     id: item.id,
     quantity: item.quantity,
     unitPrice: Number(item.unit_price),
     totalPrice: Number(item.total_price),
+    pricingMode: item.pricing_mode,
     itemTypeName: item.item_types?.name ?? '—',
     serviceName: item.services?.name ?? '—',
+    pieces: (item.order_item_pieces ?? []).map(p => ({
+      id: p.id,
+      itemTypeId: p.item_type_id,
+      itemTypeName: p.item_types?.name ?? '—',
+      quantity: p.quantity,
+    })),
   }))
+
+  const itemTypes = (await getItemTypes(profile.laundryId))
+    .filter(t => t.isActive)
+    .map(t => ({ id: t.id, name: t.name }))
 
   const payments = ((order.payments as {
     id: string; amount: number; payment_method: string; created_at: string
@@ -115,6 +128,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     cancelledAt,
     previousStatusOnCancel,
     items,
+    itemTypes,
     payments,
     notes,
     activities,

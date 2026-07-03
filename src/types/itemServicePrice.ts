@@ -5,12 +5,15 @@
  * Spec reference: Rinsion_Database_Diagram.md → item_service_prices
  */
 
+import type { PricingMode } from '@/constants/statuses'
+
 export interface ItemServicePrice {
   id: string
   laundryId: string
   itemTypeId: string
   serviceId: string
   price: number
+  pricingMode: PricingMode
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -21,6 +24,7 @@ export interface SetPriceInput {
   itemTypeId: string
   serviceId: string
   price: number
+  pricingMode: PricingMode
 }
 
 /**

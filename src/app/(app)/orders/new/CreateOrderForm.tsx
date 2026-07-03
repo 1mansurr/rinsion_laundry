@@ -8,7 +8,7 @@ import type { ItemType } from '@/services/items'
 import type { LaundryService } from '@/services/services'
 import type { PriceCell } from '@/services/pricing'
 import type { Customer } from '@/services/customers'
-import type { OrderPriority } from '@/constants/statuses'
+import type { OrderPriority, PricingMode } from '@/constants/statuses'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -20,9 +20,11 @@ interface Branch { id: string; name: string }
 interface LineItem {
   itemTypeId: string
   serviceId: string
+  /** Piece count when pricingMode is 'per_item', weight in kg when 'per_kg' */
   quantity: number
   unitPrice: number
   totalPrice: number
+  pricingMode: PricingMode
 }
 
 interface Props {
@@ -37,7 +39,7 @@ interface Props {
   allowExpressOrders?: boolean
 }
 
-const EMPTY_LINE: LineItem = { itemTypeId: '', serviceId: '', quantity: 1, unitPrice: 0, totalPrice: 0 }
+const EMPTY_LINE: LineItem = { itemTypeId: '', serviceId: '', quantity: 1, unitPrice: 0, totalPrice: 0, pricingMode: 'per_item' }
 
 const PRIORITY_LABELS: Record<OrderPriority, string> = {
   normal: 'Normal',
@@ -103,6 +105,10 @@ export function CreateOrderForm({
     return prices.find(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId && p.isActive)?.price ?? 0
   }
 
+  function getPricingMode(itemTypeId: string, serviceId: string): PricingMode {
+    return prices.find(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId && p.isActive)?.pricingMode ?? 'per_item'
+  }
+
   function getAvailableServices(itemTypeId: string) {
     if (!itemTypeId) return services.filter(s => s.isActive)
     return services.filter(s =>
@@ -119,10 +125,10 @@ export function CreateOrderForm({
         if (updated.serviceId && !avail.some(s => s.id === updated.serviceId)) updated.serviceId = ''
         if (!updated.serviceId && avail.length === 1) updated.serviceId = avail[0].id
       }
-      const unitPrice = (patch.itemTypeId !== undefined || patch.serviceId !== undefined)
-        ? getUnitPrice(updated.itemTypeId, updated.serviceId)
-        : updated.unitPrice
-      return { ...updated, unitPrice, totalPrice: unitPrice * updated.quantity }
+      const modeChanged = patch.itemTypeId !== undefined || patch.serviceId !== undefined
+      const unitPrice = modeChanged ? getUnitPrice(updated.itemTypeId, updated.serviceId) : updated.unitPrice
+      const pricingMode = modeChanged ? getPricingMode(updated.itemTypeId, updated.serviceId) : updated.pricingMode
+      return { ...updated, unitPrice, pricingMode, totalPrice: unitPrice * updated.quantity }
     }))
   }
 
@@ -390,7 +396,7 @@ export function CreateOrderForm({
             className="hidden md:grid items-center mb-1 px-1"
             style={{ gridTemplateColumns: '1.3fr 1.3fr 0.9fr 1fr 40px', gap: '10px' }}
           >
-            {['Item type', 'Service', 'Qty', 'Line total', ''].map((h, i) => (
+            {['Item type', 'Service', 'Qty / kg', 'Line total', ''].map((h, i) => (
               <span key={i} className="text-caption text-warm-500 font-medium">{h}</span>
             ))}
           </div>
@@ -426,26 +432,40 @@ export function CreateOrderForm({
                         <option key={s.id} value={s.id}>{s.name}</option>
                       ))}
                     </select>
-                    {/* Qty stepper */}
-                    <div className="inline-flex items-center border border-warm-300 rounded-7 overflow-hidden">
-                      <button
-                        type="button"
-                        onClick={() => updateLine(i, { quantity: Math.max(1, line.quantity - 1) })}
-                        className="w-9 h-9 flex items-center justify-center text-warm-600 hover:bg-warm-100 text-lg leading-none"
-                      >
-                        −
-                      </button>
-                      <span className="tnum w-8 text-center text-ui font-medium text-warm-950">
-                        {line.quantity}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => updateLine(i, { quantity: line.quantity + 1 })}
-                        className="w-9 h-9 flex items-center justify-center text-warm-600 hover:bg-warm-100 text-lg leading-none"
-                      >
-                        +
-                      </button>
-                    </div>
+                    {/* Qty stepper (per_item) or weight input (per_kg) */}
+                    {line.pricingMode === 'per_kg' ? (
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0.1"
+                          value={line.quantity}
+                          onChange={e => updateLine(i, { quantity: parseFloat(e.target.value) || 0 })}
+                          className="w-16 border border-warm-300 rounded-7 px-2 py-2 text-ui text-warm-950 text-right tnum focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                        />
+                        <span className="text-caption text-warm-500">kg</span>
+                      </div>
+                    ) : (
+                      <div className="inline-flex items-center border border-warm-300 rounded-7 overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => updateLine(i, { quantity: Math.max(1, line.quantity - 1) })}
+                          className="w-9 h-9 flex items-center justify-center text-warm-600 hover:bg-warm-100 text-lg leading-none"
+                        >
+                          −
+                        </button>
+                        <span className="tnum w-8 text-center text-ui font-medium text-warm-950">
+                          {line.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateLine(i, { quantity: line.quantity + 1 })}
+                          className="w-9 h-9 flex items-center justify-center text-warm-600 hover:bg-warm-100 text-lg leading-none"
+                        >
+                          +
+                        </button>
+                      </div>
+                    )}
                     <span className="tnum text-ui font-medium text-warm-950">
                       {line.totalPrice > 0 ? formatCurrency(line.totalPrice) : '—'}
                     </span>
@@ -492,19 +512,33 @@ export function CreateOrderForm({
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="inline-flex items-center border border-warm-300 rounded-7 overflow-hidden">
-                        <button
-                          type="button"
-                          onClick={() => updateLine(i, { quantity: Math.max(1, line.quantity - 1) })}
-                          className="w-8 h-8 flex items-center justify-center text-warm-600 hover:bg-warm-100"
-                        >−</button>
-                        <span className="tnum w-8 text-center text-ui font-medium text-warm-950">{line.quantity}</span>
-                        <button
-                          type="button"
-                          onClick={() => updateLine(i, { quantity: line.quantity + 1 })}
-                          className="w-8 h-8 flex items-center justify-center text-warm-600 hover:bg-warm-100"
-                        >+</button>
-                      </div>
+                      {line.pricingMode === 'per_kg' ? (
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="0.1"
+                            value={line.quantity}
+                            onChange={e => updateLine(i, { quantity: parseFloat(e.target.value) || 0 })}
+                            className="w-16 border border-warm-300 rounded-7 px-2 py-1.5 text-ui text-warm-950 text-right tnum focus:outline-none focus:border-brand"
+                          />
+                          <span className="text-caption text-warm-500">kg</span>
+                        </div>
+                      ) : (
+                        <div className="inline-flex items-center border border-warm-300 rounded-7 overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => updateLine(i, { quantity: Math.max(1, line.quantity - 1) })}
+                            className="w-8 h-8 flex items-center justify-center text-warm-600 hover:bg-warm-100"
+                          >−</button>
+                          <span className="tnum w-8 text-center text-ui font-medium text-warm-950">{line.quantity}</span>
+                          <button
+                            type="button"
+                            onClick={() => updateLine(i, { quantity: line.quantity + 1 })}
+                            className="w-8 h-8 flex items-center justify-center text-warm-600 hover:bg-warm-100"
+                          >+</button>
+                        </div>
+                      )}
                       <span className="tnum text-ui font-semibold text-warm-950">
                         {line.totalPrice > 0 ? formatCurrency(line.totalPrice) : '—'}
                       </span>

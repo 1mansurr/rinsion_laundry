@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, Fragment } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { updateOrderStatus } from '@/services/orders'
@@ -8,6 +8,7 @@ import { verifyAndCollect } from '@/services/orders/verifyAndCollect'
 import { recordPayment } from '@/services/payments/recordPayment'
 import { resendPickupCodeSms } from '@/services/notifications/resendPickupCodeSms'
 import { createOrderNote } from '@/services/orders/createOrderNote'
+import { setOrderItemPieces } from '@/services/orders/setOrderItemPieces'
 import { PAYMENT_METHODS, type OrderStatus, type PaymentMethod } from '@/constants/statuses'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { formatTimeAgo } from '@/utils/formatTimeAgo'
@@ -31,13 +32,24 @@ export interface OrderDetailPayment {
   createdAt: string
 }
 
+export interface OrderItemPieceRow {
+  id: string
+  itemTypeId: string
+  itemTypeName: string
+  quantity: number
+}
+
 export interface OrderDetailItem {
   id: string
+  /** Piece count when pricingMode is 'per_item', weight in kg when 'per_kg' */
   quantity: number
   unitPrice: number
   totalPrice: number
+  pricingMode: 'per_item' | 'per_kg'
   itemTypeName: string
   serviceName: string
+  /** Optional contents breakdown for a per_kg line — pure tracking, never priced */
+  pieces: OrderItemPieceRow[]
 }
 
 export interface OrderDetailActivity {
@@ -64,6 +76,7 @@ interface Props {
   cancelledAt: string | null
   previousStatusOnCancel: string | null
   items: OrderDetailItem[]
+  itemTypes: { id: string; name: string }[]
   payments: OrderDetailPayment[]
   notes: OrderDetailNote[]
   activities: OrderDetailActivity[]
@@ -85,7 +98,7 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 export function OrderDetail({
   orderId, orderNumber, status, priority, pickupCode, pickupDate, total, amountPaid,
   customerName, customerId, customerPhone, branchName, createdAt, cancelledAt,
-  previousStatusOnCancel, items, payments, notes: initNotes, activities,
+  previousStatusOnCancel, items: initItems, itemTypes, payments, notes: initNotes, activities,
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -102,6 +115,9 @@ export function OrderDetail({
 
   // Payment form
   const balance = total - amountPaid
+  const [payStep, setPayStep] = useState<'code' | 'payment'>('payment')
+  const [payCodeEntry, setPayCodeEntry] = useState('')
+  const [payCodeError, setPayCodeError] = useState('')
   const [payMethod, setPayMethod] = useState<PaymentMethod>('mobile_money')
   const [payError, setPayError] = useState('')
 
@@ -110,6 +126,15 @@ export function OrderDetail({
   const [noteText, setNoteText] = useState('')
   const [noteError, setNoteError] = useState('')
   const [addingNote, startNoteTransition] = useTransition()
+
+  // Order items (local copy so pieces breakdown edits can update in place)
+  const [items, setItems] = useState(initItems)
+
+  // Pieces breakdown modal (per_kg lines only)
+  const [piecesModalItemId, setPiecesModalItemId] = useState<string | null>(null)
+  const [piecesDraft, setPiecesDraft] = useState<{ itemTypeId: string; quantity: number }[]>([])
+  const [piecesError, setPiecesError] = useState('')
+  const [savingPieces, startPiecesTransition] = useTransition()
 
   // Activity collapsed
   const [activityOpen, setActivityOpen] = useState(status === 'cancelled')
@@ -134,17 +159,36 @@ export function OrderDetail({
     })
   }
 
+  function openPaymentModal() {
+    setPayError('')
+    setPayCodeError('')
+    setPayCodeEntry('')
+    setPayStep(status === 'ready' ? 'code' : 'payment')
+    setPaymentOpen(true)
+  }
+
+  function handlePayCodeSubmit() {
+    if (payCodeEntry.trim().toLowerCase() !== pickupCode.trim().toLowerCase()) {
+      setPayCodeError('Incorrect pickup code. Try again.')
+      return
+    }
+    setPayStep('payment')
+  }
+
   function handlePayment() {
     setPayError('')
     startTransition(async () => {
       const res = await recordPayment({ orderId, amount: balance, paymentMethod: payMethod })
-      if (res.success) {
-        toast.success('Payment recorded')
-        setPaymentOpen(false)
-        router.refresh()
+      if (!res.success) { setPayError(res.error ?? 'Failed to record payment'); return }
+
+      if (status === 'ready') {
+        await verifyAndCollect(orderId, payCodeEntry)
+        toast.success('Payment recorded — order collected')
       } else {
-        setPayError(res.error ?? 'Failed to record payment')
+        toast.success('Payment recorded')
       }
+      setPaymentOpen(false)
+      router.refresh()
     })
   }
 
@@ -188,6 +232,47 @@ export function OrderDetail({
     })
   }
 
+  function openPiecesModal(item: OrderDetailItem) {
+    setPiecesError('')
+    setPiecesDraft(
+      item.pieces.length > 0
+        ? item.pieces.map(p => ({ itemTypeId: p.itemTypeId, quantity: p.quantity }))
+        : [{ itemTypeId: itemTypes[0]?.id ?? '', quantity: 1 }]
+    )
+    setPiecesModalItemId(item.id)
+  }
+
+  function addPieceRow() {
+    setPiecesDraft(prev => [...prev, { itemTypeId: itemTypes[0]?.id ?? '', quantity: 1 }])
+  }
+
+  function updatePieceRow(index: number, patch: Partial<{ itemTypeId: string; quantity: number }>) {
+    setPiecesDraft(prev => prev.map((row, i) => i === index ? { ...row, ...patch } : row))
+  }
+
+  function removePieceRow(index: number) {
+    setPiecesDraft(prev => prev.filter((_, i) => i !== index))
+  }
+
+  function savePieces() {
+    if (!piecesModalItemId) return
+    setPiecesError('')
+    const valid = piecesDraft.filter(p => p.itemTypeId && p.quantity > 0)
+    startPiecesTransition(async () => {
+      const res = await setOrderItemPieces(orderId, piecesModalItemId, valid)
+      if (!res.success) { setPiecesError(res.error ?? 'Failed to save contents'); return }
+      setItems(prev => prev.map(it => it.id !== piecesModalItemId ? it : {
+        ...it,
+        pieces: valid.map(p => ({
+          id: crypto.randomUUID(),
+          itemTypeId: p.itemTypeId,
+          itemTypeName: itemTypes.find(t => t.id === p.itemTypeId)?.name ?? '—',
+          quantity: p.quantity,
+        })),
+      }))
+      setPiecesModalItemId(null)
+    })
+  }
 
   return (
     <div className="max-w-[1180px] mx-auto px-6 py-6 lg:px-7 lg:py-7">
@@ -283,7 +368,7 @@ export function OrderDetail({
             <div className="flex flex-wrap items-center gap-2">
               {status === 'ready' ? (
                 balance > 0 ? (
-                  <Button variant="accent" onClick={() => setPaymentOpen(true)} isPending={isPending}>
+                  <Button variant="accent" onClick={openPaymentModal} isPending={isPending}>
                     Record Payment
                   </Button>
                 ) : (
@@ -299,7 +384,7 @@ export function OrderDetail({
                     </Button>
                   )}
                   {balance > 0 && (
-                    <Button variant="accent" onClick={() => setPaymentOpen(true)} disabled={isPending}>
+                    <Button variant="accent" onClick={openPaymentModal} disabled={isPending}>
                       Record Payment
                     </Button>
                   )}
@@ -373,27 +458,58 @@ export function OrderDetail({
                 ))}
               </div>
               {items.map(item => (
-                <div
-                  key={item.id}
-                  className="grid px-5 py-3 border-b border-warm-50 last:border-0"
-                  style={{ gridTemplateColumns: '1.4fr 1.1fr 60px 1fr', gap: '12px' }}
-                >
-                  <span className="text-ui text-warm-950">{item.itemTypeName}</span>
-                  <span className="text-ui text-warm-600">{item.serviceName}</span>
-                  <span className="tnum text-ui text-warm-600">{item.quantity}</span>
-                  <span className="tnum text-ui font-medium text-warm-950">{formatCurrency(item.totalPrice)}</span>
+                <div key={item.id} className="border-b border-warm-50 last:border-0">
+                  <div
+                    className="grid px-5 py-3"
+                    style={{ gridTemplateColumns: '1.4fr 1.1fr 60px 1fr', gap: '12px' }}
+                  >
+                    <span className="text-ui text-warm-950">{item.itemTypeName}</span>
+                    <span className="text-ui text-warm-600">{item.serviceName}</span>
+                    <span className="tnum text-ui text-warm-600">
+                      {item.quantity}{item.pricingMode === 'per_kg' ? ' kg' : ''}
+                    </span>
+                    <span className="tnum text-ui font-medium text-warm-950">{formatCurrency(item.totalPrice)}</span>
+                  </div>
+                  {item.pricingMode === 'per_kg' && (
+                    <div className="px-5 pb-2.5 -mt-1">
+                      <button
+                        type="button"
+                        onClick={() => openPiecesModal(item)}
+                        className="text-caption text-brand hover:text-brand-hover underline underline-offset-2"
+                      >
+                        {item.pieces.length > 0
+                          ? item.pieces.map(p => `${p.quantity} ${p.itemTypeName}`).join(' · ')
+                          : '+ Add contents'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
             {/* Mobile list */}
             <div className="md:hidden divide-y divide-warm-100">
               {items.map(item => (
-                <div key={item.id} className="flex items-center justify-between px-4 py-3">
-                  <div>
-                    <p className="text-ui text-warm-950">{item.itemTypeName}</p>
-                    <p className="text-caption text-warm-500">{item.serviceName} × {item.quantity}</p>
+                <div key={item.id} className="px-4 py-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-ui text-warm-950">{item.itemTypeName}</p>
+                      <p className="text-caption text-warm-500">
+                        {item.serviceName} × {item.quantity}{item.pricingMode === 'per_kg' ? ' kg' : ''}
+                      </p>
+                    </div>
+                    <span className="tnum text-ui font-medium text-warm-950">{formatCurrency(item.totalPrice)}</span>
                   </div>
-                  <span className="tnum text-ui font-medium text-warm-950">{formatCurrency(item.totalPrice)}</span>
+                  {item.pricingMode === 'per_kg' && (
+                    <button
+                      type="button"
+                      onClick={() => openPiecesModal(item)}
+                      className="mt-1.5 text-caption text-brand hover:text-brand-hover underline underline-offset-2"
+                    >
+                      {item.pieces.length > 0
+                        ? item.pieces.map(p => `${p.quantity} ${p.itemTypeName}`).join(' · ')
+                        : '+ Add contents'}
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -530,7 +646,7 @@ export function OrderDetail({
           </div>
 
           {isActive && balance > 0 && (
-            <Button variant="accent" className="w-full" onClick={() => setPaymentOpen(true)}>
+            <Button variant="accent" className="w-full" onClick={openPaymentModal}>
               Record Payment
             </Button>
           )}
@@ -601,59 +717,82 @@ export function OrderDetail({
         </div>
       </Modal>
 
-      {/* Record Payment modal */}
+      {/* Record Payment modal — 2-step for ready orders */}
       <Modal
         open={paymentOpen}
-        onClose={() => { setPaymentOpen(false); setPayError('') }}
-        title="Record Payment"
-        description={`${orderNumber} · Balance ${formatCurrency(balance)}`}
+        onClose={() => { setPaymentOpen(false); setPayError(''); setPayCodeError('') }}
+        title={payStep === 'code' ? 'Verify Customer' : 'Record Payment'}
+        description={payStep === 'code' ? `${orderNumber} · ${customerName}` : `${orderNumber} · Balance ${formatCurrency(balance)}`}
       >
-        <div className="space-y-4">
-          {/* Order summary */}
-          <div className="bg-[#F8F5F0] rounded-7 px-4 py-3 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-label text-warm-500">Total</span>
-              <span className="tnum text-ui font-medium text-warm-950">{formatCurrency(total)}</span>
+        {payStep === 'code' ? (
+          <div className="space-y-4">
+            <p className="text-label font-medium text-warm-700">Enter the customer&apos;s 5-digit pickup code</p>
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={5}
+              value={payCodeEntry}
+              onChange={e => { setPayCodeEntry(e.target.value.replace(/\D/g, '')); setPayCodeError('') }}
+              onKeyDown={e => e.key === 'Enter' && handlePayCodeSubmit()}
+              placeholder="·····"
+              autoFocus
+              className={`w-full border rounded-7 py-3 text-center tnum text-[22px] font-bold tracking-[0.18em] text-warm-950 placeholder:text-warm-300 focus:outline-none focus:shadow-focus-ring ${
+                payCodeError ? 'border-error-fg' : 'border-warm-400 focus:border-brand'
+              }`}
+            />
+            {payCodeError && <p className="text-caption text-error-fg">{payCodeError}</p>}
+            <div className="flex gap-3 justify-end">
+              <Button variant="secondary" onClick={() => setPaymentOpen(false)}>Cancel</Button>
+              <Button
+                variant="primary"
+                disabled={payCodeEntry.length !== 5}
+                onClick={handlePayCodeSubmit}
+              >
+                Verify
+              </Button>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-label text-warm-500">Paid</span>
-              <span className="tnum text-ui font-medium text-success-fg">{formatCurrency(amountPaid)}</span>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-[#F8F5F0] rounded-7 px-4 py-3 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-label text-warm-500">Total</span>
+                <span className="tnum text-ui font-medium text-warm-950">{formatCurrency(total)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-label text-warm-500">Paid</span>
+                <span className="tnum text-ui font-medium text-success-fg">{formatCurrency(amountPaid)}</span>
+              </div>
+              <div className="flex items-center justify-between border-t border-warm-200 pt-1.5">
+                <span className="text-label font-semibold text-warm-900">Outstanding</span>
+                <span className="tnum text-ui font-bold text-error-fg">{formatCurrency(balance)}</span>
+              </div>
             </div>
-            <div className="flex items-center justify-between border-t border-warm-200 pt-1.5">
-              <span className="text-label font-semibold text-warm-900">Outstanding</span>
+            <div className="bg-[#F8F5F0] rounded-7 px-4 py-3 flex items-center justify-between">
+              <span className="text-label text-warm-600">Amount due</span>
               <span className="tnum text-ui font-bold text-error-fg">{formatCurrency(balance)}</span>
             </div>
+            <div>
+              <label className="text-label font-medium text-warm-700 mb-1.5 block">Payment method</label>
+              <select
+                value={payMethod}
+                onChange={e => setPayMethod(e.target.value as PaymentMethod)}
+                className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
+              >
+                {PAYMENT_METHODS.map(m => (
+                  <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m] ?? m}</option>
+                ))}
+              </select>
+            </div>
+            {payError && <p className="text-caption text-error-fg">{payError}</p>}
+            <div className="flex gap-3 justify-end">
+              <Button variant="secondary" onClick={() => setPaymentOpen(false)}>Cancel</Button>
+              <Button variant="accent" isPending={isPending} disabled={isPending} onClick={handlePayment}>
+                {status === 'ready' ? 'Confirm Payment & Collect' : 'Confirm Payment'}
+              </Button>
+            </div>
           </div>
-
-          {/* Amount — read-only */}
-          <div className="bg-[#F8F5F0] rounded-7 px-4 py-3 flex items-center justify-between">
-            <span className="text-label text-warm-600">Amount due</span>
-            <span className="tnum text-ui font-bold text-error-fg">{formatCurrency(balance)}</span>
-          </div>
-
-          {/* Method select */}
-          <div>
-            <label className="text-label font-medium text-warm-700 mb-1.5 block">Payment method</label>
-            <select
-              value={payMethod}
-              onChange={e => setPayMethod(e.target.value as PaymentMethod)}
-              className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
-            >
-              {PAYMENT_METHODS.map(m => (
-                <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m] ?? m}</option>
-              ))}
-            </select>
-          </div>
-
-          {payError && <p className="text-caption text-error-fg">{payError}</p>}
-
-          <div className="flex gap-3 justify-end">
-            <Button variant="secondary" onClick={() => setPaymentOpen(false)}>Cancel</Button>
-            <Button variant="accent" isPending={isPending} disabled={isPending} onClick={handlePayment}>
-              Confirm Payment
-            </Button>
-          </div>
-        </div>
+        )}
       </Modal>
 
       {/* Cancel order modal */}
@@ -670,6 +809,72 @@ export function OrderDetail({
           </Button>
         </div>
       </Modal>
+
+      {/* Contents breakdown modal (per_kg lines only) — optional, never affects price */}
+      {(() => {
+        const activeItem = items.find(it => it.id === piecesModalItemId)
+        if (!activeItem) return null
+        return (
+          <Modal
+            open
+            onClose={() => setPiecesModalItemId(null)}
+            title={`Contents — ${activeItem.itemTypeName} (${activeItem.quantity} kg)`}
+            description="Optional — track what's inside this batch. Doesn't affect price."
+          >
+            <div className="space-y-3">
+              {piecesDraft.map((row, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <select
+                    value={row.itemTypeId}
+                    onChange={e => updatePieceRow(i, { itemTypeId: e.target.value })}
+                    className="flex-1 border border-warm-400 rounded-7 px-3 py-2 text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                  >
+                    {itemTypes.map(t => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+                  <div className="inline-flex items-center border border-warm-300 rounded-7 overflow-hidden shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => updatePieceRow(i, { quantity: Math.max(1, row.quantity - 1) })}
+                      className="w-8 h-8 flex items-center justify-center text-warm-600 hover:bg-warm-100"
+                    >−</button>
+                    <span className="tnum w-8 text-center text-ui font-medium text-warm-950">{row.quantity}</span>
+                    <button
+                      type="button"
+                      onClick={() => updatePieceRow(i, { quantity: row.quantity + 1 })}
+                      className="w-8 h-8 flex items-center justify-center text-warm-600 hover:bg-warm-100"
+                    >+</button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removePieceRow(i)}
+                    aria-label="Remove"
+                    className="w-8 h-8 shrink-0 flex items-center justify-center text-warm-400 hover:text-error-fg"
+                  >×</button>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={addPieceRow}
+                className="w-full py-2 border border-dashed border-warm-400 rounded-10 text-label font-medium text-warm-600 hover:border-brand hover:text-brand transition-colors"
+              >
+                + Add item
+              </button>
+
+              {piecesError && <p className="text-caption text-error-fg">{piecesError}</p>}
+
+              <div className="flex gap-3 justify-end pt-1">
+                <Button variant="secondary" onClick={() => setPiecesModalItemId(null)}>Cancel</Button>
+                <Button variant="primary" isPending={savingPieces} disabled={savingPieces} onClick={savePieces}>
+                  Save
+                </Button>
+              </div>
+            </div>
+          </Modal>
+        )
+      })()}
     </div>
   )
 }
@@ -678,11 +883,10 @@ function ProgressStepper({ currentIdx }: { currentIdx: number }) {
   return (
     <div className="flex items-center">
       {STEPS.map((step, i) => (
-        <div key={step} className="flex items-center flex-1 last:flex-none">
-          {/* Connector line before */}
+        <Fragment key={step}>
           {i > 0 && (
             <div
-              className="flex-1 h-px"
+              className="flex-1 h-px mx-1"
               style={{
                 background: i <= currentIdx
                   ? '#0F3D2E'
@@ -690,7 +894,6 @@ function ProgressStepper({ currentIdx }: { currentIdx: number }) {
               }}
             />
           )}
-          {/* Step circle */}
           <div className="flex flex-col items-center gap-1.5 shrink-0">
             <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
               i < currentIdx ? 'bg-brand border-brand' :
@@ -710,7 +913,7 @@ function ProgressStepper({ currentIdx }: { currentIdx: number }) {
               {STEP_LABELS[step]}
             </span>
           </div>
-        </div>
+        </Fragment>
       ))}
     </div>
   )
