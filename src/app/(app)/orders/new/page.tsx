@@ -19,6 +19,7 @@ type FormData = {
   preselectedCustomer: Customer | null
   isAdmin: boolean
   defaultBranchId: string
+  isMultiBranch: boolean
 }
 
 function NewOrderContent() {
@@ -58,6 +59,7 @@ function NewOrderContent() {
           defaultBranchId={data.defaultBranchId}
           preselectedCustomer={data.preselectedCustomer}
           allowExpressOrders={data.settings?.allowExpressOrders ?? true}
+          isMultiBranch={data.isMultiBranch}
         />
       )}
     </div>

@@ -64,5 +64,6 @@ export async function GET(request: Request) {
     preselectedCustomer,
     isAdmin: profile.role === 'admin',
     defaultBranchId: profile.branchId,
+    isMultiBranch: branches.length > 1,
   })
 }
