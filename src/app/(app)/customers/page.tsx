@@ -1,37 +1,27 @@
-'use client'
-
-import { Suspense, useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { PageSkeleton } from '@/components/ui/PageSkeleton'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { getCustomersList } from '@/services/customers/getCustomersList'
 import { UrlPagination } from '@/components/ui/UrlPagination'
 import { CustomersFilterBar } from './CustomersFilterBar'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { formatDate } from '@/utils/formatDate'
-import type { CustomerListRow } from '@/services/customers/getCustomersList'
 
 const PER_PAGE = 30
 
-function CustomersContent() {
-  const searchParams = useSearchParams()
-  const q = searchParams.get('q') ?? ''
-  const page = Math.max(1, Number(searchParams.get('page') ?? '1'))
+interface Props {
+  searchParams: { q?: string; page?: string }
+}
 
-  const [data, setData] = useState<{ rows: CustomerListRow[]; total: number; role: string } | null>(null)
+export default async function CustomersPage({ searchParams }: Props) {
+  const profile = await getMyProfile()
+  if (!profile) redirect('/login')
 
-  useEffect(() => {
-    setData(null)
-    const params = new URLSearchParams()
-    if (q) params.set('q', q)
-    params.set('page', String(page))
-    fetch(`/api/customers?${params}`)
-      .then(r => r.json())
-      .then(setData)
-  }, [q, page])
+  const q = searchParams.q ?? ''
+  const page = Math.max(1, Number(searchParams.page ?? '1'))
 
-  if (!data) return <PageSkeleton />
+  const { rows, total } = await getCustomersList(profile.laundryId, { q, page, perPage: PER_PAGE })
 
-  const { rows, total } = data
   const totalPages = Math.ceil(total / PER_PAGE)
   const from = total === 0 ? 0 : (page - 1) * PER_PAGE + 1
   const to = Math.min(page * PER_PAGE, total)
@@ -47,7 +37,7 @@ function CustomersContent() {
           <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">Customers</h1>
           <p className="text-ui text-warm-800 mt-1">
             {total} customer{total !== 1 ? 's' : ''}
-            {data.role === 'admin' ? ' · All branches' : ''}
+            {profile.role === 'admin' ? ' · All branches' : ''}
           </p>
         </div>
         <Link
@@ -194,13 +184,5 @@ function CustomersContent() {
         </>
       )}
     </div>
-  )
-}
-
-export default function CustomersPage() {
-  return (
-    <Suspense fallback={<PageSkeleton />}>
-      <CustomersContent />
-    </Suspense>
   )
 }

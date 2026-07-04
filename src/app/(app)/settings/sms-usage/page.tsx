@@ -1,7 +1,8 @@
-'use client'
-import { useEffect, useState } from 'react'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { PageSkeleton } from '@/components/ui/PageSkeleton'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { getSmsUsageData, type SmsMessageLogRow } from '@/services/notifications/getSmsUsageData'
+import { RestrictedCard } from '@/components/app/RestrictedCard'
 
 const TRIGGER_LABELS: Record<string, string> = {
   ORDER_CREATED:            'Order created',
@@ -13,29 +14,24 @@ const TRIGGER_LABELS: Record<string, string> = {
   RENEWAL_REMINDER_DAY_OF:  'Renewal reminder (today)',
 }
 
-type SmsMessage = {
-  id: string; trigger_event: string; status: string; phone: string
-  counts_toward_cap: boolean; created_at: string; error_message: string | null
-}
+export default async function SmsUsagePage() {
+  const profile = await getMyProfile()
+  if (!profile) redirect('/login')
 
-type SmsPageData = {
-  subscription: { cycleStartDate: string; cycleEndDate: string; smsQuota: number } | null
-  smsUsed: number
-  messages: SmsMessage[]
-  quota: number
-  usagePct: number
-}
+  if (profile.role !== 'admin') {
+    return (
+      <div className="p-6 max-w-3xl mx-auto">
+        <div className="flex items-center gap-2 mb-6">
+          <Link href="/settings" className="text-sm text-gray-400 hover:text-gray-700">Settings</Link>
+          <span className="text-gray-300">/</span>
+          <h1 className="text-sm font-semibold text-gray-900">SMS Usage</h1>
+        </div>
+        <RestrictedCard />
+      </div>
+    )
+  }
 
-export default function SmsUsagePage() {
-  const [data, setData] = useState<SmsPageData | null>(null)
-
-  useEffect(() => {
-    fetch('/api/settings/sms-usage').then(r => r.json()).then(setData)
-  }, [])
-
-  if (!data) return <PageSkeleton rows={5} />
-
-  const { subscription, smsUsed, messages, quota, usagePct } = data
+  const { subscription, smsUsed, messages, quota, usagePct } = await getSmsUsageData(profile.laundryId)
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
@@ -76,11 +72,11 @@ export default function SmsUsagePage() {
         <div className="px-5 py-3.5 border-b border-gray-100">
           <h2 className="text-sm font-semibold text-gray-900">Message Log</h2>
         </div>
-        {(messages ?? []).length === 0 ? (
+        {messages.length === 0 ? (
           <p className="text-sm text-gray-400 text-center py-8">No SMS messages sent yet.</p>
         ) : (
           <div className="divide-y divide-gray-50">
-            {(messages ?? []).map((sms: SmsMessage) => (
+            {messages.map((sms: SmsMessageLogRow) => (
               <div key={sms.id} className="flex items-start justify-between px-5 py-3">
                 <div className="flex items-center gap-2.5">
                   <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1 ${sms.status === 'sent' ? 'bg-green-400' : 'bg-red-400'}`} />

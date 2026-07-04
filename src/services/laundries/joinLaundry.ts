@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, createAdminClient } from '@/lib/supabase'
+import { getVerifiedUserId } from '@/lib/auth'
 import type { ServiceResult } from '@/types/serviceResult'
 
 export interface MyJoinRequestStatus {
@@ -60,13 +61,13 @@ export async function submitJoinRequest(pin: string): Promise<ServiceResult<null
 
 export async function getMyJoinRequestStatus(): Promise<MyJoinRequestStatus | null> {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
+  const userId = await getVerifiedUserId(supabase)
+  if (!userId) return null
 
   const { data } = await supabase
     .from('join_requests')
     .select('status, laundry_name, created_at')
-    .eq('auth_user_id', user.id)
+    .eq('auth_user_id', userId)
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()

@@ -1,15 +1,12 @@
-'use client'
-
-import { Suspense, useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { PageSkeleton } from '@/components/ui/PageSkeleton'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { getOrdersList, type OrderListRow } from '@/services/orders/getOrdersList'
 import { StatusBadge } from '@/components/app/StatusBadge'
 import { UrlPagination } from '@/components/ui/UrlPagination'
 import { OrdersFilterBar } from './OrdersFilterBar'
 import { formatDate } from '@/utils/formatDate'
 import { formatCurrency } from '@/utils/formatCurrency'
-import type { OrderListRow } from '@/services/orders/getOrdersList'
 
 const PER_PAGE = 30
 
@@ -19,28 +16,20 @@ function formatPieces(row: Pick<OrderListRow, 'pieces' | 'kg'>): string {
   return `${row.pieces}`
 }
 
-function OrdersContent() {
-  const searchParams = useSearchParams()
-  const q = searchParams.get('q') ?? ''
-  const status = searchParams.get('status') ?? ''
-  const page = Math.max(1, Number(searchParams.get('page') ?? '1'))
+interface Props {
+  searchParams: { q?: string; status?: string; page?: string }
+}
 
-  const [data, setData] = useState<{ rows: OrderListRow[]; total: number; role: string } | null>(null)
+export default async function OrdersPage({ searchParams }: Props) {
+  const profile = await getMyProfile()
+  if (!profile) redirect('/login')
 
-  useEffect(() => {
-    setData(null)
-    const params = new URLSearchParams()
-    if (q) params.set('q', q)
-    if (status) params.set('status', status)
-    params.set('page', String(page))
-    fetch(`/api/orders?${params}`)
-      .then(r => r.json())
-      .then(setData)
-  }, [q, status, page])
+  const q = searchParams.q ?? ''
+  const status = searchParams.status ?? ''
+  const page = Math.max(1, Number(searchParams.page ?? '1'))
 
-  if (!data) return <PageSkeleton />
+  const { rows, total } = await getOrdersList(profile.laundryId, { q, status, page, perPage: PER_PAGE })
 
-  const { rows, total } = data
   const totalPages = Math.ceil(total / PER_PAGE)
   const from = total === 0 ? 0 : (page - 1) * PER_PAGE + 1
   const to = Math.min(page * PER_PAGE, total)
@@ -57,7 +46,7 @@ function OrdersContent() {
           <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">Orders</h1>
           <p className="text-ui text-warm-800 mt-1">
             {total} order{total !== 1 ? 's' : ''}
-            {data.role === 'admin' ? ' · All branches' : ''}
+            {profile.role === 'admin' ? ' · All branches' : ''}
           </p>
         </div>
         <Link
@@ -193,13 +182,5 @@ function OrdersContent() {
         </>
       )}
     </div>
-  )
-}
-
-export default function OrdersPage() {
-  return (
-    <Suspense fallback={<PageSkeleton />}>
-      <OrdersContent />
-    </Suspense>
   )
 }

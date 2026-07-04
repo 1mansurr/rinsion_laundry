@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { createItemType, toggleItemType, type ItemType } from '@/services/items'
 import { createService, toggleService, setServicePricing, type LaundryService } from '@/services/services'
 import { upsertPrice, togglePrice, type PriceCell } from '@/services/pricing'
@@ -15,7 +15,6 @@ interface Props {
   services: LaundryService[]
   prices: PriceCell[]
   pricingModel: PricingModel
-  onImported: () => void
 }
 
 function ModeToggle({ value, onChange }: { value: PricingMode; onChange: (m: PricingMode) => void }) {
@@ -38,11 +37,17 @@ function ModeToggle({ value, onChange }: { value: PricingMode; onChange: (m: Pri
   )
 }
 
-export function ItemsServicesClient({ itemTypes: initItems, services: initServices, prices: initPrices, pricingModel, onImported }: Props) {
+export function ItemsServicesClient({ itemTypes: initItems, services: initServices, prices: initPrices, pricingModel }: Props) {
   const [tab, setTab] = useState<'items' | 'services' | 'pricing'>('items')
   const [items, setItems] = useState(initItems)
   const [services, setServices] = useState(initServices)
   const [prices, setPrices] = useState(initPrices)
+  // Re-sync local state when the server re-fetches (e.g. after router.refresh()
+  // post-import) — this component stays mounted across a refresh, so its
+  // useState initial values alone won't pick up the new props.
+  useEffect(() => { setItems(initItems) }, [initItems])
+  useEffect(() => { setServices(initServices) }, [initServices])
+  useEffect(() => { setPrices(initPrices) }, [initPrices])
   const [isPending, startTransition] = useTransition()
   const [newItemName, setNewItemName] = useState('')
   const [newServiceName, setNewServiceName] = useState('')
@@ -660,7 +665,6 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
       <ImportPricingModal
         open={importOpen}
         onClose={() => setImportOpen(false)}
-        onImported={onImported}
       />
     </div>
   )

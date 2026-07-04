@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { parsePricingImport, commitPricingImport, type ImportPreviewRow } from '@/services/pricing/importPricing'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
@@ -10,10 +11,14 @@ import { toast } from '@/components/ui/Toast'
 interface Props {
   open: boolean
   onClose: () => void
-  onImported: () => void
+  /** Called after a successful commit, in addition to router.refresh(). Use
+   * for flows needing more than an in-place data refresh (e.g. onboarding
+   * moving to its next step). */
+  onImported?: () => void
 }
 
 export function ImportPricingModal({ open, onClose, onImported }: Props) {
+  const router = useRouter()
   const [step, setStep] = useState<'upload' | 'preview'>('upload')
   const [rows, setRows] = useState<ImportPreviewRow[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -59,7 +64,8 @@ export function ImportPricingModal({ open, onClose, onImported }: Props) {
         (failedRows > 0 ? `. ${failedRows} row${failedRows === 1 ? '' : 's'} failed.` : '.')
       )
       handleClose()
-      onImported()
+      router.refresh()
+      onImported?.()
     })
   }
 

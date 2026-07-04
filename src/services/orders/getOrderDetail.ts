@@ -1,19 +1,48 @@
-import { NextResponse } from 'next/server'
-import { getMyProfile } from '@/services/employees/getMyProfile'
+'use server'
+
+import { createClient } from '@/lib/supabase'
 import { getOrder } from '@/services/orders'
 import { getItemTypes } from '@/services/items'
-import { createClient } from '@/lib/supabase'
+import type { OrderStatus, OrderPriority, PricingMode } from '@/constants/statuses'
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const profile = await getMyProfile()
-  if (!profile) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+export interface OrderDetailData {
+  orderId: string
+  orderNumber: string
+  status: OrderStatus
+  priority: OrderPriority
+  pickupCode: string
+  pickupDate: string | null
+  subtotal: number
+  taxAmount: number
+  total: number
+  amountPaid: number
+  customerName: string
+  customerId: string
+  customerPhone: string
+  branchName: string
+  createdAt: string
+  cancelledAt: string | null
+  previousStatusOnCancel: string | null
+  items: {
+    id: string
+    quantity: number
+    unitPrice: number
+    totalPrice: number
+    pricingMode: PricingMode
+    itemTypeName: string
+    serviceName: string
+    pieces: { id: string; itemTypeId: string; itemTypeName: string; quantity: number }[]
+  }[]
+  itemTypes: { id: string; name: string }[]
+  payments: { id: string; amount: number; paymentMethod: string; createdAt: string }[]
+  refunds: { id: string; amount: number; refundMethod: string; reason: string | null; createdAt: string }[]
+  notes: { id: string; note: string; createdAt: string; authorName: string }[]
+  activities: { id: string; description: string; createdAt: string; employeeName: string }[]
+}
 
-  const order = await getOrder(params.id)
-  if (!order) {
-    return NextResponse.json({ error: 'Order not found' }, { status: 404 })
-  }
+export async function getOrderDetail(id: string, laundryId: string): Promise<OrderDetailData | null> {
+  const order = await getOrder(id)
+  if (!order) return null
 
   const supabase = createClient()
 
@@ -87,7 +116,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     })),
   }))
 
-  const itemTypes = (await getItemTypes(profile.laundryId))
+  const itemTypes = (await getItemTypes(laundryId))
     .filter(t => t.isActive)
     .map(t => ({ id: t.id, name: t.name }))
 
@@ -123,11 +152,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
   const cancelledAt = cancelEntry?.created_at ?? null
   const previousStatusOnCancel = cancelEntry?.previous_status ?? null
 
-  return NextResponse.json({
+  return {
     orderId: order.id,
     orderNumber: order.order_number,
-    status: order.status,
-    priority: order.priority ?? 'normal',
+    status: order.status as OrderStatus,
+    priority: (order.priority ?? 'normal') as OrderPriority,
     pickupCode: order.pickup_code,
     pickupDate: order.pickup_date ?? null,
     subtotal: Number(order.subtotal),
@@ -147,5 +176,5 @@ export async function GET(request: Request, { params }: { params: { id: string }
     refunds,
     notes,
     activities,
-  })
+  }
 }

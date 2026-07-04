@@ -1,13 +1,13 @@
-'use client'
-import { useEffect, useState, useTransition, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { PageSkeleton } from '@/components/ui/PageSkeleton'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { getSubscriptionPageData } from '@/services/subscriptions/getSubscriptionPageData'
 import { claimPaymentSent } from '@/services/subscriptions/claimPaymentSent'
 import { computeProrateAmount } from '@/services/subscriptions/computeProrateAmount'
-import { startTrial } from '@/services/subscriptions/startTrial'
 import { PLANS } from '@/constants/plans'
 import { formatDate } from '@/utils/formatDate'
+import { RestrictedCard } from '@/components/app/RestrictedCard'
+import { StartTrialButton } from './StartTrialButton'
 
 const PLAN_LABELS: Record<string, string> = { trial: 'Trial', starter: 'Starter', growth: 'Growth' }
 const STATUS_LABELS: Record<string, string> = {
@@ -27,62 +27,35 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: 'text-gray-500 bg-gray-100',
 }
 
-type SubscriptionRow = {
-  id: string; plan: string; status: string; cycleStartDate: string
-  cycleEndDate: string; smsQuota: number; daysLeft: number
+interface Props {
+  searchParams: { action?: string; plan?: string }
 }
 
-type RecentPayment = {
-  id: string; amount: number; payment_type: string; plan_at_payment: string; paid_at: string
-}
+export default async function SubscriptionPage({ searchParams }: Props) {
+  const profile = await getMyProfile()
+  if (!profile) redirect('/login')
 
-type PendingClaim = {
-  id: string; reference_code: string; claimed_amount: number; target_plan: string; claimed_at: string
-}
-
-type SubscriptionPageData = {
-  subscription: SubscriptionRow | null
-  recentPayments: RecentPayment[]
-  existingClaim: PendingClaim | null
-  action: string | null
-  selectedPlan: string | null
-  paymentType: string | null
-  targetPlan: string | null
-  paymentAmount: number
-  newCycleStart: string
-  newCycleEnd: string
-  referenceCode: string
-  momoNumber: string
-}
-
-function SubscriptionContent() {
-  const searchParams = useSearchParams()
-  const action = searchParams.get('action') ?? undefined
-  const planParam = searchParams.get('plan') ?? undefined
-
-  const [data, setData] = useState<SubscriptionPageData | null>(null)
-  const [startingTrial, startTrialTransition] = useTransition()
-  const [trialError, setTrialError] = useState<string | null>(null)
-
-  function handleStartTrial() {
-    setTrialError(null)
-    startTrialTransition(async () => {
-      const res = await startTrial()
-      if (res.success) window.location.reload()
-      else setTrialError(res.error)
-    })
+  if (profile.role !== 'admin') {
+    return (
+      <div className="p-6 max-w-2xl mx-auto">
+        <div className="flex items-center gap-2 mb-6">
+          <Link href="/settings" className="text-sm text-gray-400 hover:text-gray-700">Settings</Link>
+          <span className="text-gray-300">/</span>
+          <h1 className="text-sm font-semibold text-gray-900">Subscription</h1>
+        </div>
+        <RestrictedCard />
+      </div>
+    )
   }
 
-  useEffect(() => {
-    const params = new URLSearchParams()
-    if (action) params.set('action', action)
-    if (planParam) params.set('plan', planParam)
-    fetch(`/api/settings/subscription?${params}`).then(r => r.json()).then(setData)
-  }, [action, planParam])
+  const action = searchParams.action ?? null
+  const selectedPlan = searchParams.plan ?? null
 
-  if (!data) return <PageSkeleton rows={3} />
+  const {
+    subscription, recentPayments, existingClaim,
+    paymentType, targetPlan, paymentAmount, newCycleStart, newCycleEnd, referenceCode, momoNumber,
+  } = await getSubscriptionPageData(profile.laundryId, action, selectedPlan)
 
-  const { subscription, recentPayments, existingClaim, paymentType, targetPlan, paymentAmount, newCycleStart, newCycleEnd, referenceCode, momoNumber } = data
   const cycleDays = subscription?.plan === 'trial' ? 14 : 30
 
   return (
@@ -133,14 +106,7 @@ function SubscriptionContent() {
       {!subscription && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-5 mb-4 text-sm text-yellow-800 space-y-3">
           <p>No active subscription yet. Start your 14-day free trial to unlock orders, payments, and SMS.</p>
-          {trialError && <p className="text-red-700">{trialError}</p>}
-          <button
-            onClick={handleStartTrial}
-            disabled={startingTrial}
-            className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
-          >
-            {startingTrial ? 'Starting…' : 'Start free trial'}
-          </button>
+          <StartTrialButton />
         </div>
       )}
 
@@ -210,7 +176,7 @@ function SubscriptionContent() {
           </p>
 
           <form action={claimPaymentSent}>
-            <input type="hidden" name="reference_code" value={referenceCode} />
+            <input type="hidden" name="reference_code" value={referenceCode ?? ''} />
             <input type="hidden" name="payment_type" value={paymentType} />
             <input type="hidden" name="target_plan" value={targetPlan} />
             <button
@@ -313,13 +279,13 @@ function SubscriptionContent() {
       </div>
 
       {/* ── Recent payments ── */}
-      {(recentPayments ?? []).length > 0 && (
+      {recentPayments.length > 0 && (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-3.5 border-b border-gray-100">
             <h2 className="text-sm font-semibold text-gray-900">Recent payments</h2>
           </div>
           <div className="divide-y divide-gray-50">
-            {recentPayments!.map((p: RecentPayment) => (
+            {recentPayments.map(p => (
               <div key={p.id} className="flex items-center justify-between px-5 py-3">
                 <div>
                   <p className="text-sm text-gray-900">GHS {Number(p.amount).toFixed(0)}</p>
@@ -332,13 +298,5 @@ function SubscriptionContent() {
         </div>
       )}
     </div>
-  )
-}
-
-export default function SubscriptionPage() {
-  return (
-    <Suspense fallback={<PageSkeleton rows={3} />}>
-      <SubscriptionContent />
-    </Suspense>
   )
 }

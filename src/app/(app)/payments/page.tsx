@@ -1,14 +1,11 @@
-'use client'
-
-import { Suspense, useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { PageSkeleton } from '@/components/ui/PageSkeleton'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { getPayments, getPaymentsSummary } from '@/services/payments/getPayments'
 import { UrlPagination } from '@/components/ui/UrlPagination'
 import { PaymentsFilterBar } from './PaymentsFilterBar'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { formatDate } from '@/utils/formatDate'
-import type { PaymentListRow, PaymentsSummary } from '@/services/payments/getPayments'
 
 const PER_PAGE = 30
 
@@ -40,28 +37,23 @@ function MethodPill({ method }: { method: string }) {
   )
 }
 
-function PaymentsContent() {
-  const searchParams = useSearchParams()
-  const q = searchParams.get('q') ?? ''
-  const method = searchParams.get('method') ?? ''
-  const page = Math.max(1, Number(searchParams.get('page') ?? '1'))
+interface Props {
+  searchParams: { q?: string; method?: string; page?: string }
+}
 
-  const [data, setData] = useState<{ rows: PaymentListRow[]; total: number; summary: PaymentsSummary; role: string } | null>(null)
+export default async function PaymentsPage({ searchParams }: Props) {
+  const profile = await getMyProfile()
+  if (!profile) redirect('/login')
 
-  useEffect(() => {
-    setData(null)
-    const params = new URLSearchParams()
-    if (q) params.set('q', q)
-    if (method) params.set('method', method)
-    params.set('page', String(page))
-    fetch(`/api/payments?${params}`)
-      .then(r => r.json())
-      .then(setData)
-  }, [q, method, page])
+  const q = searchParams.q ?? ''
+  const method = searchParams.method ?? ''
+  const page = Math.max(1, Number(searchParams.page ?? '1'))
 
-  if (!data) return <PageSkeleton />
+  const [{ rows, total }, summary] = await Promise.all([
+    getPayments(profile.laundryId, { q, method, page, perPage: PER_PAGE }),
+    getPaymentsSummary(profile.laundryId),
+  ])
 
-  const { rows, total, summary } = data
   const totalPages = Math.ceil(total / PER_PAGE)
   const from = total === 0 ? 0 : (page - 1) * PER_PAGE + 1
   const to = Math.min(page * PER_PAGE, total)
@@ -77,7 +69,7 @@ function PaymentsContent() {
         <div>
           <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">Payments</h1>
           <p className="text-ui text-warm-800 mt-1">
-            {data.role === 'admin' ? 'All branches' : 'Your branch'}
+            {profile.role === 'admin' ? 'All branches' : 'Your branch'}
           </p>
         </div>
       </div>
@@ -198,13 +190,5 @@ function PaymentsContent() {
         </>
       )}
     </div>
-  )
-}
-
-export default function PaymentsPage() {
-  return (
-    <Suspense fallback={<PageSkeleton />}>
-      <PaymentsContent />
-    </Suspense>
   )
 }

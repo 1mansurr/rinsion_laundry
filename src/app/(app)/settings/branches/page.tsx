@@ -1,18 +1,37 @@
-'use client'
-import { useEffect, useState } from 'react'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { PageSkeleton } from '@/components/ui/PageSkeleton'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { getBranches } from '@/services/employees'
+import { getActiveSubscription } from '@/services/subscriptions/getActive'
+import { PLANS } from '@/constants/plans'
+import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { BranchesClient } from './BranchesClient'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
 
-export default function BranchesPage() {
-  const [data, setData] = useState<{ branches: { id: string; name: string }[]; plan: SubscriptionPlan; branchLimit: number } | null>(null)
+export default async function BranchesPage() {
+  const profile = await getMyProfile()
+  if (!profile) redirect('/login')
 
-  useEffect(() => {
-    fetch('/api/settings/branches').then(r => r.json()).then(setData)
-  }, [])
+  if (profile.role !== 'admin') {
+    return (
+      <div className="p-6 max-w-xl mx-auto">
+        <div className="flex items-center gap-2 mb-6">
+          <Link href="/settings" className="text-sm text-gray-400 hover:text-gray-700">Settings</Link>
+          <span className="text-gray-300">/</span>
+          <h1 className="text-sm font-semibold text-gray-900">Branches</h1>
+        </div>
+        <RestrictedCard />
+      </div>
+    )
+  }
 
-  if (!data) return <PageSkeleton rows={3} />
+  const [branches, subscription] = await Promise.all([
+    getBranches(),
+    getActiveSubscription(profile.laundryId),
+  ])
+
+  const plan = (subscription?.plan ?? 'starter') as SubscriptionPlan
+  const branchLimit = PLANS[plan as keyof typeof PLANS]?.branchLimit ?? PLANS.starter.branchLimit
 
   return (
     <div className="p-6 max-w-xl mx-auto">
@@ -23,9 +42,9 @@ export default function BranchesPage() {
       </div>
 
       <BranchesClient
-        branches={data.branches}
-        branchLimit={data.branchLimit}
-        plan={data.plan}
+        branches={branches}
+        branchLimit={branchLimit}
+        plan={plan}
       />
     </div>
   )

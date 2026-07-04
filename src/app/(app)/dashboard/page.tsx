@@ -1,44 +1,14 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useProfile } from '@/contexts/ProfileContext'
-import { CardSkeleton } from '@/components/ui/PageSkeleton'
+import { redirect } from 'next/navigation'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { getDashboardData } from '@/services/dashboard/getDashboardData'
 import { DashboardClient } from './DashboardClient'
-import type { ReadyOrder, ActivityEntry } from './DashboardClient'
-import type { SubscriptionStatus } from '@/constants/subscriptionStatuses'
 
-interface DashboardData {
-  readyOrders: ReadyOrder[]
-  isFirstTime: boolean
-  adminStats?: { ordersToday: number; outstandingBalance: number; activeCustomersThisWeek: number }
-  activities: ActivityEntry[]
-  showSmsBanner: boolean
-  smsUsed: number
-  smsQuota: number
-  subscriptionStatus: SubscriptionStatus | null
-  todayDate: string
-  redirect?: string
-}
+export default async function DashboardPage() {
+  const profile = await getMyProfile()
+  if (!profile) redirect('/login')
 
-export default function DashboardPage() {
-  const profile = useProfile()
-  const router = useRouter()
-  const [data, setData] = useState<DashboardData | null>(null)
-
-  useEffect(() => {
-    fetch('/api/dashboard')
-      .then(r => r.json())
-      .then((d: DashboardData) => {
-        if (d.redirect) {
-          router.replace(d.redirect)
-        } else {
-          setData(d)
-        }
-      })
-  }, [router])
-
-  if (!data || !profile) return <CardSkeleton />
+  const data = await getDashboardData(profile.laundryId, profile.role, profile.branchId)
+  if (data.needsOnboarding) redirect('/onboarding')
 
   return (
     <DashboardClient

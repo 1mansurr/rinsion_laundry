@@ -1,36 +1,29 @@
-'use client'
-import { useEffect, useState } from 'react'
+import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { PageSkeleton } from '@/components/ui/PageSkeleton'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { getCustomer } from '@/services/customers'
 import { StatusBadge } from '@/components/app/StatusBadge'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { formatDate } from '@/utils/formatDate'
 
-type CustomerData = {
-  id: string
-  firstName: string
-  lastName: string
-  phone: string
-  firstVisitDate: string | null
-  lastVisitDate: string | null
-  createdAt: string
-  orders: { id: string; order_number: string; status: string; total: number; created_at: string }[]
+interface Props {
+  params: { id: string }
 }
 
-export default function CustomerDetailPage({ params }: { params: { id: string } }) {
-  const [data, setData] = useState<CustomerData | null>(null)
+export default async function CustomerDetailPage({ params }: Props) {
+  const profile = await getMyProfile()
+  if (!profile) redirect('/login')
 
-  useEffect(() => {
-    fetch(`/api/customers/${params.id}`).then(r => r.json()).then(setData)
-  }, [params.id])
+  const data = await getCustomer(params.id)
+  if (!data) notFound()
 
-  if (!data) return <PageSkeleton rows={5} />
-
-  const orders = data.orders ?? []
+  const orders = (data.orders as {
+    id: string; order_number: string; status: string; total: number; created_at: string
+  }[]) ?? []
   const nonCancelledOrders = orders.filter(o => o.status !== 'cancelled')
   const totalSpent = nonCancelledOrders.reduce((s, o) => s + Number(o.total), 0)
-  const initials = `${data.firstName[0] ?? ''}${data.lastName[0] ?? ''}`.toUpperCase()
-  const memberSince = data.firstVisitDate ? formatDate(data.firstVisitDate) : formatDate(data.createdAt)
+  const initials = `${data.first_name[0] ?? ''}${data.last_name[0] ?? ''}`.toUpperCase()
+  const memberSince = formatDate(data.first_visit_date ?? data.created_at)
 
   return (
     <div className="max-w-[1180px] mx-auto px-7 py-7">
@@ -46,7 +39,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
         </span>
         <div className="flex-1 min-w-[200px]">
           <h1 className="text-[25px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">
-            {data.firstName} {data.lastName}
+            {data.first_name} {data.last_name}
           </h1>
           <p className="tnum text-ui text-warm-800 mt-1">
             {data.phone} · Customer since {memberSince}
@@ -81,7 +74,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
         <div className="bg-white border border-warm-300 rounded-10 px-5 py-[18px]">
           <p className="text-label text-warm-800 font-medium">Last order</p>
           <p className="text-[20px] font-bold text-warm-950 mt-1.5">
-            {data.lastVisitDate ? formatDate(data.lastVisitDate) : '—'}
+            {data.last_visit_date ? formatDate(data.last_visit_date) : '—'}
           </p>
         </div>
       </div>

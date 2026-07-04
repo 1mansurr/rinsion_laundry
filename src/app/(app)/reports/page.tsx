@@ -1,9 +1,9 @@
-'use client'
-import { useEffect, useState } from 'react'
-import { PageSkeleton } from '@/components/ui/PageSkeleton'
+import { redirect } from 'next/navigation'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { getAllReports } from '@/services/reports'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { formatCurrency } from '@/utils/formatCurrency'
-import type { RevenueReport, OrdersReport, EmployeeActivityItem } from '@/services/reports'
+import type { EmployeeActivityItem } from '@/services/reports'
 
 const STATUS_LABELS: Record<string, string> = {
   received:   'Received',
@@ -23,25 +23,11 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled:  '#B0413A',
 }
 
-type ReportsData = {
-  restricted?: boolean
-  reports: {
-    revenue: RevenueReport
-    orders: OrdersReport
-    employeeActivity: EmployeeActivityItem[]
-  }
-}
+export default async function ReportsPage() {
+  const profile = await getMyProfile()
+  if (!profile) redirect('/login')
 
-export default function ReportsPage() {
-  const [data, setData] = useState<ReportsData | null>(null)
-
-  useEffect(() => {
-    fetch('/api/reports').then(r => r.json()).then(setData)
-  }, [])
-
-  if (!data) return <PageSkeleton />
-
-  if (data.restricted) {
+  if (profile.role !== 'admin') {
     return (
       <div className="max-w-[1180px] mx-auto px-7 py-7">
         <div className="mb-[18px]">
@@ -52,7 +38,10 @@ export default function ReportsPage() {
     )
   }
 
-  const { revenue, orders, employeeActivity } = data.reports
+  const reports = await getAllReports()
+  if (!reports) redirect('/login')
+
+  const { revenue, orders, employeeActivity } = reports
 
   const thisMonthLabel = new Date().toLocaleString('en-GB', { month: 'long', year: 'numeric' })
   const totalOrders = orders.totalAllTime || 1

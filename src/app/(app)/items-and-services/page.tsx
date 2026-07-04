@@ -1,34 +1,17 @@
-'use client'
-import { useEffect, useState } from 'react'
-import { PageSkeleton } from '@/components/ui/PageSkeleton'
+import { redirect } from 'next/navigation'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { getItemTypes } from '@/services/items'
+import { getServices } from '@/services/services'
+import { getPricingMatrix } from '@/services/pricing'
+import { getSettings } from '@/services/settings'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { ItemsServicesClient } from './ItemsServicesClient'
-import type { PriceCell } from '@/services/pricing'
-import type { PricingModel, PricingMode } from '@/constants/statuses'
 
-type ItemType = { id: string; name: string; isActive: boolean }
-type Service = { id: string; name: string; isActive: boolean; pricingMode: PricingMode; kgRate: number | null }
+export default async function ItemsAndServicesPage() {
+  const profile = await getMyProfile()
+  if (!profile) redirect('/login')
 
-type ItemsPageData = {
-  restricted?: boolean
-  itemTypes: ItemType[]
-  services: Service[]
-  prices: PriceCell[]
-  pricingModel: PricingModel
-}
-
-export default function ItemsAndServicesPage() {
-  const [data, setData] = useState<ItemsPageData | null>(null)
-
-  function loadData() {
-    fetch('/api/items-and-services').then(r => r.json()).then(setData)
-  }
-
-  useEffect(loadData, [])
-
-  if (!data) return <PageSkeleton />
-
-  if (data.restricted) {
+  if (profile.role !== 'admin') {
     return (
       <div className="max-w-[1180px] mx-auto px-7 py-7">
         <div className="mb-[18px]">
@@ -40,6 +23,13 @@ export default function ItemsAndServicesPage() {
     )
   }
 
+  const [itemTypes, services, prices, settings] = await Promise.all([
+    getItemTypes(profile.laundryId),
+    getServices(profile.laundryId),
+    getPricingMatrix(profile.laundryId),
+    getSettings(),
+  ])
+
   return (
     <div className="max-w-[1180px] mx-auto px-7 py-7">
       <div className="mb-[18px]">
@@ -47,11 +37,10 @@ export default function ItemsAndServicesPage() {
         <p className="text-ui text-warm-800 mt-1">The garment types and services your team picks from when creating orders.</p>
       </div>
       <ItemsServicesClient
-        itemTypes={data.itemTypes}
-        services={data.services}
-        prices={data.prices}
-        pricingModel={data.pricingModel}
-        onImported={loadData}
+        itemTypes={itemTypes}
+        services={services}
+        prices={prices}
+        pricingModel={settings?.pricingModel ?? 'per_item'}
       />
     </div>
   )

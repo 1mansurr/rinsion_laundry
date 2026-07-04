@@ -1,38 +1,57 @@
-import { NextResponse } from 'next/server'
+'use server'
+
 import { createClient } from '@/lib/supabase'
-import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
 import { computeSmsUsage } from '@/services/notifications/computeSmsUsage'
+import type { EmployeeRole } from '@/constants/statuses'
+import type { SubscriptionStatus } from '@/constants/subscriptionStatuses'
+import type { ReadyOrder, ActivityEntry } from '@/app/(app)/dashboard/DashboardClient'
 
-export async function GET() {
-  const profile = await getMyProfile()
-  if (!profile) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+export interface DashboardData {
+  needsOnboarding: boolean
+  readyOrders: ReadyOrder[]
+  isFirstTime: boolean
+  adminStats?: { ordersToday: number; outstandingBalance: number; activeCustomersThisWeek: number }
+  activities: ActivityEntry[]
+  showSmsBanner: boolean
+  smsUsed: number
+  smsQuota: number
+  subscriptionStatus: SubscriptionStatus | null
+  todayDate: string
+}
 
+export async function getDashboardData(
+  laundryId: string,
+  role: EmployeeRole,
+  branchId: string
+): Promise<DashboardData> {
   const supabase = createClient()
   const today = new Date().toISOString().split('T')[0]
   const weekAgo = new Date(Date.now() - 7 * 86_400_000).toISOString()
 
-  // Check if admin has any item types; if not, redirect to onboarding
-  if (profile.role === 'admin') {
+  // Check if admin has any item types; if not, dashboard defers to onboarding
+  if (role === 'admin') {
     const { count: itemCount } = await supabase
       .from('item_types')
       .select('*', { count: 'exact', head: true })
-      .eq('laundry_id', profile.laundryId)
+      .eq('laundry_id', laundryId)
       .eq('is_active', true)
     if ((itemCount ?? 0) === 0) {
-      return NextResponse.json({ redirect: '/onboarding' }, { status: 200 })
+      return {
+        needsOnboarding: true,
+        readyOrders: [], isFirstTime: true, activities: [],
+        showSmsBanner: false, smsUsed: 0, smsQuota: 0, subscriptionStatus: null, todayDate: '',
+      }
     }
   }
 
   const [subscription, readyRes, todayCountRes, totalOrdersRes, activityRes] = await Promise.all([
-    getActiveSubscription(profile.laundryId),
+    getActiveSubscription(laundryId),
 
     supabase
       .from('orders')
       .select('id, order_number, pickup_code, updated_at, total, payments(amount), order_refunds(amount), customers(first_name, last_name, phone), branches(id, name)')
-      .eq('laundry_id', profile.laundryId)
+      .eq('laundry_id', laundryId)
       .eq('status', 'ready')
       .is('deleted_at', null)
       .order('updated_at', { ascending: true }),
@@ -40,26 +59,26 @@ export async function GET() {
     supabase
       .from('orders')
       .select('*', { count: 'exact', head: true })
-      .eq('laundry_id', profile.laundryId)
+      .eq('laundry_id', laundryId)
       .gte('created_at', `${today}T00:00:00`)
       .is('deleted_at', null),
 
     supabase
       .from('orders')
       .select('*', { count: 'exact', head: true })
-      .eq('laundry_id', profile.laundryId)
+      .eq('laundry_id', laundryId)
       .is('deleted_at', null),
 
     supabase
       .from('activity_logs')
       .select('id, action_type, description, created_at, internal_admin_email, employees(first_name, last_name), orders(customers(first_name, last_name))')
-      .eq('laundry_id', profile.laundryId)
+      .eq('laundry_id', laundryId)
       .order('created_at', { ascending: false })
       .limit(8),
   ])
 
   const smsUsed = subscription
-    ? await computeSmsUsage(profile.laundryId, subscription.cycleStartDate, subscription.cycleEndDate)
+    ? await computeSmsUsage(laundryId, subscription.cycleStartDate, subscription.cycleEndDate)
     : 0
 
   // Shape ready orders + filter by branch for employees
@@ -81,9 +100,9 @@ export async function GET() {
       balance: Math.max(0, Number(o.total) - amountPaid),
     }
   })
-  const readyOrders = profile.role === 'admin'
+  const readyOrders = role === 'admin'
     ? allReady
-    : allReady.filter(o => o.branchId === profile.branchId)
+    : allReady.filter(o => o.branchId === branchId)
 
   // Shape activity log
   const activities = (activityRes.data ?? []).map(a => {
@@ -103,18 +122,18 @@ export async function GET() {
   // Admin-only stats
   let adminStats: { ordersToday: number; outstandingBalance: number; activeCustomersThisWeek: number } | undefined
 
-  if (profile.role === 'admin') {
+  if (role === 'admin') {
     const [activeOrdersRes, weekOrdersRes] = await Promise.all([
       supabase
         .from('orders')
         .select('id, total')
-        .eq('laundry_id', profile.laundryId)
+        .eq('laundry_id', laundryId)
         .not('status', 'in', '(collected,cancelled)')
         .is('deleted_at', null),
       supabase
         .from('orders')
         .select('customer_id')
-        .eq('laundry_id', profile.laundryId)
+        .eq('laundry_id', laundryId)
         .gte('created_at', weekAgo)
         .is('deleted_at', null),
     ])
@@ -142,7 +161,7 @@ export async function GET() {
   }
 
   const showSmsBanner =
-    profile.role === 'admin' &&
+    role === 'admin' &&
     subscription !== null &&
     subscription.smsQuota > 0 &&
     smsUsed / subscription.smsQuota >= 0.7
@@ -154,15 +173,16 @@ export async function GET() {
     year: 'numeric',
   })
 
-  return NextResponse.json({
+  return {
+    needsOnboarding: false,
     readyOrders,
     isFirstTime: (totalOrdersRes.count ?? 0) === 0,
-    adminStats: adminStats ?? null,
+    adminStats,
     activities,
     showSmsBanner,
     smsUsed,
     smsQuota: subscription?.smsQuota ?? 0,
     subscriptionStatus: subscription?.status ?? null,
     todayDate,
-  })
+  }
 }
