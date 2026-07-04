@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Wordmark } from '@/components/ui/Wordmark'
+import { ImportPricingModal } from '../items-and-services/ImportPricingModal'
 
 const PRICING_MODEL_LABELS: Record<PricingModel, { label: string; description: string }> = {
   per_item: { label: 'Per item', description: 'Every service is priced per piece (e.g. GHS 5 per shirt).' },
@@ -52,18 +53,21 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
   const [laundryName, setLaundryName] = useState(defaultLaundryName)
   const [branchName, setBranchName] = useState(defaultBranchName)
 
-  // Step 2 — pricing model
-  const [pricingModel, setPricingModel] = useState<PricingModel>('per_item')
-
-  // Step 3 — services (toggle)
+  // Step 2 — services (toggle)
   const [selectedServices, setSelectedServices] = useState<string[]>(['Wash Only', 'Wash + Iron'])
 
-  // Step 4 — mini pricing grid (or a flat rate list when pricingModel is per_kg)
-  // Created service IDs after step 3 submission
+  // Step 3 — pricing model
+  const [pricingModel, setPricingModel] = useState<PricingModel>('per_item')
+
+  // Step 4 — mini pricing grid (or a flat rate list when pricingModel is per_kg),
+  // or a bulk file import as an alternative to manual entry.
+  // Created service IDs after step 2 submission
   const [createdServiceIds, setCreatedServiceIds] = useState<{ name: string; id: string }[]>([])
   const [createdItemIds, setCreatedItemIds] = useState<{ name: string; id: string }[]>([])
   const [pricingGrid, setPricingGrid] = useState<Record<string, Record<string, string>>>({})
   const [kgRates, setKgRates] = useState<Record<string, string>>({})
+  const [priceEntryMode, setPriceEntryMode] = useState<'manual' | 'import'>('manual')
+  const [importModalOpen, setImportModalOpen] = useState(false)
 
   // Trial-start confirmation, shown once onboarding is done
   const [showTrialModal, setShowTrialModal] = useState(false)
@@ -83,25 +87,17 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
     })
   }
 
-  async function savePricingModel() {
-    setError('')
-    startTransition(async () => {
-      const res = await updateSettings({ pricingModel })
-      if (!res.success) { setError(res.error); return }
-      setStep(3)
-    })
-  }
-
   async function saveServices() {
     if (selectedServices.length === 0) {
       // Skip is allowed for steps > 1
-      setStep(4)
+      setStep(3)
       return
     }
     setError('')
     startTransition(async () => {
-      // Create default items and selected services — new services default to
-      // this laundry's pricing model (set in the previous step)
+      // Create default items and selected services. The pricing-model step comes
+      // next and cascades onto every service in the laundry, so it's fine for
+      // these to start out with whatever pricing_mode the laundry currently has.
       const [serviceResults, itemResults] = await Promise.all([
         Promise.all(selectedServices.map(name => createService(name))),
         Promise.all(DEFAULT_ITEMS.map(name => createItemType(name))),
@@ -117,6 +113,15 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
 
       setCreatedServiceIds(svcIds)
       setCreatedItemIds(itemIds)
+      setStep(3)
+    })
+  }
+
+  async function savePricingModel() {
+    setError('')
+    startTransition(async () => {
+      const res = await updateSettings({ pricingModel })
+      if (!res.success) { setError(res.error); return }
       setStep(4)
     })
   }
@@ -267,43 +272,8 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
             </div>
           )}
 
-          {/* Step 2 — Pricing model */}
+          {/* Step 2 — Services */}
           {step === 2 && (
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-[24px] font-semibold text-warm-950 mb-1">How do you charge?</h1>
-                <p className="text-body text-warm-600">
-                  This decides how the pricing matrix works. You can change it later in Settings.
-                </p>
-              </div>
-
-              {error && <p className="text-caption text-error-fg">{error}</p>}
-
-              <div className="space-y-3">
-                {PRICING_MODELS.map(m => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setPricingModel(m)}
-                    className={`w-full text-left px-4 py-3 rounded-10 border transition-colors ${
-                      pricingModel === m ? 'border-brand bg-brand-pale' : 'border-warm-300 hover:bg-warm-50'
-                    }`}
-                  >
-                    <p className="text-ui font-medium text-warm-950">{PRICING_MODEL_LABELS[m].label}</p>
-                    <p className="text-caption text-warm-600 mt-0.5">{PRICING_MODEL_LABELS[m].description}</p>
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Button variant="ghost" onClick={() => setStep(1)} disabled={isPending}>Back</Button>
-                <Button onClick={savePricingModel} isPending={isPending} size="lg">Next</Button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3 — Services */}
-          {step === 3 && (
             <div className="space-y-6">
               <div>
                 <h1 className="text-[24px] font-semibold text-warm-950 mb-1">Choose your services</h1>
@@ -331,11 +301,11 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
               </div>
 
               <div className="flex items-center justify-between">
-                <Button variant="ghost" onClick={() => setStep(2)} disabled={isPending}>Back</Button>
+                <Button variant="ghost" onClick={() => setStep(1)} disabled={isPending}>Back</Button>
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => setStep(4)}
+                    onClick={() => setStep(3)}
                     className="text-caption text-warm-500 hover:text-warm-800 underline underline-offset-2"
                   >
                     I&apos;ll do this later
@@ -346,20 +316,85 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
             </div>
           )}
 
-          {/* Step 4 — Mini pricing grid */}
+          {/* Step 3 — Pricing model */}
+          {step === 3 && (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-[24px] font-semibold text-warm-950 mb-1">How do you charge?</h1>
+                <p className="text-body text-warm-600">
+                  This decides how the pricing matrix works. You can change it later in Settings.
+                </p>
+              </div>
+
+              {error && <p className="text-caption text-error-fg">{error}</p>}
+
+              <div className="space-y-3">
+                {PRICING_MODELS.map(m => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setPricingModel(m)}
+                    className={`w-full text-left px-4 py-3 rounded-10 border transition-colors ${
+                      pricingModel === m ? 'border-brand bg-brand-pale' : 'border-warm-300 hover:bg-warm-50'
+                    }`}
+                  >
+                    <p className="text-ui font-medium text-warm-950">{PRICING_MODEL_LABELS[m].label}</p>
+                    <p className="text-caption text-warm-600 mt-0.5">{PRICING_MODEL_LABELS[m].description}</p>
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Button variant="ghost" onClick={() => setStep(2)} disabled={isPending}>Back</Button>
+                <Button onClick={savePricingModel} isPending={isPending} size="lg">Next</Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4 — Set prices: manual grid or bulk import */}
           {step === 4 && (
             <div className="space-y-6">
               <div>
                 <h1 className="text-[24px] font-semibold text-warm-950 mb-1">Set your prices</h1>
                 <p className="text-body text-warm-600">
-                  Add prices for each item × service combination. You can skip and set these later.
+                  Add prices manually, or import them from a spreadsheet. You can skip and set these later.
                 </p>
               </div>
 
-              {createdServiceIds.length === 0 ? (
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPriceEntryMode('manual')}
+                  className={`px-4 py-2 rounded-8 text-ui font-medium border transition-colors ${
+                    priceEntryMode === 'manual' ? 'border-brand bg-brand-pale text-brand' : 'border-warm-300 text-warm-600 hover:bg-warm-50'
+                  }`}
+                >
+                  Enter manually
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPriceEntryMode('import')}
+                  className={`px-4 py-2 rounded-8 text-ui font-medium border transition-colors ${
+                    priceEntryMode === 'import' ? 'border-brand bg-brand-pale text-brand' : 'border-warm-300 text-warm-600 hover:bg-warm-50'
+                  }`}
+                >
+                  Import from file
+                </button>
+              </div>
+
+              {priceEntryMode === 'import' ? (
+                <div className="bg-white border border-warm-300 rounded-10 p-5 text-center space-y-3">
+                  <p className="text-body text-warm-600">
+                    Upload an Excel or CSV file with your services, item types, and prices — we&apos;ll set them all up in bulk.
+                  </p>
+                  <Button variant="primary" onClick={() => setImportModalOpen(true)}>
+                    Open import
+                  </Button>
+                </div>
+              ) : createdServiceIds.length === 0 ? (
                 <div className="bg-white border border-warm-300 rounded-10 p-5 text-center">
                   <p className="text-body text-warm-500">
-                    No services were created in step 3. You can set pricing from Settings → Items &amp; Services.
+                    No services were created in the previous step. You can set pricing from Settings → Items &amp; Services.
                   </p>
                 </div>
               ) : pricingModel === 'per_kg' ? (
@@ -422,7 +457,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
               ) : (
                 <div className="bg-white border border-warm-300 rounded-10 p-5 text-center">
                   <p className="text-body text-warm-500">
-                    No item types were created in step 3. You can set pricing from Settings → Items &amp; Services.
+                    No item types were created in the previous step. You can set pricing from Settings → Items &amp; Services.
                   </p>
                 </div>
               )}
@@ -437,13 +472,24 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                   >
                     I&apos;ll do this later
                   </button>
-                  <Button onClick={savePricing} isPending={isPending} size="lg">Finish</Button>
+                  {priceEntryMode === 'manual' && (
+                    <Button onClick={savePricing} isPending={isPending} size="lg">Finish</Button>
+                  )}
                 </div>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      <ImportPricingModal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImported={() => {
+          setImportModalOpen(false)
+          startTransition(finishOnboarding)
+        }}
+      />
 
       <Modal
         open={showTrialModal}
