@@ -71,6 +71,22 @@ export async function updateSettings(patch: Partial<LaundrySettings>): Promise<S
 
   if (error) return { success: false, error: error.message }
 
+  // A laundry-wide pricing model switch to a pure mode forces every service
+  // to match — otherwise services created before the switch stay stuck on
+  // their old mode with no UI able to fix them (ModeToggle only shows in
+  // 'mixed'). 'mixed' is left alone: per-service mode is what that mode means.
+  if (patch.pricingModel === 'per_kg') {
+    await supabase
+      .from('services')
+      .update({ pricing_mode: 'per_kg' })
+      .eq('laundry_id', emp.laundry_id)
+  } else if (patch.pricingModel === 'per_item') {
+    await supabase
+      .from('services')
+      .update({ pricing_mode: 'per_item', kg_rate: null })
+      .eq('laundry_id', emp.laundry_id)
+  }
+
   const changed = Object.entries(patch).map(([k, v]) => `${k}=${v}`).join(', ')
   await supabase.from('activity_logs').insert({
     laundry_id: emp.laundry_id,

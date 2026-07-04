@@ -20,9 +20,11 @@ type ItemsPageData = {
 export default function ItemsAndServicesPage() {
   const [data, setData] = useState<ItemsPageData | null>(null)
 
-  useEffect(() => {
+  function loadData() {
     fetch('/api/items-and-services').then(r => r.json()).then(setData)
-  }, [])
+  }
+
+  useEffect(loadData, [])
 
   if (!data) return <PageSkeleton />
 
@@ -49,6 +51,7 @@ export default function ItemsAndServicesPage() {
         services={data.services}
         prices={data.prices}
         pricingModel={data.pricingModel}
+        onImported={loadData}
       />
     </div>
   )

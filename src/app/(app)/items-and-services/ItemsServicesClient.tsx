@@ -8,12 +8,14 @@ import type { PricingMode, PricingModel } from '@/constants/statuses'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { ImportPricingModal } from './ImportPricingModal'
 
 interface Props {
   itemTypes: ItemType[]
   services: LaundryService[]
   prices: PriceCell[]
   pricingModel: PricingModel
+  onImported: () => void
 }
 
 function ModeToggle({ value, onChange }: { value: PricingMode; onChange: (m: PricingMode) => void }) {
@@ -36,7 +38,7 @@ function ModeToggle({ value, onChange }: { value: PricingMode; onChange: (m: Pri
   )
 }
 
-export function ItemsServicesClient({ itemTypes: initItems, services: initServices, prices: initPrices, pricingModel }: Props) {
+export function ItemsServicesClient({ itemTypes: initItems, services: initServices, prices: initPrices, pricingModel, onImported }: Props) {
   const [tab, setTab] = useState<'items' | 'services' | 'pricing'>('items')
   const [items, setItems] = useState(initItems)
   const [services, setServices] = useState(initServices)
@@ -45,6 +47,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
   const [newItemName, setNewItemName] = useState('')
   const [newServiceName, setNewServiceName] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [importOpen, setImportOpen] = useState(false)
   const [editingCell, setEditingCell] = useState<{ itemTypeId: string; serviceId: string } | null>(null)
   const [cellPrice, setCellPrice] = useState('')
   const [editingRateServiceId, setEditingRateServiceId] = useState<string | null>(null)
@@ -52,6 +55,10 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
   const [selectedServiceId, setSelectedServiceId] = useState<string>('')
   // Mobile: expanded item card in pricing view
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null)
+  // Exceptions editor (mixed mode, per_kg services only)
+  const [addingExceptionFor, setAddingExceptionFor] = useState<string | null>(null)
+  const [newExceptionItemTypeId, setNewExceptionItemTypeId] = useState('')
+  const [newExceptionPrice, setNewExceptionPrice] = useState('')
 
   function addItem() {
     if (!newItemName.trim()) return
@@ -159,6 +166,32 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
     })
   }
 
+  function openAddException(serviceId: string) {
+    setAddingExceptionFor(serviceId)
+    setNewExceptionItemTypeId('')
+    setNewExceptionPrice('')
+  }
+
+  function saveException(serviceId: string) {
+    const itemTypeId = newExceptionItemTypeId
+    const val = parseFloat(newExceptionPrice)
+    if (!itemTypeId || isNaN(val) || val < 0) return
+    startTransition(async () => {
+      const res = await upsertPrice(itemTypeId, serviceId, val)
+      if (res.success) {
+        setPrices(prev => {
+          const existing = prev.find(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId)
+          if (existing) return prev.map(p =>
+            p.itemTypeId === itemTypeId && p.serviceId === serviceId
+              ? { ...p, price: val, isActive: true } : p
+          )
+          return [...prev, { id: '', itemTypeId, serviceId, price: val, isActive: true }]
+        })
+      }
+      setAddingExceptionFor(null)
+    })
+  }
+
   const activeItems = items.filter(i => i.isActive)
   const activeServices = services.filter(s => s.isActive)
   const perKgServices = activeServices.filter(s => s.pricingMode === 'per_kg')
@@ -167,7 +200,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
     ? selectedServiceId
     : perItemServices[0]?.id ?? ''
 
-  const TAB_LABELS = { items: 'Item Types', services: 'Services', pricing: 'Pricing Matrix' }
+  const TAB_LABELS = { items: 'Item Types', services: 'Services', pricing: 'Pricing' }
 
   return (
     <div className="max-w-[1180px] mx-auto px-6 py-6">
@@ -272,9 +305,14 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
         </div>
       )}
 
-      {/* Pricing Matrix tab */}
+      {/* Pricing tab */}
       {tab === 'pricing' && (
         <div className="space-y-8">
+          <div className="flex justify-end">
+            <Button variant="secondary" size="sm" onClick={() => setImportOpen(true)}>
+              Import from Excel
+            </Button>
+          </div>
           {activeServices.length === 0 ? (
             <EmptyState
               headline="Nothing to price yet"
@@ -283,56 +321,160 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
           ) : (
             <>
               {/* Weight-based services — one rate per service, no per-item breakdown */}
-              {perKgServices.length > 0 && (
+              {pricingModel !== 'per_item' && perKgServices.length > 0 && (
                 <section>
                   <p className="text-label font-medium text-warm-700 mb-3">Weight-based pricing</p>
                   <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
                     {perKgServices.map(svc => {
                       const isEditing = editingRateServiceId === svc.id
+                      const exceptions = activeItems
+                        .map(item => ({ item, cell: getPrice(item.id, svc.id) }))
+                        .filter((e): e is { item: typeof e.item; cell: NonNullable<typeof e.cell> } => !!e.cell?.isActive)
+                      const availableForException = activeItems.filter(
+                        item => !exceptions.some(e => e.item.id === item.id)
+                      )
+                      const isAddingThis = addingExceptionFor === svc.id
+
                       return (
-                        <div key={svc.id} className="flex items-center justify-between px-5 py-3.5 border-b border-warm-100 last:border-0">
-                          <div>
-                            <p className="text-ui text-warm-950">{svc.name}</p>
-                            <p className="text-caption text-warm-500">Charged by total weight, not per item</p>
-                          </div>
-                          {isEditing ? (
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-caption text-warm-500">GHS</span>
-                              <input
-                                autoFocus
-                                value={rateInput}
-                                onChange={e => setRateInput(e.target.value)}
-                                onKeyDown={e => {
-                                  if (e.key === 'Enter') saveRate(svc.id)
-                                  if (e.key === 'Escape') setEditingRateServiceId(null)
-                                }}
-                                onBlur={() => saveRate(svc.id)}
-                                className="w-24 border border-brand rounded-7 px-2.5 py-1.5 text-ui text-warm-950 text-right focus:outline-none focus:shadow-focus-ring"
-                                placeholder="0.00"
-                              />
-                              <span className="text-caption text-warm-500">/ kg</span>
+                        <div key={svc.id} className="border-b border-warm-100 last:border-0">
+                          <div className="flex items-center justify-between px-5 py-3.5">
+                            <div>
+                              <p className="text-ui text-warm-950">{svc.name}</p>
+                              <p className="text-caption text-warm-500">Charged by total weight, not per item</p>
                             </div>
-                          ) : svc.kgRate !== null ? (
-                            <div className="flex items-center gap-3">
-                              <span className="tnum text-ui font-medium text-warm-950">
-                                GHS {svc.kgRate.toFixed(2)} <span className="text-caption text-warm-400 font-normal">/ kg</span>
-                              </span>
+                            {isEditing ? (
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-caption text-warm-500">GHS</span>
+                                <input
+                                  autoFocus
+                                  value={rateInput}
+                                  onChange={e => setRateInput(e.target.value)}
+                                  onKeyDown={e => {
+                                    if (e.key === 'Enter') saveRate(svc.id)
+                                    if (e.key === 'Escape') setEditingRateServiceId(null)
+                                  }}
+                                  onBlur={() => saveRate(svc.id)}
+                                  className="w-24 border border-brand rounded-7 px-2.5 py-1.5 text-ui text-warm-950 text-right focus:outline-none focus:shadow-focus-ring"
+                                  placeholder="0.00"
+                                />
+                                <span className="text-caption text-warm-500">/ kg</span>
+                              </div>
+                            ) : svc.kgRate !== null ? (
+                              <div className="flex items-center gap-3">
+                                <span className="tnum text-ui font-medium text-warm-950">
+                                  GHS {svc.kgRate.toFixed(2)} <span className="text-caption text-warm-400 font-normal">/ kg</span>
+                                </span>
+                                <button
+                                  onClick={() => startEditingRate(svc)}
+                                  disabled={isPending}
+                                  className="text-caption text-warm-400 hover:text-warm-700"
+                                >
+                                  Edit
+                                </button>
+                              </div>
+                            ) : (
                               <button
                                 onClick={() => startEditingRate(svc)}
                                 disabled={isPending}
-                                className="text-caption text-warm-400 hover:text-warm-700"
+                                className="text-ui text-warm-300 hover:text-warm-600 transition-colors"
                               >
-                                Edit
+                                — Set rate
                               </button>
+                            )}
+                          </div>
+
+                          {/* Exceptions — item types priced per-item instead of by weight for this service */}
+                          {pricingModel === 'mixed' && (
+                            <div className="px-5 pb-3.5 -mt-1 pt-2.5 border-t border-warm-100">
+                              <p className="text-caption text-warm-500 mb-2">Priced per item instead of by weight</p>
+                              {exceptions.length === 0 && !isAddingThis && (
+                                <p className="text-caption text-warm-400 mb-2">No exceptions — everything on this service is priced by weight.</p>
+                              )}
+                              <div className="space-y-1.5">
+                                {exceptions.map(({ item, cell }) => {
+                                  const isEditingCell = editingCell?.itemTypeId === item.id && editingCell?.serviceId === svc.id
+                                  return (
+                                    <div key={item.id} className="flex items-center justify-between">
+                                      <span className="text-ui text-warm-800">{item.name}</span>
+                                      <div className="flex items-center gap-2">
+                                        {isEditingCell ? (
+                                          <input
+                                            autoFocus
+                                            value={cellPrice}
+                                            onChange={e => setCellPrice(e.target.value)}
+                                            onKeyDown={e => {
+                                              if (e.key === 'Enter') savePrice(item.id, svc.id)
+                                              if (e.key === 'Escape') setEditingCell(null)
+                                            }}
+                                            onBlur={() => savePrice(item.id, svc.id)}
+                                            className="w-20 border border-brand rounded-7 px-2 py-1 text-ui text-warm-950 text-right focus:outline-none focus:shadow-focus-ring"
+                                          />
+                                        ) : (
+                                          <button
+                                            onClick={() => startEditingCell(item.id, svc.id, cell)}
+                                            disabled={isPending}
+                                            className="tnum text-ui font-medium text-warm-950 hover:text-brand"
+                                          >
+                                            GHS {cell.price.toFixed(2)}
+                                          </button>
+                                        )}
+                                        <button
+                                          onClick={() => handleDisablePrice(item.id, svc.id)}
+                                          disabled={isPending}
+                                          className="text-caption text-warm-400 hover:text-error-fg"
+                                        >
+                                          Remove
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                              {isAddingThis ? (
+                                <div className="flex items-center gap-2 mt-2">
+                                  <select
+                                    value={newExceptionItemTypeId}
+                                    onChange={e => setNewExceptionItemTypeId(e.target.value)}
+                                    autoFocus
+                                    className="flex-1 border border-warm-300 rounded-7 px-2 py-1.5 text-ui text-warm-950 bg-white focus:outline-none focus:border-brand"
+                                  >
+                                    <option value="">Select item…</option>
+                                    {availableForException.map(item => (
+                                      <option key={item.id} value={item.id}>{item.name}</option>
+                                    ))}
+                                  </select>
+                                  <input
+                                    value={newExceptionPrice}
+                                    onChange={e => setNewExceptionPrice(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && saveException(svc.id)}
+                                    placeholder="0.00"
+                                    className="w-20 border border-warm-300 rounded-7 px-2 py-1.5 text-ui text-warm-950 text-right focus:outline-none focus:border-brand"
+                                  />
+                                  <button
+                                    onClick={() => saveException(svc.id)}
+                                    disabled={!newExceptionItemTypeId || !newExceptionPrice || isPending}
+                                    className="text-caption text-brand font-medium disabled:opacity-40"
+                                  >
+                                    Add
+                                  </button>
+                                  <button
+                                    onClick={() => setAddingExceptionFor(null)}
+                                    className="text-caption text-warm-400 hover:text-warm-700"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              ) : (
+                                availableForException.length > 0 && (
+                                  <button
+                                    onClick={() => openAddException(svc.id)}
+                                    className="mt-2 text-caption text-brand hover:text-brand-hover underline underline-offset-2"
+                                  >
+                                    + Add exception
+                                  </button>
+                                )
+                              )}
                             </div>
-                          ) : (
-                            <button
-                              onClick={() => startEditingRate(svc)}
-                              disabled={isPending}
-                              className="text-ui text-warm-300 hover:text-warm-600 transition-colors"
-                            >
-                              — Set rate
-                            </button>
                           )}
                         </div>
                       )
@@ -342,7 +484,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
               )}
 
               {/* Per-item services — item type × service price matrix */}
-              {perItemServices.length > 0 && (
+              {pricingModel !== 'per_kg' && perItemServices.length > 0 && (
                 <section>
                   <p className="text-label font-medium text-warm-700 mb-3">Item pricing</p>
                   {activeItems.length === 0 ? (
@@ -514,6 +656,12 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
           )}
         </div>
       )}
+
+      <ImportPricingModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={onImported}
+      />
     </div>
   )
 }

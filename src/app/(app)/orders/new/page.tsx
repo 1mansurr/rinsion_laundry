@@ -5,7 +5,7 @@ import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { CreateOrderForm } from './CreateOrderForm'
 import type { PriceCell } from '@/services/pricing'
 import type { Customer } from '@/services/customers'
-import type { PricingMode } from '@/constants/statuses'
+import type { PricingMode, PricingModel } from '@/constants/statuses'
 
 type ItemType = { id: string; name: string; isActive: boolean }
 type Service = { id: string; name: string; isActive: boolean; pricingMode: PricingMode; kgRate: number | null }
@@ -16,7 +16,7 @@ type FormData = {
   prices: PriceCell[]
   customers: Customer[]
   branches: { id: string; name: string }[]
-  settings: { allowExpressOrders: boolean } | null
+  settings: { allowExpressOrders: boolean; pricingModel: PricingModel } | null
   preselectedCustomer: Customer | null
   isAdmin: boolean
   defaultBranchId: string
@@ -61,6 +61,7 @@ function NewOrderContent() {
           preselectedCustomer={data.preselectedCustomer}
           allowExpressOrders={data.settings?.allowExpressOrders ?? true}
           isMultiBranch={data.isMultiBranch}
+          pricingModel={data.settings?.pricingModel ?? 'per_item'}
         />
       )}
     </div>

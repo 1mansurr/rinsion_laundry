@@ -9,7 +9,7 @@ import type { ItemType } from '@/services/items'
 import type { LaundryService } from '@/services/services'
 import type { PriceCell } from '@/services/pricing'
 import type { Customer } from '@/services/customers'
-import { PAYMENT_METHODS, type OrderPriority, type PaymentMethod, type PricingMode } from '@/constants/statuses'
+import { PAYMENT_METHODS, type OrderPriority, type PaymentMethod, type PricingMode, type PricingModel } from '@/constants/statuses'
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   cash: 'Cash', mobile_money: 'Mobile Money', card: 'Card', bank_transfer: 'Bank Transfer', other: 'Other',
@@ -43,6 +43,7 @@ interface Props {
   preselectedCustomer?: Customer | null
   allowExpressOrders?: boolean
   isMultiBranch?: boolean
+  pricingModel?: PricingModel
 }
 
 const EMPTY_LINE: LineItem = { itemTypeId: '', serviceId: '', quantity: 1, unitPrice: 0, totalPrice: 0, pricingMode: 'per_item' }
@@ -56,7 +57,7 @@ const PRIORITY_LABELS: Record<OrderPriority, string> = {
 export function CreateOrderForm({
   itemTypes, services, prices, customers, branches,
   isAdmin, defaultBranchId, preselectedCustomer,
-  allowExpressOrders = true, isMultiBranch = false,
+  allowExpressOrders = true, isMultiBranch = false, pricingModel = 'per_item',
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -426,6 +427,10 @@ export function CreateOrderForm({
           <div className="space-y-3">
             {lines.map((line, i) => {
               const availableItemTypes = getAvailableItemTypes(line.serviceId)
+              const svc = getService(line.serviceId)
+              // Weight-based service with per-item exceptions (mixed mode only) — let staff
+              // choose per line whether this piece is weighed or is one of the excepted items.
+              const showWeightItemToggle = svc?.pricingMode === 'per_kg' && pricingModel === 'mixed' && availableItemTypes.length > 0
               return (
                 <div key={i}>
                   {/* Desktop row */}
@@ -443,21 +448,41 @@ export function CreateOrderForm({
                         <option key={s.id} value={s.id}>{s.name}</option>
                       ))}
                     </select>
-                    {line.pricingMode === 'per_kg' ? (
-                      <span className="text-caption text-warm-400 italic">Priced by weight</span>
-                    ) : (
-                      <select
-                        value={line.itemTypeId}
-                        onChange={e => updateLine(i, { itemTypeId: e.target.value })}
-                        disabled={!line.serviceId}
-                        className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring appearance-none disabled:opacity-40"
-                      >
-                        <option value="">Select item…</option>
-                        {availableItemTypes.map(t => (
-                          <option key={t.id} value={t.id}>{t.name}</option>
-                        ))}
-                      </select>
-                    )}
+                    <div>
+                      {showWeightItemToggle && (
+                        <div className="inline-flex rounded-7 border border-warm-300 overflow-hidden text-[11px] mb-1">
+                          <button
+                            type="button"
+                            onClick={() => updateLine(i, { pricingMode: 'per_kg', itemTypeId: '' })}
+                            className={`px-2 py-1 font-medium transition-colors ${line.pricingMode === 'per_kg' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-500 hover:bg-warm-100'}`}
+                          >
+                            By weight
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => updateLine(i, { pricingMode: 'per_item', itemTypeId: availableItemTypes.length === 1 ? availableItemTypes[0].id : '' })}
+                            className={`px-2 py-1 font-medium transition-colors ${line.pricingMode === 'per_item' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-500 hover:bg-warm-100'}`}
+                          >
+                            By item
+                          </button>
+                        </div>
+                      )}
+                      {line.pricingMode === 'per_kg' ? (
+                        <span className="text-caption text-warm-400 italic">Priced by weight</span>
+                      ) : (
+                        <select
+                          value={line.itemTypeId}
+                          onChange={e => updateLine(i, { itemTypeId: e.target.value })}
+                          disabled={!line.serviceId}
+                          className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring appearance-none disabled:opacity-40"
+                        >
+                          <option value="">Select item…</option>
+                          {availableItemTypes.map(t => (
+                            <option key={t.id} value={t.id}>{t.name}</option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
                     {/* Qty stepper (per_item) or weight input (per_kg) */}
                     {line.pricingMode === 'per_kg' ? (
                       <div className="flex items-center gap-1.5">
@@ -524,6 +549,24 @@ export function CreateOrderForm({
                       </div>
                       <div>
                         <p className="text-caption text-warm-500 mb-1">Item type</p>
+                        {showWeightItemToggle && (
+                          <div className="inline-flex rounded-7 border border-warm-300 overflow-hidden text-[11px] mb-1">
+                            <button
+                              type="button"
+                              onClick={() => updateLine(i, { pricingMode: 'per_kg', itemTypeId: '' })}
+                              className={`px-2 py-1 font-medium transition-colors ${line.pricingMode === 'per_kg' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-500 hover:bg-warm-100'}`}
+                            >
+                              By weight
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => updateLine(i, { pricingMode: 'per_item', itemTypeId: availableItemTypes.length === 1 ? availableItemTypes[0].id : '' })}
+                              className={`px-2 py-1 font-medium transition-colors ${line.pricingMode === 'per_item' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-500 hover:bg-warm-100'}`}
+                            >
+                              By item
+                            </button>
+                          </div>
+                        )}
                         {line.pricingMode === 'per_kg' ? (
                           <p className="text-[14px] text-warm-400 italic py-2">Priced by weight</p>
                         ) : (
