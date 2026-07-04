@@ -5,6 +5,7 @@ import { OrderDetail } from './OrderDetail'
 import type {
   OrderDetailNote,
   OrderDetailPayment,
+  OrderDetailRefund,
   OrderDetailItem,
   OrderDetailActivity,
 } from './OrderDetail'
@@ -17,6 +18,8 @@ type OrderData = {
   priority: string
   pickupCode: string
   pickupDate: string | null
+  subtotal: number
+  taxAmount: number
   total: number
   amountPaid: number
   customerName: string
@@ -29,6 +32,7 @@ type OrderData = {
   items: OrderDetailItem[]
   itemTypes: { id: string; name: string }[]
   payments: OrderDetailPayment[]
+  refunds: OrderDetailRefund[]
   notes: OrderDetailNote[]
   activities: OrderDetailActivity[]
 }

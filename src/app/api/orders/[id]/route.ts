@@ -100,7 +100,19 @@ export async function GET(request: Request, { params }: { params: { id: string }
     createdAt: p.created_at,
   }))
 
-  const amountPaid = payments.reduce((s, p) => s + p.amount, 0)
+  const refunds = ((order.order_refunds as {
+    id: string; amount: number; refund_method: string; reason: string | null; created_at: string
+  }[]) ?? []).map(r => ({
+    id: r.id,
+    amount: Number(r.amount),
+    refundMethod: r.refund_method,
+    reason: r.reason,
+    createdAt: r.created_at,
+  }))
+
+  const grossPaid = payments.reduce((s, p) => s + p.amount, 0)
+  const totalRefunded = refunds.reduce((s, r) => s + r.amount, 0)
+  const amountPaid = grossPaid - totalRefunded
 
   // Cancelled metadata
   const statusHistory = (order.order_status_history as {
@@ -118,6 +130,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
     priority: order.priority ?? 'normal',
     pickupCode: order.pickup_code,
     pickupDate: order.pickup_date ?? null,
+    subtotal: Number(order.subtotal),
+    taxAmount: Number(order.tax_amount),
     total: Number(order.total),
     amountPaid,
     customerName: customer ? `${customer.first_name} ${customer.last_name}` : '—',
@@ -130,6 +144,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     items,
     itemTypes,
     payments,
+    refunds,
     notes,
     activities,
   })

@@ -21,7 +21,7 @@ export async function verifyAndCollect(
 
   const { data: order } = await supabase
     .from('orders')
-    .select('status, pickup_code, total, payments(amount)')
+    .select('status, pickup_code, total, payments(amount), order_refunds(amount)')
     .eq('id', orderId)
     .single()
 
@@ -33,7 +33,8 @@ export async function verifyAndCollect(
   }
 
   const payments = (order.payments as { amount: number }[]) ?? []
-  const paid = payments.reduce((s, p) => s + Number(p.amount), 0)
+  const refunds = (order.order_refunds as { amount: number }[]) ?? []
+  const paid = payments.reduce((s, p) => s + Number(p.amount), 0) - refunds.reduce((s, r) => s + Number(r.amount), 0)
   if (paid < Number(order.total)) {
     const balance = (Number(order.total) - paid).toFixed(2)
     return { success: false, error: `Balance of GHS ${balance} outstanding. Record payment first.` }

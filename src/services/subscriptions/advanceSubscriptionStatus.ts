@@ -15,8 +15,8 @@ export interface AdvanceResult {
  *
  * Status transitions (days past cycle_end_date):
  *   active / trialing  → soft_block  at daysOverdue >= 1
- *   soft_block         → hard_block  at daysOverdue >= 1 + GRACE_PERIOD_SOFT_DAYS (7)
- *   hard_block         → locked      at daysOverdue >= 7 + GRACE_PERIOD_HARD_DAYS  (13)
+ *   soft_block         → hard_block  at daysOverdue >= 1 + GRACE_PERIOD_SOFT_DAYS (11)
+ *   hard_block         → locked      at daysOverdue >= 11 + GRACE_PERIOD_HARD_DAYS  (21)
  *
  * Renewal reminders sent to laundry admin at daysUntilEnd = 3, 1, 0.
  * Deduplicated: checks sms_messages for the current cycle before sending.

@@ -4,7 +4,8 @@ import { createClient } from '@/lib/supabase'
 import { smsProvider } from '@/lib/sms'
 import { computeSmsUsage } from './computeSmsUsage'
 import { countFailuresInLast24Hours } from './countFailuresInLast24Hours'
-import { SMS_WARNING_THRESHOLD, SMS_FAILURE_24H_THRESHOLD } from '@/constants/plans'
+import { SMS_WARNING_THRESHOLD, SMS_FAILURE_24H_THRESHOLD, SMS_OVERAGE_LIMIT } from '@/constants/plans'
+import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
 
 export interface SendSmsInput {
   laundryId: string
@@ -47,7 +48,35 @@ export async function sendSms(input: SendSmsInput): Promise<{ success: boolean }
     sendQuotaWarningSms(input.laundryId, sub.id, used, quota).catch(() => null)
   }
 
-  // Send via provider (overage is allowed — sends always go through)
+  // Overage is allowed up to SMS_OVERAGE_LIMIT beyond quota — past that, stop sending
+  // to cap unpaid exposure. The customer simply doesn't get this SMS.
+  if (used >= quota + SMS_OVERAGE_LIMIT) {
+    const now = new Date().toISOString()
+    await supabase.from('sms_messages').insert({
+      laundry_id: input.laundryId,
+      order_id: input.orderId,
+      customer_id: input.customerId,
+      phone: input.phone,
+      message: input.message,
+      trigger_event: input.triggerEvent,
+      provider: 'mnotify',
+      status: 'failed',
+      counts_toward_cap: false,
+      failed_at: now,
+      error_message: 'SMS overage limit exceeded for this cycle',
+    })
+
+    await supabase.from('activity_logs').insert({
+      laundry_id: input.laundryId,
+      order_id: input.orderId,
+      action_type: ACTIVITY_ACTION_TYPES.SMS_QUOTA_EXCEEDED,
+      description: `SMS to ${input.phone} blocked — overage limit of ${SMS_OVERAGE_LIMIT} beyond quota reached`,
+    })
+
+    return { success: false }
+  }
+
+  // Send via provider (overage up to the limit above is allowed — sends go through)
   const result = await smsProvider.sendSms(input.phone, input.message, 'Rinsion')
 
   // Determine cap contribution per spec failure-counting rules

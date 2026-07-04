@@ -34,15 +34,18 @@ export const PLANS = {
 export type PlanKey = keyof typeof PLANS
 
 /** Days of full access before warnings start (soft block day 1) */
-export const GRACE_PERIOD_SOFT_DAYS = 6   // days 1-6 past cycle end → soft_block
-export const GRACE_PERIOD_HARD_DAYS = 6   // days 7-12 past cycle end → hard_block
-// Day 13+ → locked
+export const GRACE_PERIOD_SOFT_DAYS = 10   // days 1-10 past cycle end → soft_block
+export const GRACE_PERIOD_HARD_DAYS = 10   // days 11-20 past cycle end → hard_block
+// Day 21+ → locked
 
 export const CYCLE_DAYS = 30
 export const TRIAL_DAYS = 14
 
 /** GHS charged per SMS beyond the plan quota */
 export const SMS_OVERAGE_PRICE = 0.05
+
+/** Max cap-eligible SMS sends allowed beyond the plan quota in a cycle — sends are skipped past this */
+export const SMS_OVERAGE_LIMIT = 30
 
 /** Usage fraction that triggers the 70% warning (0.70) */
 export const SMS_WARNING_THRESHOLD = 0.70

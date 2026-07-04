@@ -12,6 +12,7 @@ export interface LaundrySettings {
   requirePickupCode: boolean
   allowCustomerSubmissions: boolean
   pricingModel: PricingModel
+  taxRate: number
 }
 
 export async function getSettings(): Promise<LaundrySettings | null> {
@@ -28,7 +29,7 @@ export async function getSettings(): Promise<LaundrySettings | null> {
 
   const { data } = await supabase
     .from('settings')
-    .select('allow_partial_payments, allow_express_orders, require_pickup_code, allow_customer_submissions, pricing_model')
+    .select('allow_partial_payments, allow_express_orders, require_pickup_code, allow_customer_submissions, pricing_model, tax_rate')
     .eq('laundry_id', emp.laundry_id)
     .single()
 
@@ -39,6 +40,7 @@ export async function getSettings(): Promise<LaundrySettings | null> {
     requirePickupCode: data.require_pickup_code,
     allowCustomerSubmissions: data.allow_customer_submissions,
     pricingModel: data.pricing_model,
+    taxRate: Number(data.tax_rate),
   }
 }
 
@@ -54,12 +56,13 @@ export async function updateSettings(patch: Partial<LaundrySettings>): Promise<S
     .single()
   if (!emp || emp.role !== 'admin') return { success: false, error: 'Admin only.' }
 
-  const dbPatch: Record<string, boolean | string> = { updated_at: new Date().toISOString() }
+  const dbPatch: Record<string, boolean | string | number> = { updated_at: new Date().toISOString() }
   if (patch.allowPartialPayments !== undefined) dbPatch.allow_partial_payments = patch.allowPartialPayments
   if (patch.allowExpressOrders !== undefined) dbPatch.allow_express_orders = patch.allowExpressOrders
   if (patch.requirePickupCode !== undefined) dbPatch.require_pickup_code = patch.requirePickupCode
   if (patch.allowCustomerSubmissions !== undefined) dbPatch.allow_customer_submissions = patch.allowCustomerSubmissions
   if (patch.pricingModel !== undefined) dbPatch.pricing_model = patch.pricingModel
+  if (patch.taxRate !== undefined) dbPatch.tax_rate = patch.taxRate
 
   const { error } = await supabase
     .from('settings')

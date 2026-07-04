@@ -120,7 +120,7 @@ export function DashboardClient({
   }
 
   function handleCollect() {
-    if (!collectingOrder || collectCode.length !== 5) return
+    if (!collectingOrder || collectCode.length !== 6) return
     setCollectError('')
     startTransition(async () => {
       const res = await verifyAndCollect(collectingOrder.id, collectCode)
@@ -357,19 +357,18 @@ export function DashboardClient({
         <div className="space-y-4">
           <div>
             <p className="text-label font-medium text-warm-700 mb-2">
-              Enter the 5-digit pickup code
+              Enter the 6-character pickup code
             </p>
             <input
               type="text"
-              inputMode="numeric"
-              maxLength={5}
+              maxLength={6}
               value={collectCode}
               onChange={e => {
-                setCollectCode(e.target.value.replace(/\D/g, ''))
+                setCollectCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))
                 setCollectError('')
               }}
               onKeyDown={e => e.key === 'Enter' && handleCollect()}
-              placeholder="·····"
+              placeholder="······"
               autoFocus
               className={`w-full border rounded-7 py-3 text-center tnum text-[22px] font-bold tracking-[0.18em] text-warm-950 placeholder:text-warm-300 focus:outline-none focus:shadow-focus-ring transition-shadow ${
                 collectError
@@ -396,7 +395,7 @@ export function DashboardClient({
             <Button
               variant="primary"
               isPending={isPending}
-              disabled={collectCode.length !== 5 || isPending}
+              disabled={collectCode.length !== 6 || isPending}
               onClick={handleCollect}
             >
               Collect Order

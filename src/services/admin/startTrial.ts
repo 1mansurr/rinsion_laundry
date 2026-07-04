@@ -3,6 +3,7 @@
 import { createAdminClient, createClient } from '@/lib/supabase'
 import { INTERNAL_ADMIN_EMAILS } from '@/constants/internalAdmins'
 import { PLANS, TRIAL_DAYS } from '@/constants/plans'
+import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
 import { revalidatePath } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -48,6 +49,14 @@ export async function startTrial(
     .single()
 
   if (error) return { success: false, error: error.message }
+
+  await admin.from('activity_logs').insert({
+    laundry_id: laundryId,
+    employee_id: null,
+    internal_admin_email: user.email,
+    action_type: ACTIVITY_ACTION_TYPES.INTERNAL_TRIAL_STARTED,
+    description: `Trial started by Rinsion admin ${user.email}`,
+  })
 
   revalidatePath('/internal/laundries')
   return { success: true, data: { subscriptionId: sub.id } }

@@ -4,6 +4,7 @@ import { createAdminClient, createClient } from '@/lib/supabase'
 import { INTERNAL_ADMIN_EMAILS } from '@/constants/internalAdmins'
 import { PLANS, TRIAL_DAYS } from '@/constants/plans'
 import { DEFAULT_ITEM_TYPES, DEFAULT_SERVICES } from '@/constants/defaultCatalog'
+import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
 import { generateJoinPin } from '@/utils/generateJoinPin'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -119,6 +120,14 @@ export async function createLaundry(
     })
 
   if (subErr) return { success: false, error: subErr.message }
+
+  await admin.from('activity_logs').insert({
+    laundry_id: laundry.id,
+    employee_id: null,
+    internal_admin_email: user.email,
+    action_type: ACTIVITY_ACTION_TYPES.INTERNAL_LAUNDRY_CREATED,
+    description: `Laundry "${input.laundryName}" provisioned by Rinsion admin ${user.email}`,
+  })
 
   return {
     success: true,

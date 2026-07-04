@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { updateOrderStatus } from '@/services/orders'
 import { verifyAndCollect } from '@/services/orders/verifyAndCollect'
 import { recordPayment } from '@/services/payments/recordPayment'
+import { recordRefund } from '@/services/payments/recordRefund'
 import { resendPickupCodeSms } from '@/services/notifications/resendPickupCodeSms'
 import { createOrderNote } from '@/services/orders/createOrderNote'
 import { setOrderItemPieces } from '@/services/orders/setOrderItemPieces'
@@ -29,6 +30,14 @@ export interface OrderDetailPayment {
   id: string
   amount: number
   paymentMethod: string
+  createdAt: string
+}
+
+export interface OrderDetailRefund {
+  id: string
+  amount: number
+  refundMethod: string
+  reason: string | null
   createdAt: string
 }
 
@@ -66,6 +75,8 @@ interface Props {
   priority: string
   pickupCode: string
   pickupDate: string | null
+  subtotal: number
+  taxAmount: number
   total: number
   amountPaid: number
   customerName: string
@@ -78,6 +89,7 @@ interface Props {
   items: OrderDetailItem[]
   itemTypes: { id: string; name: string }[]
   payments: OrderDetailPayment[]
+  refunds: OrderDetailRefund[]
   notes: OrderDetailNote[]
   activities: OrderDetailActivity[]
 }
@@ -96,9 +108,9 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 }
 
 export function OrderDetail({
-  orderId, orderNumber, status, priority, pickupCode, pickupDate, total, amountPaid,
+  orderId, orderNumber, status, priority, pickupCode, pickupDate, subtotal, taxAmount, total, amountPaid,
   customerName, customerId, customerPhone, branchName, createdAt, cancelledAt,
-  previousStatusOnCancel, items: initItems, itemTypes, payments, notes: initNotes, activities,
+  previousStatusOnCancel, items: initItems, itemTypes, payments, refunds: initRefunds, notes: initNotes, activities,
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -107,6 +119,7 @@ export function OrderDetail({
   const [collectOpen, setCollectOpen] = useState(false)
   const [paymentOpen, setPaymentOpen] = useState(false)
   const [cancelOpen, setCancelOpen] = useState(false)
+  const [refundOpen, setRefundOpen] = useState(false)
   const [showMoreMenu, setShowMoreMenu] = useState(false)
 
   // Collect form
@@ -120,6 +133,14 @@ export function OrderDetail({
   const [payCodeError, setPayCodeError] = useState('')
   const [payMethod, setPayMethod] = useState<PaymentMethod>('mobile_money')
   const [payError, setPayError] = useState('')
+
+  // Refund form — refundable is capped at the net amount currently paid
+  const [refunds, setRefunds] = useState(initRefunds)
+  const refundable = amountPaid
+  const [refundAmount, setRefundAmount] = useState('')
+  const [refundMethod, setRefundMethod] = useState<PaymentMethod>('mobile_money')
+  const [refundReason, setRefundReason] = useState('')
+  const [refundError, setRefundError] = useState('')
 
   // Notes
   const [notes, setNotes] = useState(initNotes)
@@ -145,7 +166,7 @@ export function OrderDetail({
   const currentStepIdx = STEPS.indexOf(status)
 
   function handleCollect() {
-    if (collectCode.length !== 5) return
+    if (collectCode.length !== 6) return
     setCollectError('')
     startTransition(async () => {
       const res = await verifyAndCollect(orderId, collectCode)
@@ -188,6 +209,35 @@ export function OrderDetail({
         toast.success('Payment recorded')
       }
       setPaymentOpen(false)
+      router.refresh()
+    })
+  }
+
+  function openRefundModal() {
+    setRefundError('')
+    setRefundAmount(refundable.toFixed(2))
+    setRefundMethod('mobile_money')
+    setRefundReason('')
+    setRefundOpen(true)
+  }
+
+  function handleRefund() {
+    const amount = parseFloat(refundAmount)
+    if (!amount || amount <= 0) { setRefundError('Enter a valid amount.'); return }
+    if (amount > refundable) { setRefundError(`Cannot refund more than ${formatCurrency(refundable)}.`); return }
+    setRefundError('')
+    startTransition(async () => {
+      const res = await recordRefund({ orderId, amount, refundMethod, reason: refundReason || undefined })
+      if (!res.success) { setRefundError(res.error ?? 'Failed to record refund'); return }
+      setRefunds(prev => [...prev, {
+        id: crypto.randomUUID(),
+        amount,
+        refundMethod,
+        reason: refundReason || null,
+        createdAt: new Date().toISOString(),
+      }])
+      toast.success('Refund recorded')
+      setRefundOpen(false)
       router.refresh()
     })
   }
@@ -425,6 +475,15 @@ export function OrderDetail({
             </div>
           )}
 
+          {/* Refund — available on any order with money still held, most relevant right after cancellation */}
+          {refundable > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant={isCancelled ? 'accent' : 'secondary'} onClick={openRefundModal} isPending={isPending}>
+                Record Refund
+              </Button>
+            </div>
+          )}
+
           {/* Customer */}
           <div className="bg-white border border-warm-300 rounded-10 p-5">
             <h2 className="text-label font-semibold text-warm-500 uppercase tracking-wider mb-3">Customer</h2>
@@ -521,9 +580,21 @@ export function OrderDetail({
                 </div>
               ))}
             </div>
-            <div className="flex items-center justify-between px-5 py-3 bg-[#F8F5F0] border-t border-warm-200">
-              <span className="text-ui font-semibold text-warm-900">Total</span>
-              <span className="tnum text-ui font-bold text-warm-950">{formatCurrency(total)}</span>
+            <div className="px-5 py-3 bg-[#F8F5F0] border-t border-warm-200 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-ui text-warm-700">Subtotal</span>
+                <span className="tnum text-ui text-warm-900">{formatCurrency(subtotal)}</span>
+              </div>
+              {taxAmount > 0 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-ui text-warm-700">Tax</span>
+                  <span className="tnum text-ui text-warm-900">{formatCurrency(taxAmount)}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <span className="text-ui font-semibold text-warm-900">Total</span>
+                <span className="tnum text-ui font-bold text-warm-950">{formatCurrency(total)}</span>
+              </div>
             </div>
           </div>
 
@@ -547,6 +618,32 @@ export function OrderDetail({
                     </div>
                     <span className="tnum text-ui font-medium text-success-fg">
                       {formatCurrency(p.amount)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Refunds */}
+          {refunds.length > 0 && (
+            <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-warm-200">
+                <h2 className="text-ui font-semibold text-warm-950">Refunds</h2>
+              </div>
+              <div className="divide-y divide-warm-100">
+                {refunds.map(r => (
+                  <div key={r.id} className="flex items-center justify-between px-5 py-3">
+                    <div>
+                      <p className="text-ui text-warm-900">
+                        {PAYMENT_METHOD_LABELS[r.refundMethod] ?? r.refundMethod}
+                      </p>
+                      <p className="text-caption text-warm-400">
+                        {formatTimeAgo(r.createdAt)}{r.reason ? ` · ${r.reason}` : ''}
+                      </p>
+                    </div>
+                    <span className="tnum text-ui font-medium text-error-fg">
+                      -{formatCurrency(r.amount)}
                     </span>
                   </div>
                 ))}
@@ -637,6 +734,12 @@ export function OrderDetail({
         {/* Right column — desktop summary */}
         <div className="hidden lg:block space-y-4">
           <div className="bg-white border border-warm-300 rounded-10 p-5 space-y-3">
+            {taxAmount > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-label text-warm-500">Tax</span>
+                <span className="tnum text-ui font-medium text-warm-950">{formatCurrency(taxAmount)}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <span className="text-label text-warm-500">Total</span>
               <span className="tnum text-ui font-semibold text-warm-950">{formatCurrency(total)}</span>
@@ -684,15 +787,14 @@ export function OrderDetail({
       >
         <div className="space-y-4">
           <div>
-            <p className="text-label font-medium text-warm-700 mb-2">Enter the 5-digit pickup code</p>
+            <p className="text-label font-medium text-warm-700 mb-2">Enter the 6-character pickup code</p>
             <input
               type="text"
-              inputMode="numeric"
-              maxLength={5}
+              maxLength={6}
               value={collectCode}
-              onChange={e => { setCollectCode(e.target.value.replace(/\D/g, '')); setCollectError('') }}
+              onChange={e => { setCollectCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')); setCollectError('') }}
               onKeyDown={e => e.key === 'Enter' && handleCollect()}
-              placeholder="·····"
+              placeholder="······"
               autoFocus
               className={`w-full border rounded-7 py-3 text-center tnum text-[22px] font-bold tracking-[0.18em] text-warm-950 placeholder:text-warm-300 focus:outline-none focus:shadow-focus-ring ${
                 collectError ? 'border-error-fg' : 'border-warm-400 focus:border-brand'
@@ -734,15 +836,14 @@ export function OrderDetail({
       >
         {payStep === 'code' ? (
           <div className="space-y-4">
-            <p className="text-label font-medium text-warm-700">Enter the customer&apos;s 5-digit pickup code</p>
+            <p className="text-label font-medium text-warm-700">Enter the customer&apos;s 6-character pickup code</p>
             <input
               type="text"
-              inputMode="numeric"
-              maxLength={5}
+              maxLength={6}
               value={payCodeEntry}
-              onChange={e => { setPayCodeEntry(e.target.value.replace(/\D/g, '')); setPayCodeError('') }}
+              onChange={e => { setPayCodeEntry(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')); setPayCodeError('') }}
               onKeyDown={e => e.key === 'Enter' && handlePayCodeSubmit()}
-              placeholder="·····"
+              placeholder="······"
               autoFocus
               className={`w-full border rounded-7 py-3 text-center tnum text-[22px] font-bold tracking-[0.18em] text-warm-950 placeholder:text-warm-300 focus:outline-none focus:shadow-focus-ring ${
                 payCodeError ? 'border-error-fg' : 'border-warm-400 focus:border-brand'
@@ -753,7 +854,7 @@ export function OrderDetail({
               <Button variant="secondary" onClick={() => setPaymentOpen(false)}>Cancel</Button>
               <Button
                 variant="primary"
-                disabled={payCodeEntry.length !== 5}
+                disabled={payCodeEntry.length !== 6}
                 onClick={handlePayCodeSubmit}
               >
                 Verify
@@ -815,6 +916,58 @@ export function OrderDetail({
           <Button variant="destructive" filled isPending={isPending} onClick={handleCancel}>
             Cancel Order
           </Button>
+        </div>
+      </Modal>
+
+      {/* Record Refund modal */}
+      <Modal
+        open={refundOpen}
+        onClose={() => setRefundOpen(false)}
+        title="Record Refund"
+        description={`${orderNumber} · ${customerName} · Up to ${formatCurrency(refundable)} refundable`}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="text-label font-medium text-warm-700 mb-1.5 block">Amount</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              max={refundable}
+              value={refundAmount}
+              onChange={e => setRefundAmount(e.target.value)}
+              className="w-full border border-warm-400 rounded-7 px-3 py-2 text-ui text-warm-950 tnum focus:outline-none focus:border-brand focus:shadow-focus-ring"
+            />
+          </div>
+          <div>
+            <label className="text-label font-medium text-warm-700 mb-1.5 block">Refund method</label>
+            <select
+              value={refundMethod}
+              onChange={e => setRefundMethod(e.target.value as PaymentMethod)}
+              className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
+            >
+              {PAYMENT_METHODS.map(m => (
+                <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m] ?? m}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-label font-medium text-warm-700 mb-1.5 block">Reason (optional)</label>
+            <input
+              type="text"
+              value={refundReason}
+              onChange={e => setRefundReason(e.target.value)}
+              placeholder="e.g. Order cancelled after payment"
+              className="w-full border border-warm-400 rounded-7 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+            />
+          </div>
+          {refundError && <p className="text-caption text-error-fg">{refundError}</p>}
+          <div className="flex gap-3 justify-end">
+            <Button variant="secondary" onClick={() => setRefundOpen(false)}>Cancel</Button>
+            <Button variant="destructive" filled isPending={isPending} disabled={isPending} onClick={handleRefund}>
+              Record Refund
+            </Button>
+          </div>
         </div>
       </Modal>
 

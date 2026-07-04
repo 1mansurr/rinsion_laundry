@@ -75,7 +75,7 @@ function PricingModelPanel({ open }: { open: boolean }) {
           <span className="text-caption text-warm-500">Loading…</span>
         </div>
       ) : (
-        <PricingModelForm pricingModel={data.settings.pricingModel} />
+        <PricingModelForm pricingModel={data.settings.pricingModel} taxRate={data.settings.taxRate} />
       )}
     </div>
   )

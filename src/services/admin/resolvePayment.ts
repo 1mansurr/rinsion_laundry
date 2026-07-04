@@ -4,6 +4,7 @@ import { createAdminClient, createClient } from '@/lib/supabase'
 import { isInternalAdminEmail } from '@/lib/internal-admins'
 import { recordCycleRenewalPayment } from '@/services/subscriptions/recordCycleRenewalPayment'
 import { recordUpgradePayment } from '@/services/subscriptions/recordUpgradePayment'
+import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
 import { revalidatePath } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
 import type { PlanKey } from '@/constants/plans'
@@ -68,6 +69,14 @@ export async function resolvePayment(
       resolution,
     })
     .eq('id', pendingPaymentId)
+
+  await supabase.from('activity_logs').insert({
+    laundry_id: pending.laundry_id,
+    employee_id: null,
+    internal_admin_email: user.email,
+    action_type: ACTIVITY_ACTION_TYPES.INTERNAL_PAYMENT_RESOLVED,
+    description: `Pending payment ${resolution} by Rinsion admin ${user.email}`,
+  })
 
   revalidatePath('/internal/manual-payments')
   return { success: true, data: null }

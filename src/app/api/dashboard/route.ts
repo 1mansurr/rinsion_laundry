@@ -31,7 +31,7 @@ export async function GET() {
 
     supabase
       .from('orders')
-      .select('id, order_number, pickup_code, updated_at, total, payments(amount), customers(first_name, last_name, phone), branches(id, name)')
+      .select('id, order_number, pickup_code, updated_at, total, payments(amount), order_refunds(amount), customers(first_name, last_name, phone), branches(id, name)')
       .eq('laundry_id', profile.laundryId)
       .eq('status', 'ready')
       .is('deleted_at', null)
@@ -52,7 +52,7 @@ export async function GET() {
 
     supabase
       .from('activity_logs')
-      .select('id, action_type, description, created_at, employees(first_name, last_name), orders(customers(first_name, last_name))')
+      .select('id, action_type, description, created_at, internal_admin_email, employees(first_name, last_name), orders(customers(first_name, last_name))')
       .eq('laundry_id', profile.laundryId)
       .order('created_at', { ascending: false })
       .limit(8),
@@ -67,7 +67,8 @@ export async function GET() {
     const c = o.customers as unknown as { first_name: string; last_name: string; phone: string } | null
     const b = o.branches as unknown as { id: string; name: string } | null
     const pmts = (o.payments as unknown as { amount: number }[] | null) ?? []
-    const amountPaid = pmts.reduce((s, p) => s + Number(p.amount), 0)
+    const refs = (o.order_refunds as unknown as { amount: number }[] | null) ?? []
+    const amountPaid = pmts.reduce((s, p) => s + Number(p.amount), 0) - refs.reduce((s, r) => s + Number(r.amount), 0)
     return {
       id: o.id,
       orderNumber: o.order_number,
@@ -94,7 +95,7 @@ export async function GET() {
       description: a.description as string,
       actionType: a.action_type as string,
       createdAt: a.created_at as string,
-      employeeName: emp ? `${emp.first_name} ${emp.last_name}` : '',
+      employeeName: emp ? `${emp.first_name} ${emp.last_name}` : (a.internal_admin_email as string | null) ?? '',
       customerName: cust ? `${cust.first_name} ${cust.last_name}`.trim() : '',
     }
   })

@@ -4,7 +4,7 @@ import { OMark } from '@/components/ui/OMark'
 // lg: thin OMark ring framing the code — used in PickupFlow and Order Detail header
 
 interface PickupCodeChipProps {
-  code: string   // 5-digit numeric
+  code: string   // 6-char alphanumeric
   size?: 'sm' | 'lg'
   className?: string
 }

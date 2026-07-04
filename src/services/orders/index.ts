@@ -104,30 +104,50 @@ export async function createOrder(input: CreateOrderInput): Promise<ServiceResul
     return { success: false, error: 'Account is blocked. Please renew your subscription.' }
   }
 
-  const orderNumber = generateOrderNumber()
-  const pickupCode = generatePickupCode()
-  const subtotal = input.items.reduce((s, i) => s + i.totalPrice, 0)
-  const branchId = emp.role === 'admin' ? input.branchId : emp.branch_id
-
-  const { data: order, error: orderErr } = await supabase
-    .from('orders')
-    .insert({
-      order_number: orderNumber,
-      pickup_code: pickupCode,
-      laundry_id: emp.laundry_id,
-      branch_id: branchId,
-      customer_id: input.customerId,
-      created_by_employee_id: emp.id,
-      status: 'received',
-      priority: input.priority,
-      pickup_date: input.pickupDate ?? null,
-      subtotal,
-      total: subtotal,
-    })
-    .select('id')
+  const { data: settingsRow } = await supabase
+    .from('settings')
+    .select('tax_rate')
+    .eq('laundry_id', emp.laundry_id)
     .single()
 
-  if (orderErr) return { success: false, error: orderErr.message }
+  const orderNumber = generateOrderNumber()
+  const subtotal = input.items.reduce((s, i) => s + i.totalPrice, 0)
+  const taxRate = Number(settingsRow?.tax_rate ?? 0)
+  const taxAmount = Math.round(subtotal * taxRate) / 100
+  const total = subtotal + taxAmount
+  const branchId = emp.role === 'admin' ? input.branchId : emp.branch_id
+
+  // pickup_code is unique per laundry — regenerate and retry on conflict
+  let pickupCode = generatePickupCode()
+  let order: { id: string } | null = null
+  let orderErr: { code?: string; message: string } | null = null
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const result = await supabase
+      .from('orders')
+      .insert({
+        order_number: orderNumber,
+        pickup_code: pickupCode,
+        laundry_id: emp.laundry_id,
+        branch_id: branchId,
+        customer_id: input.customerId,
+        created_by_employee_id: emp.id,
+        status: 'received',
+        priority: input.priority,
+        pickup_date: input.pickupDate ?? null,
+        subtotal,
+        tax_amount: taxAmount,
+        total,
+      })
+      .select('id')
+      .single()
+
+    if (!result.error) { order = result.data; orderErr = null; break }
+    orderErr = result.error
+    if (result.error.code !== '23505' || !result.error.message.includes('pickup_code')) break
+    pickupCode = generatePickupCode()
+  }
+
+  if (!order) return { success: false, error: orderErr?.message ?? 'Failed to create order.' }
 
   await supabase.from('order_items').insert(
     input.items.map(item => ({
@@ -185,7 +205,7 @@ export async function getOrder(id: string) {
   const { data } = await supabase
     .from('orders')
     .select(`
-      id, order_number, pickup_code, status, priority, pickup_date, subtotal, total, created_at,
+      id, order_number, pickup_code, status, priority, pickup_date, subtotal, tax_amount, total, created_at,
       customers(id, first_name, last_name, phone),
       branches(name),
       order_items(
@@ -195,6 +215,7 @@ export async function getOrder(id: string) {
         order_item_pieces(id, item_type_id, quantity, item_types(name))
       ),
       payments(id, amount, payment_method, created_at),
+      order_refunds(id, amount, refund_method, reason, created_at),
       order_notes(id, note, created_at, created_by_type),
       order_status_history(previous_status, new_status, created_at),
       sms_messages(id, trigger_event, status, phone, created_at)
@@ -308,7 +329,9 @@ export async function updateOrderStatus(
 
   if (newStatus === 'collected') {
     const { data: pmts } = await supabase.from('payments').select('amount').eq('order_id', orderId)
+    const { data: refs } = await supabase.from('order_refunds').select('amount').eq('order_id', orderId)
     const paid = (pmts ?? []).reduce((s, p) => s + Number(p.amount), 0)
+      - (refs ?? []).reduce((s, r) => s + Number(r.amount), 0)
     if (paid < Number(order.total)) {
       const bal = (Number(order.total) - paid).toFixed(2)
       return { success: false, error: `Balance of GHS ${bal} outstanding. Record payment first.` }
