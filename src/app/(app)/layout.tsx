@@ -40,7 +40,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <Banner variant={bannerConfig.variant}>{bannerConfig.text}</Banner>
             </div>
           )}
-          <main className="flex-1 overflow-auto pb-[60px] min-[720px]:pb-0">
+          <main className="flex-1 overflow-auto pb-[calc(60px+env(safe-area-inset-bottom))] min-[720px]:pb-0">
             {children}
           </main>
         </div>

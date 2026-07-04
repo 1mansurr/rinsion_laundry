@@ -55,7 +55,7 @@ export function BottomTabBar({ role }: { role: EmployeeRole }) {
   const tabs = role === 'admin' ? ADMIN_TABS : EMPLOYEE_TABS
 
   return (
-    <nav className="min-[720px]:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-warm-300 flex items-stretch">
+    <nav className="min-[720px]:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-warm-300 flex items-stretch pb-[env(safe-area-inset-bottom)]">
       {tabs.map(tab => {
         const active = tab.matchExact
           ? pathname === tab.href

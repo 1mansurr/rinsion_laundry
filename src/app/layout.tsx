@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Public_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -12,6 +12,15 @@ const publicSans = Public_Sans({
 export const metadata: Metadata = {
   title: "Rinsion",
   description: "Laundry operations platform for Ghana",
+};
+
+// viewportFit: 'cover' lets the page draw under the iOS home-indicator/notch
+// area so env(safe-area-inset-*) reports real values instead of 0 — needed
+// for the bottom tab bar to pad itself above the home indicator.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
