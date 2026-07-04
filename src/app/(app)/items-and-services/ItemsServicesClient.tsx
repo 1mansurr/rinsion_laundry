@@ -310,7 +310,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
         <div className="space-y-8">
           <div className="flex justify-end">
             <Button variant="secondary" size="sm" onClick={() => setImportOpen(true)}>
-              Import from Excel
+              Import Pricing
             </Button>
           </div>
           {activeServices.length === 0 ? (
