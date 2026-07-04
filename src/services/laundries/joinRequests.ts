@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { getVerifiedUserId } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { PLANS } from '@/constants/plans'
 import type { EmployeeRole } from '@/constants/statuses'
@@ -18,13 +19,13 @@ export interface PendingJoinRequest {
 
 export async function getPendingJoinRequests(): Promise<PendingJoinRequest[]> {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
+  const userId = await getVerifiedUserId(supabase)
+  if (!userId) return []
 
   const { data: emp } = await supabase
     .from('employees')
     .select('laundry_id, role')
-    .eq('auth_user_id', user.id)
+    .eq('auth_user_id', userId)
     .single()
   if (!emp || emp.role !== 'admin') return []
 
@@ -51,13 +52,13 @@ export async function approveJoinRequest(
   branchId: string
 ): Promise<ServiceResult<null>> {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { success: false, error: 'Not authenticated.' }
+  const userId = await getVerifiedUserId(supabase)
+  if (!userId) return { success: false, error: 'Not authenticated.' }
 
   const { data: emp } = await supabase
     .from('employees')
     .select('id, laundry_id, role')
-    .eq('auth_user_id', user.id)
+    .eq('auth_user_id', userId)
     .single()
   if (!emp || emp.role !== 'admin') return { success: false, error: 'Admin only.' }
 
@@ -124,13 +125,13 @@ export async function approveJoinRequest(
 
 export async function rejectJoinRequest(requestId: string): Promise<ServiceResult<null>> {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { success: false, error: 'Not authenticated.' }
+  const userId = await getVerifiedUserId(supabase)
+  if (!userId) return { success: false, error: 'Not authenticated.' }
 
   const { data: emp } = await supabase
     .from('employees')
     .select('id, laundry_id, role')
-    .eq('auth_user_id', user.id)
+    .eq('auth_user_id', userId)
     .single()
   if (!emp || emp.role !== 'admin') return { success: false, error: 'Admin only.' }
 

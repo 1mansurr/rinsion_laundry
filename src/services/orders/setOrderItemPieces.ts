@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { getVerifiedUserId } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -20,13 +21,13 @@ export async function setOrderItemPieces(
   pieces: OrderItemPieceInput[]
 ): Promise<ServiceResult<null>> {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { success: false, error: 'Not authenticated.' }
+  const userId = await getVerifiedUserId(supabase)
+  if (!userId) return { success: false, error: 'Not authenticated.' }
 
   const { data: emp } = await supabase
     .from('employees')
     .select('id, laundry_id')
-    .eq('auth_user_id', user.id)
+    .eq('auth_user_id', userId)
     .eq('is_active', true)
     .single()
   if (!emp) return { success: false, error: 'Employee not found.' }

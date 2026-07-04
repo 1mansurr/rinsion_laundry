@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient, createClient } from '@/lib/supabase'
+import { getVerifiedUserId } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { PLANS } from '@/constants/plans'
 import type { EmployeeRole } from '@/constants/statuses'
@@ -30,13 +31,13 @@ export interface CreateEmployeeInput {
 
 export async function getEmployees(): Promise<Employee[]> {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
+  const userId = await getVerifiedUserId(supabase)
+  if (!userId) return []
 
   const { data: emp } = await supabase
     .from('employees')
     .select('laundry_id')
-    .eq('auth_user_id', user.id)
+    .eq('auth_user_id', userId)
     .single()
 
   if (!emp) return []
@@ -62,13 +63,13 @@ export async function getEmployees(): Promise<Employee[]> {
 
 export async function createEmployee(input: CreateEmployeeInput): Promise<ServiceResult<{ tempPassword: string }>> {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { success: false, error: 'Not authenticated.' }
+  const userId = await getVerifiedUserId(supabase)
+  if (!userId) return { success: false, error: 'Not authenticated.' }
 
   const { data: caller } = await supabase
     .from('employees')
     .select('laundry_id, role')
-    .eq('auth_user_id', user.id)
+    .eq('auth_user_id', userId)
     .single()
 
   if (!caller || caller.role !== 'admin') return { success: false, error: 'Admin only.' }
@@ -142,13 +143,13 @@ export async function createEmployee(input: CreateEmployeeInput): Promise<Servic
 
 export async function toggleEmployee(employeeId: string, isActive: boolean): Promise<ServiceResult<null>> {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { success: false, error: 'Not authenticated.' }
+  const userId = await getVerifiedUserId(supabase)
+  if (!userId) return { success: false, error: 'Not authenticated.' }
 
   const { data: caller } = await supabase
     .from('employees')
     .select('id, laundry_id, role')
-    .eq('auth_user_id', user.id)
+    .eq('auth_user_id', userId)
     .single()
 
   if (!caller || caller.role !== 'admin') return { success: false, error: 'Admin only.' }
@@ -168,13 +169,13 @@ export async function toggleEmployee(employeeId: string, isActive: boolean): Pro
 
 export async function getBranches(): Promise<{ id: string; name: string }[]> {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
+  const userId = await getVerifiedUserId(supabase)
+  if (!userId) return []
 
   const { data: emp } = await supabase
     .from('employees')
     .select('laundry_id')
-    .eq('auth_user_id', user.id)
+    .eq('auth_user_id', userId)
     .single()
 
   if (!emp) return []

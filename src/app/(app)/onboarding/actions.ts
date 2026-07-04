@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { getVerifiedUserId } from '@/lib/auth'
 
 export async function updateLaundrySetup(
   laundryId: string,
@@ -25,13 +26,13 @@ export async function updateLaundrySetup(
 
 export async function completeOnboarding(): Promise<{ success: true } | { success: false; error: string }> {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { success: false, error: 'Not authenticated.' }
+  const userId = await getVerifiedUserId(supabase)
+  if (!userId) return { success: false, error: 'Not authenticated.' }
 
   const { data: emp } = await supabase
     .from('employees')
     .select('laundry_id')
-    .eq('auth_user_id', user.id)
+    .eq('auth_user_id', userId)
     .single()
   if (!emp) return { success: false, error: 'Employee not found.' }
 

@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { getVerifiedUserId } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -34,13 +35,13 @@ export async function upsertPrice(
   price: number
 ): Promise<ServiceResult<null>> {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { success: false, error: 'Not authenticated.' }
+  const userId = await getVerifiedUserId(supabase)
+  if (!userId) return { success: false, error: 'Not authenticated.' }
 
   const { data: emp } = await supabase
     .from('employees')
     .select('laundry_id, role')
-    .eq('auth_user_id', user.id)
+    .eq('auth_user_id', userId)
     .single()
 
   if (!emp || emp.role !== 'admin') return { success: false, error: 'Admin only.' }

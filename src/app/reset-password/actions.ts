@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { getVerifiedUserId } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
 export async function updatePassword(
@@ -18,8 +19,8 @@ export async function updatePassword(
   }
 
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
+  const userId = await getVerifiedUserId(supabase)
+  if (!userId) {
     return { error: 'Reset link expired or invalid. Please request a new one.' }
   }
 

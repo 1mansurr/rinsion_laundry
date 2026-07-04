@@ -2,6 +2,7 @@
 
 import ExcelJS from 'exceljs'
 import { createClient } from '@/lib/supabase'
+import { getVerifiedUserId } from '@/lib/auth'
 import { createService, setServicePricing } from '@/services/services'
 import { createItemType } from '@/services/items'
 import { upsertPrice } from '@/services/pricing'
@@ -108,13 +109,13 @@ async function parseFile(file: File): Promise<RawRow[]> {
 
 async function getCallerContext() {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
+  const userId = await getVerifiedUserId(supabase)
+  if (!userId) return null
 
   const { data: emp } = await supabase
     .from('employees')
     .select('laundry_id, role')
-    .eq('auth_user_id', user.id)
+    .eq('auth_user_id', userId)
     .single()
   if (!emp || emp.role !== 'admin') return null
 
@@ -263,11 +264,11 @@ export async function commitPricingImport(rows: ImportPreviewRow[]): Promise<Ser
     else failedRows++
   }
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const userId = await getVerifiedUserId(supabase)
   const { data: emp } = await supabase
     .from('employees')
     .select('id')
-    .eq('auth_user_id', user!.id)
+    .eq('auth_user_id', userId!)
     .single()
 
   await supabase.from('activity_logs').insert({

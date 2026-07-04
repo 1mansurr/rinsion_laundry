@@ -40,9 +40,13 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // IMPORTANT: Do not add logic between createServerClient and getUser.
+  // IMPORTANT: Do not add logic between createServerClient and getClaims.
   // A simple mistake will make it very hard to debug session issues.
-  const { data: { user } } = await supabase.auth.getUser()
+  // getClaims() verifies the JWT locally against the cached JWKS (this project
+  // uses asymmetric ES256 signing keys), avoiding a network round trip to the
+  // Auth server on every request that getUser() would require.
+  const { data } = await supabase.auth.getClaims()
+  const user = data?.claims ? { id: data.claims.sub, email: data.claims.email } : null
 
   const { pathname } = request.nextUrl
 

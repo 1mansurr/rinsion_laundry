@@ -1,7 +1,7 @@
 import { cache } from 'react'
 import { unstable_cache } from 'next/cache'
-import { headers } from 'next/headers'
 import { createClient, createAdminClient } from '@/lib/supabase'
+import { getVerifiedUserId } from '@/lib/auth'
 import type { EmployeeRole } from '@/constants/statuses'
 
 export interface MyProfile {
@@ -66,19 +66,9 @@ function buildProfile(data: EmployeeRow): MyProfile {
 // cache() deduplicates calls within a single request — layout and page both call this,
 // but only the first resolves; subsequent calls return the memoized result.
 export const getMyProfile = cache(async function (): Promise<MyProfile | null> {
-  // x-user-id is set by middleware after verifying the JWT — reading it here avoids
-  // a second auth.getUser() network call on every navigation.
-  const userId = headers().get('x-user-id')
-
-  if (userId) {
-    const data = await fetchEmployeeRow(userId)
-    return data ? buildProfile(data) : null
-  }
-
-  // Fallback for any path middleware doesn't cover (e.g. direct server invocations).
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-  const data = await fetchEmployeeRow(user.id)
+  const userId = await getVerifiedUserId(supabase)
+  if (!userId) return null
+  const data = await fetchEmployeeRow(userId)
   return data ? buildProfile(data) : null
 })
