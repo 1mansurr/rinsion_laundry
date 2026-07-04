@@ -70,7 +70,6 @@ export default async function NewOrderPage({ searchParams }: Props) {
           preselectedCustomer={preselectedCustomer}
           allowExpressOrders={settings?.allowExpressOrders ?? true}
           isMultiBranch={isMultiBranch}
-          pricingModel={settings?.pricingModel ?? 'per_item'}
         />
       )}
     </div>

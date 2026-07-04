@@ -9,7 +9,7 @@ import type { ItemType } from '@/services/items'
 import type { LaundryService } from '@/services/services'
 import type { PriceCell } from '@/services/pricing'
 import type { Customer } from '@/services/customers'
-import { PAYMENT_METHODS, type OrderPriority, type PaymentMethod, type PricingMode, type PricingModel } from '@/constants/statuses'
+import { PAYMENT_METHODS, type OrderPriority, type PaymentMethod, type PricingMode } from '@/constants/statuses'
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   cash: 'Cash', mobile_money: 'Mobile Money', card: 'Card', bank_transfer: 'Bank Transfer', other: 'Other',
@@ -43,7 +43,6 @@ interface Props {
   preselectedCustomer?: Customer | null
   allowExpressOrders?: boolean
   isMultiBranch?: boolean
-  pricingModel?: PricingModel
 }
 
 const EMPTY_LINE: LineItem = { itemTypeId: '', serviceId: '', quantity: 1, unitPrice: 0, totalPrice: 0, pricingMode: 'per_item' }
@@ -57,7 +56,7 @@ const PRIORITY_LABELS: Record<OrderPriority, string> = {
 export function CreateOrderForm({
   itemTypes, services, prices, customers, branches,
   isAdmin, defaultBranchId, preselectedCustomer,
-  allowExpressOrders = true, isMultiBranch = false, pricingModel = 'per_item',
+  allowExpressOrders = true, isMultiBranch = false,
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -155,6 +154,16 @@ export function CreateOrderForm({
 
   function addLine() { setLines(prev => [...prev, { ...EMPTY_LINE }]) }
   function removeLine(i: number) { if (lines.length > 1) setLines(prev => prev.filter((_, idx) => idx !== i)) }
+
+  // Adds a per-item line for a service that's otherwise priced by weight —
+  // e.g. a suit priced individually even though the service is fundamentally
+  // per-kg. Pre-fills the same service; staff can still change it.
+  function addExceptionLine(serviceId: string) {
+    const avail = getAvailableItemTypes(serviceId)
+    const itemTypeId = avail.length === 1 ? avail[0].id : ''
+    const unitPrice = getUnitPrice(itemTypeId, serviceId, 'per_item')
+    setLines(prev => [...prev, { serviceId, itemTypeId, quantity: 1, unitPrice, totalPrice: unitPrice, pricingMode: 'per_item' }])
+  }
 
   const total = lines.reduce((s, l) => s + l.totalPrice, 0)
   const validLines = lines.filter(l =>
@@ -427,10 +436,10 @@ export function CreateOrderForm({
           <div className="space-y-3">
             {lines.map((line, i) => {
               const availableItemTypes = getAvailableItemTypes(line.serviceId)
-              const svc = getService(line.serviceId)
-              // Weight-based service with per-item exceptions (mixed mode only) — let staff
-              // choose per line whether this piece is weighed or is one of the excepted items.
-              const showWeightItemToggle = svc?.pricingMode === 'per_kg' && pricingModel === 'mixed' && availableItemTypes.length > 0
+              // Weight-based service with per-item exceptions priced (e.g. a suit priced
+              // individually) — offer a way to add that as its own line, regardless of
+              // the laundry's overall pricing-model setting.
+              const canAddException = line.pricingMode === 'per_kg' && availableItemTypes.length > 0
               return (
                 <div key={i}>
                   {/* Desktop row */}
@@ -449,24 +458,6 @@ export function CreateOrderForm({
                       ))}
                     </select>
                     <div>
-                      {showWeightItemToggle && (
-                        <div className="inline-flex rounded-7 border border-warm-300 overflow-hidden text-[11px] mb-1">
-                          <button
-                            type="button"
-                            onClick={() => updateLine(i, { pricingMode: 'per_kg', itemTypeId: '' })}
-                            className={`px-2 py-1 font-medium transition-colors ${line.pricingMode === 'per_kg' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-500 hover:bg-warm-100'}`}
-                          >
-                            By weight
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => updateLine(i, { pricingMode: 'per_item', itemTypeId: availableItemTypes.length === 1 ? availableItemTypes[0].id : '' })}
-                            className={`px-2 py-1 font-medium transition-colors ${line.pricingMode === 'per_item' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-500 hover:bg-warm-100'}`}
-                          >
-                            By item
-                          </button>
-                        </div>
-                      )}
                       {line.pricingMode === 'per_kg' ? (
                         <span className="text-caption text-warm-400 italic">Priced by weight</span>
                       ) : (
@@ -549,24 +540,6 @@ export function CreateOrderForm({
                       </div>
                       <div>
                         <p className="text-caption text-warm-500 mb-1">Item type</p>
-                        {showWeightItemToggle && (
-                          <div className="inline-flex rounded-7 border border-warm-300 overflow-hidden text-[11px] mb-1">
-                            <button
-                              type="button"
-                              onClick={() => updateLine(i, { pricingMode: 'per_kg', itemTypeId: '' })}
-                              className={`px-2 py-1 font-medium transition-colors ${line.pricingMode === 'per_kg' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-500 hover:bg-warm-100'}`}
-                            >
-                              By weight
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => updateLine(i, { pricingMode: 'per_item', itemTypeId: availableItemTypes.length === 1 ? availableItemTypes[0].id : '' })}
-                              className={`px-2 py-1 font-medium transition-colors ${line.pricingMode === 'per_item' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-500 hover:bg-warm-100'}`}
-                            >
-                              By item
-                            </button>
-                          </div>
-                        )}
                         {line.pricingMode === 'per_kg' ? (
                           <p className="text-[14px] text-warm-400 italic py-2">Priced by weight</p>
                         ) : (
@@ -624,6 +597,16 @@ export function CreateOrderForm({
                       )}
                     </div>
                   </div>
+
+                  {canAddException && (
+                    <button
+                      type="button"
+                      onClick={() => addExceptionLine(line.serviceId)}
+                      className="mt-1.5 px-1 text-caption text-brand hover:text-brand-hover underline underline-offset-2"
+                    >
+                      + Add an exception item
+                    </button>
+                  )}
                 </div>
               )
             })}
