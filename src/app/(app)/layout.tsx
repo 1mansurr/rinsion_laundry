@@ -32,7 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <ProfileProvider profile={profile}>
-      <div className="flex h-screen bg-canvas">
+      <div className="flex h-dvh bg-canvas">
         <Sidebar profile={profile} />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {bannerConfig && (

@@ -63,6 +63,13 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse
   }
 
+  // Password recovery: reachable signed-out (request the link, exchange the
+  // code) and signed-in for the brief recovery session set up by the code
+  // exchange, so no auth gating here — each route/page handles its own case.
+  if (pathname.startsWith('/forgot-password') || pathname.startsWith('/auth/callback')) {
+    return supabaseResponse
+  }
+
   // Signup is reachable both signed-out (the initial form) and signed-in but
   // not yet an employee (choose/add-laundry/join-laundry) — each page checks
   // its own precondition and redirects, so just let it through here.

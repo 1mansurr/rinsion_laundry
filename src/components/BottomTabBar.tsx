@@ -15,7 +15,7 @@ const ADMIN_TABS: TabConfig[] = [
   { href: '/orders',    label: 'Orders' },
   { href: '/customers', label: 'Customers' },
   { href: '/payments',  label: 'Payments' },
-  { href: '/settings',  label: 'More' },
+  { href: '/settings',  label: 'Settings' },
 ]
 
 const EMPLOYEE_TABS: TabConfig[] = [
@@ -41,6 +41,9 @@ function TabSvg({ label, active }: { label: string; active: boolean }) {
   )
   if (label === 'Pickup') return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill={c}><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2a3 3 0 0 0 6 0h6a3 3 0 0 0 6 0h2v-5l-3-4zm-5 8.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-9 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm7-7V9.5h2.5l2 2.5H13z"/></svg>
+  )
+  if (label === 'Settings') return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill={c}><path d="M19.14 12.94a7.14 7.14 0 0 0 .06-.94 7.14 7.14 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.7 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.62-.06.94s.02.63.06.94L2.82 14.5a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.4.32.61.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.23.09.47 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.56ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></svg>
   )
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill={c}><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
