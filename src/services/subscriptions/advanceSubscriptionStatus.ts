@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/supabase'
-import { smsProvider } from '@/lib/sms'
+import { sendRenewalReminderSms, type RenewalReminderTrigger } from '@/services/notifications/sendRenewalReminderSms'
 import { GRACE_PERIOD_SOFT_DAYS, GRACE_PERIOD_HARD_DAYS } from '@/constants/plans'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
 
@@ -84,7 +84,7 @@ export async function advanceSubscriptionStatus(): Promise<AdvanceResult> {
       // daysUntilEnd is the inverse of daysDiff; only [3,1,0] trigger reminders
       const daysUntilEnd = -daysDiff
       if (['active', 'trialing'].includes(sub.status) && [3, 1, 0].includes(daysUntilEnd)) {
-        const triggerEvent =
+        const triggerEvent: RenewalReminderTrigger =
           daysUntilEnd === 0 ? 'RENEWAL_REMINDER_DAY_OF'
           : daysUntilEnd === 1 ? 'RENEWAL_REMINDER_1_DAY'
           : 'RENEWAL_REMINDER_3_DAYS'
@@ -98,7 +98,7 @@ export async function advanceSubscriptionStatus(): Promise<AdvanceResult> {
           .gte('created_at', sub.cycle_start_date)
 
         if ((count ?? 0) === 0) {
-          const sent = await sendReminderToAdmin(supabase, sub.laundry_id, sub.plan, daysUntilEnd, triggerEvent)
+          const sent = await sendRenewalReminderSms(sub.laundry_id, sub.plan, daysUntilEnd, triggerEvent)
           if (sent) remindersSent++
         }
       }
@@ -108,60 +108,4 @@ export async function advanceSubscriptionStatus(): Promise<AdvanceResult> {
   }
 
   return { processed: subs.length, transitioned, remindersSent, errors }
-}
-
-// Uses the passed admin client so all writes bypass RLS (no user session in cron context)
-async function sendReminderToAdmin(
-  supabase: ReturnType<typeof createAdminClient>,
-  laundryId: string,
-  plan: string,
-  daysLeft: number,
-  triggerEvent: string,
-): Promise<boolean> {
-  const { data: admin } = await supabase
-    .from('employees')
-    .select('phone')
-    .eq('laundry_id', laundryId)
-    .eq('role', 'admin')
-    .eq('is_active', true)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
-
-  if (!admin?.phone) return false
-
-  const planPrices: Record<string, number> = { starter: 90, growth: 180, trial: 90 }
-  const amount = planPrices[plan] ?? 90
-  const upgradeNote = plan === 'starter' ? ` or GHS ${amount * 2} for Growth` : ''
-
-  // TODO: confirm message wording after interviews
-  let message: string
-  if (daysLeft === 0) {
-    message = `Rinsion: Your subscription expires today. Send GHS ${amount} to renew and keep your laundry running.`
-  } else if (daysLeft === 1) {
-    message = `Rinsion: Your subscription expires tomorrow. Send GHS ${amount} to renew${upgradeNote}.`
-  } else {
-    message = `Rinsion: Your subscription ends in ${daysLeft} days. Renew for GHS ${amount}${upgradeNote}.`
-  }
-
-  const result = await smsProvider.sendSms(admin.phone, message, 'Rinsion')
-  const now = new Date().toISOString()
-
-  await supabase.from('sms_messages').insert({
-    laundry_id: laundryId,
-    order_id: null,
-    customer_id: null,
-    phone: admin.phone,
-    message,
-    trigger_event: triggerEvent,
-    provider: 'mnotify',
-    provider_message_id: result.providerMessageId ?? null,
-    status: result.success ? 'sent' : 'failed',
-    counts_toward_cap: false,
-    sent_at: result.success ? now : null,
-    failed_at: result.success ? null : now,
-    error_message: result.errorMessage ?? null,
-  })
-
-  return result.success
 }
