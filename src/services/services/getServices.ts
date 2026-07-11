@@ -9,8 +9,10 @@ export interface LaundryService {
   name: string
   isActive: boolean
   pricingMode: PricingMode
-  /** Rate per kg, only meaningful when pricingMode is 'per_kg'. Null until set. */
-  kgRate: number | null
+  /** Rate per kg, only meaningful when pricingMode is 'per_kg'. Null until set. Equal to maxKgRate for a fixed rate. */
+  minKgRate: number | null
+  maxKgRate: number | null
+  notes: string | null
 }
 
 // Cached 5 min, tag-scoped per laundry — services are near-static reference
@@ -23,7 +25,7 @@ export async function getServices(laundryId: string): Promise<LaundryService[]> 
       const supabase = createAdminClient()
       const { data } = await supabase
         .from('services')
-        .select('id, name, is_active, pricing_mode, kg_rate')
+        .select('id, name, is_active, pricing_mode, min_kg_rate, max_kg_rate, notes')
         .eq('laundry_id', laundryId)
         .is('deleted_at', null)
         .order('created_at', { ascending: true })
@@ -33,7 +35,9 @@ export async function getServices(laundryId: string): Promise<LaundryService[]> 
         name: r.name,
         isActive: r.is_active,
         pricingMode: r.pricing_mode,
-        kgRate: r.kg_rate === null ? null : Number(r.kg_rate),
+        minKgRate: r.min_kg_rate === null ? null : Number(r.min_kg_rate),
+        maxKgRate: r.max_kg_rate === null ? null : Number(r.max_kg_rate),
+        notes: r.notes,
       }))
     },
     ['services', laundryId],

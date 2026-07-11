@@ -47,6 +47,63 @@ export async function createOrder(input: CreateOrderInput): Promise<ServiceResul
     return { success: false, error: 'Account is blocked. Please renew your subscription.' }
   }
 
+  // Validate every submitted price against the live pricing tables before
+  // trusting it into subtotal/total. createOrder previously trusted the
+  // client completely with no check at all — this closes that gap for both
+  // range and fixed-price rows (a fixed row collapses to an exact-match
+  // check since min === max, which the current UI can never violate anyway).
+  const perItemItems = input.items.filter(i => i.pricingMode !== 'per_kg')
+  const perKgServiceIds = Array.from(new Set(input.items.filter(i => i.pricingMode === 'per_kg').map(i => i.serviceId)))
+  const itemTypeIds = Array.from(new Set(perItemItems.map(i => i.itemTypeId).filter((id): id is string => !!id)))
+  const perItemServiceIds = Array.from(new Set(perItemItems.map(i => i.serviceId)))
+
+  const [{ data: priceRows }, { data: kgRows }] = await Promise.all([
+    itemTypeIds.length > 0
+      ? supabase
+          .from('item_service_prices')
+          .select('item_type_id, service_id, min_price, max_price')
+          .eq('laundry_id', emp.laundry_id)
+          .eq('is_active', true)
+          .in('item_type_id', itemTypeIds)
+          .in('service_id', perItemServiceIds)
+      : Promise.resolve({ data: [] as { item_type_id: string; service_id: string; min_price: number; max_price: number }[] }),
+    perKgServiceIds.length > 0
+      ? supabase
+          .from('services')
+          .select('id, min_kg_rate, max_kg_rate')
+          .eq('laundry_id', emp.laundry_id)
+          .in('id', perKgServiceIds)
+      : Promise.resolve({ data: [] as { id: string; min_kg_rate: number | null; max_kg_rate: number | null }[] }),
+  ])
+
+  const priceByKey = new Map(
+    (priceRows ?? []).map(r => [`${r.item_type_id}:${r.service_id}`, { min: Number(r.min_price), max: Number(r.max_price) }])
+  )
+  const kgRateById = new Map(
+    (kgRows ?? []).map(r => [r.id, { min: r.min_kg_rate !== null ? Number(r.min_kg_rate) : null, max: r.max_kg_rate !== null ? Number(r.max_kg_rate) : null }])
+  )
+
+  for (const item of input.items) {
+    if (item.pricingMode === 'per_kg') {
+      const rate = kgRateById.get(item.serviceId)
+      if (!rate || rate.min === null || rate.max === null) {
+        return { success: false, error: 'Price not found for the selected service. Refresh and try again.' }
+      }
+      if (!priceWithinRange(item.unitPrice, rate.min, rate.max)) {
+        return { success: false, error: `Price must be between GHS ${rate.min.toFixed(2)} and GHS ${rate.max.toFixed(2)} (submitted GHS ${item.unitPrice.toFixed(2)}).` }
+      }
+    } else {
+      if (!item.itemTypeId) return { success: false, error: 'Missing item type for a per-item line.' }
+      const range = priceByKey.get(`${item.itemTypeId}:${item.serviceId}`)
+      if (!range) {
+        return { success: false, error: 'Price not found for the selected item. Refresh and try again.' }
+      }
+      if (!priceWithinRange(item.unitPrice, range.min, range.max)) {
+        return { success: false, error: `Price must be between GHS ${range.min.toFixed(2)} and GHS ${range.max.toFixed(2)} (submitted GHS ${item.unitPrice.toFixed(2)}).` }
+      }
+    }
+  }
+
   const { data: settingsRow } = await supabase
     .from('settings')
     .select('tax_rate')
@@ -116,6 +173,12 @@ export async function createOrder(input: CreateOrderInput): Promise<ServiceResul
     success: true,
     data: { orderId: order.order_id, orderNumber: order.order_number, pickupCode: order.pickup_code },
   }
+}
+
+// Integer-cents comparison avoids float rounding false-positives against DECIMAL(10,2) columns.
+function priceWithinRange(value: number, min: number, max: number): boolean {
+  const cents = Math.round(value * 100)
+  return cents >= Math.round(min * 100) && cents <= Math.round(max * 100)
 }
 
 function generateOrderNumber(): string {

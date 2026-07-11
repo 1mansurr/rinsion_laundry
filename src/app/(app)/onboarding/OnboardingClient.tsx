@@ -65,8 +65,11 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
   // Created service IDs after step 2 submission
   const [createdServiceIds, setCreatedServiceIds] = useState<{ name: string; id: string }[]>([])
   const [createdItemIds, setCreatedItemIds] = useState<{ name: string; id: string }[]>([])
-  const [pricingGrid, setPricingGrid] = useState<Record<string, Record<string, string>>>({})
-  const [kgRates, setKgRates] = useState<Record<string, string>>({})
+  // Notes entry is deferred from onboarding (kept fast); admins add notes later via Items & Services.
+  const [pricingGridMin, setPricingGridMin] = useState<Record<string, Record<string, string>>>({})
+  const [pricingGridMax, setPricingGridMax] = useState<Record<string, Record<string, string>>>({})
+  const [kgRatesMin, setKgRatesMin] = useState<Record<string, string>>({})
+  const [kgRatesMax, setKgRatesMax] = useState<Record<string, string>>({})
   const [priceEntryMode, setPriceEntryMode] = useState<'manual' | 'import'>('manual')
   const [importModalOpen, setImportModalOpen] = useState(false)
 
@@ -134,17 +137,21 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
       if (pricingModel === 'per_kg') {
         // Every created service is priced by weight — a single rate each, no item breakdown
         for (const svc of createdServiceIds) {
-          const val = kgRates[svc.id]
-          if (val && parseFloat(val) > 0) {
-            entries.push(setServicePricing(svc.id, 'per_kg', parseFloat(val)))
+          const minVal = kgRatesMin[svc.id]
+          if (minVal && parseFloat(minVal) > 0) {
+            const maxRaw = kgRatesMax[svc.id]
+            const maxVal = maxRaw && parseFloat(maxRaw) > 0 ? parseFloat(maxRaw) : parseFloat(minVal)
+            entries.push(setServicePricing(svc.id, 'per_kg', parseFloat(minVal), maxVal, null))
           }
         }
       } else {
         for (const item of createdItemIds) {
           for (const svc of createdServiceIds) {
-            const val = pricingGrid[item.id]?.[svc.id]
-            if (val && parseFloat(val) > 0) {
-              entries.push(upsertPrice(item.id, svc.id, parseFloat(val)))
+            const minVal = pricingGridMin[item.id]?.[svc.id]
+            if (minVal && parseFloat(minVal) > 0) {
+              const maxRaw = pricingGridMax[item.id]?.[svc.id]
+              const maxVal = maxRaw && parseFloat(maxRaw) > 0 ? parseFloat(maxRaw) : parseFloat(minVal)
+              entries.push(upsertPrice(item.id, svc.id, parseFloat(minVal), maxVal, null))
             }
           }
         }
@@ -178,15 +185,26 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
     )
   }
 
-  function setPriceCell(itemId: string, svcId: string, val: string) {
-    setPricingGrid(prev => ({
+  function setPriceCellMin(itemId: string, svcId: string, val: string) {
+    setPricingGridMin(prev => ({
       ...prev,
       [itemId]: { ...(prev[itemId] ?? {}), [svcId]: val },
     }))
   }
 
-  function setKgRate(svcId: string, val: string) {
-    setKgRates(prev => ({ ...prev, [svcId]: val }))
+  function setPriceCellMax(itemId: string, svcId: string, val: string) {
+    setPricingGridMax(prev => ({
+      ...prev,
+      [itemId]: { ...(prev[itemId] ?? {}), [svcId]: val },
+    }))
+  }
+
+  function setKgRateMin(svcId: string, val: string) {
+    setKgRatesMin(prev => ({ ...prev, [svcId]: val }))
+  }
+
+  function setKgRateMax(svcId: string, val: string) {
+    setKgRatesMax(prev => ({ ...prev, [svcId]: val }))
   }
 
   return (
@@ -409,10 +427,20 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                           type="number"
                           min="0"
                           step="0.01"
-                          value={kgRates[svc.id] ?? ''}
-                          onChange={e => setKgRate(svc.id, e.target.value)}
-                          placeholder="—"
-                          className="w-20 border border-warm-300 rounded-7 px-2 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                          value={kgRatesMin[svc.id] ?? ''}
+                          onChange={e => setKgRateMin(svc.id, e.target.value)}
+                          placeholder="Min"
+                          className="w-16 border border-warm-300 rounded-7 px-2 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                        />
+                        <span className="text-warm-400">–</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={kgRatesMax[svc.id] ?? ''}
+                          onChange={e => setKgRateMax(svc.id, e.target.value)}
+                          placeholder="Max"
+                          className="w-16 border border-warm-300 rounded-7 px-2 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
                         />
                         <span className="text-caption text-warm-500">/ kg</span>
                       </div>
@@ -424,7 +452,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                   {/* Header */}
                   <div
                     className="grid bg-[#F4F0EA] px-5 py-2.5 border-b border-warm-200"
-                    style={{ gridTemplateColumns: `1fr ${createdServiceIds.map(() => '120px').join(' ')}` }}
+                    style={{ gridTemplateColumns: `1fr ${createdServiceIds.map(() => '170px').join(' ')}` }}
                   >
                     <span className="text-caption font-medium text-warm-500">Item</span>
                     {createdServiceIds.map(svc => (
@@ -435,7 +463,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                     <div
                       key={item.id}
                       className="grid px-5 py-3 border-b border-warm-100 last:border-0 items-center"
-                      style={{ gridTemplateColumns: `1fr ${createdServiceIds.map(() => '120px').join(' ')}` }}
+                      style={{ gridTemplateColumns: `1fr ${createdServiceIds.map(() => '170px').join(' ')}` }}
                     >
                       <span className="text-ui text-warm-950">{item.name}</span>
                       {createdServiceIds.map(svc => (
@@ -445,10 +473,20 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                             type="number"
                             min="0"
                             step="0.01"
-                            value={pricingGrid[item.id]?.[svc.id] ?? ''}
-                            onChange={e => setPriceCell(item.id, svc.id, e.target.value)}
-                            placeholder="—"
-                            className="w-20 border border-warm-300 rounded-7 px-2 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                            value={pricingGridMin[item.id]?.[svc.id] ?? ''}
+                            onChange={e => setPriceCellMin(item.id, svc.id, e.target.value)}
+                            placeholder="Min"
+                            className="w-14 border border-warm-300 rounded-7 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                          />
+                          <span className="text-warm-400">–</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={pricingGridMax[item.id]?.[svc.id] ?? ''}
+                            onChange={e => setPriceCellMax(item.id, svc.id, e.target.value)}
+                            placeholder="Max"
+                            className="w-14 border border-warm-300 rounded-7 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
                           />
                         </div>
                       ))}

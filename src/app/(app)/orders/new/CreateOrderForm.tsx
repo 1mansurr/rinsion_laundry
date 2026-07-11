@@ -16,6 +16,7 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
   cash: 'Cash', mobile_money: 'Mobile Money', card: 'Card', bank_transfer: 'Bank Transfer', other: 'Other',
 }
 import { formatCurrency } from '@/utils/formatCurrency'
+import { formatPriceRange } from '@/utils/formatPriceRange'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
@@ -28,9 +29,14 @@ interface LineItem {
   serviceId: string
   /** Piece count when pricingMode is 'per_item', weight in kg when 'per_kg' */
   quantity: number
-  unitPrice: number
+  /** null = a range price awaiting manual entry by the employee */
+  unitPrice: number | null
   totalPrice: number
   pricingMode: PricingMode
+  /** Resolved price bounds for the current item+service; equal for a fixed price. Null until a priced combo is selected. */
+  priceMin: number | null
+  priceMax: number | null
+  priceNotes: string | null
 }
 
 interface Props {
@@ -46,7 +52,10 @@ interface Props {
   isMultiBranch?: boolean
 }
 
-const EMPTY_LINE: LineItem = { itemTypeId: '', serviceId: '', quantity: 1, unitPrice: 0, totalPrice: 0, pricingMode: 'per_item' }
+const EMPTY_LINE: LineItem = {
+  itemTypeId: '', serviceId: '', quantity: 1, unitPrice: null, totalPrice: 0, pricingMode: 'per_item',
+  priceMin: null, priceMax: null, priceNotes: null,
+}
 
 const PRIORITY_LABELS: Record<OrderPriority, string> = {
   normal: 'Normal',
@@ -112,7 +121,7 @@ export function CreateOrderForm({
   // service needs a rate set, a per_item service needs at least one priced item type.
   const usableServices = services.filter(s => s.isActive && (
     s.pricingMode === 'per_kg'
-      ? s.kgRate !== null
+      ? s.minKgRate !== null
       : itemTypes.some(t => t.isActive && prices.some(p => p.itemTypeId === t.id && p.serviceId === s.id && p.isActive))
   ))
 
@@ -127,15 +136,23 @@ export function CreateOrderForm({
     )
   }
 
-  function getUnitPrice(itemTypeId: string, serviceId: string, mode: PricingMode) {
-    if (mode === 'per_kg') return getService(serviceId)?.kgRate ?? 0
-    return prices.find(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId && p.isActive)?.price ?? 0
+  /** Resolves the price bounds for an item+service combo. Null if unpriced/not yet selected. */
+  function getPriceRange(itemTypeId: string, serviceId: string, mode: PricingMode): { min: number; max: number; notes: string | null } | null {
+    if (mode === 'per_kg') {
+      const svc = getService(serviceId)
+      if (!svc || svc.minKgRate === null || svc.maxKgRate === null) return null
+      return { min: svc.minKgRate, max: svc.maxKgRate, notes: svc.notes }
+    }
+    const cell = prices.find(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId && p.isActive)
+    if (!cell) return null
+    return { min: cell.minPrice, max: cell.maxPrice, notes: cell.notes }
   }
 
   function updateLine(index: number, patch: Partial<LineItem>) {
     setLines(prev => prev.map((l, i) => {
       if (i !== index) return l
       const updated = { ...l, ...patch }
+      const identityChanged = patch.serviceId !== undefined || patch.itemTypeId !== undefined
       if (patch.serviceId !== undefined) {
         const svc = getService(updated.serviceId)
         updated.pricingMode = svc?.pricingMode ?? 'per_item'
@@ -148,8 +165,20 @@ export function CreateOrderForm({
           }
         }
       }
-      const unitPrice = getUnitPrice(updated.itemTypeId, updated.serviceId, updated.pricingMode)
-      return { ...updated, unitPrice, totalPrice: unitPrice * updated.quantity }
+      // Only re-resolve the price when the service/item selection changes —
+      // never on quantity, or a manually-entered range price would get
+      // clobbered on every stepper tick.
+      if (identityChanged) {
+        const range = getPriceRange(updated.itemTypeId, updated.serviceId, updated.pricingMode)
+        updated.priceMin = range?.min ?? null
+        updated.priceMax = range?.max ?? null
+        updated.priceNotes = range?.notes ?? null
+        // Fixed price (min === max, including no-range services) auto-fills exactly
+        // as before; a genuine range starts unfilled, awaiting manual entry.
+        updated.unitPrice = range && range.min === range.max ? range.min : null
+      }
+      updated.totalPrice = updated.unitPrice !== null ? updated.unitPrice * updated.quantity : 0
+      return updated
     }))
   }
 
@@ -162,15 +191,31 @@ export function CreateOrderForm({
   function addExceptionLine(serviceId: string) {
     const avail = getAvailableItemTypes(serviceId)
     const itemTypeId = avail.length === 1 ? avail[0].id : ''
-    const unitPrice = getUnitPrice(itemTypeId, serviceId, 'per_item')
-    setLines(prev => [...prev, { serviceId, itemTypeId, quantity: 1, unitPrice, totalPrice: unitPrice, pricingMode: 'per_item' }])
+    const range = getPriceRange(itemTypeId, serviceId, 'per_item')
+    const unitPrice = range && range.min === range.max ? range.min : null
+    setLines(prev => [...prev, {
+      serviceId, itemTypeId, quantity: 1,
+      unitPrice, totalPrice: unitPrice !== null ? unitPrice : 0,
+      pricingMode: 'per_item',
+      priceMin: range?.min ?? null, priceMax: range?.max ?? null, priceNotes: range?.notes ?? null,
+    }])
   }
 
   const total = lines.reduce((s, l) => s + l.totalPrice, 0)
-  const validLines = lines.filter(l =>
-    l.serviceId && (l.pricingMode === 'per_kg' || l.itemTypeId) && l.quantity > 0
+  const validLines = lines.filter(l => {
+    if (!l.serviceId || (l.pricingMode !== 'per_kg' && !l.itemTypeId) || l.quantity <= 0) return false
+    if (l.unitPrice === null) return false
+    if (l.priceMin !== null && l.priceMax !== null && (l.unitPrice < l.priceMin || l.unitPrice > l.priceMax)) return false
+    return true
+  })
+  // A range line that's fully selected (service+item) but still missing a manual
+  // price, or filled outside bounds, must block submission rather than silently
+  // dropping out of the order the way an untouched blank line already does.
+  const hasIncompleteRangeLine = lines.some(l =>
+    l.priceMin !== null && l.priceMax !== null && l.priceMin !== l.priceMax &&
+    (l.unitPrice === null || l.unitPrice < l.priceMin || l.unitPrice > l.priceMax)
   )
-  const canSubmit = !!selectedCustomer && validLines.length > 0
+  const canSubmit = !!selectedCustomer && validLines.length > 0 && !hasIncompleteRangeLine
 
   function openInlineCreate() {
     const parts = customerSearch.trim().split(' ')
@@ -211,7 +256,15 @@ export function CreateOrderForm({
       priority,
       pickupDate: pickupDate || undefined,
       notes: notes || undefined,
-      items: validLines.map(l => ({ ...l, itemTypeId: l.itemTypeId || undefined })),
+      items: validLines.map(l => ({
+        itemTypeId: l.itemTypeId || undefined,
+        serviceId: l.serviceId,
+        quantity: l.quantity,
+        // validLines guarantees unitPrice is non-null and within [priceMin, priceMax]
+        unitPrice: l.unitPrice!,
+        totalPrice: l.totalPrice,
+        pricingMode: l.pricingMode,
+      })),
     }
     startTransition(async () => {
       const res = await createOrder(input)
@@ -427,9 +480,9 @@ export function CreateOrderForm({
           {/* Desktop grid header */}
           <div
             className="hidden md:grid items-center mb-1 px-1"
-            style={{ gridTemplateColumns: '1.3fr 1.3fr 0.9fr 1fr 40px', gap: '10px' }}
+            style={{ gridTemplateColumns: '1.2fr 1.2fr 0.8fr 0.9fr 1fr 40px', gap: '10px' }}
           >
-            {['Service', 'Item type', 'Qty / kg', 'Line total', ''].map((h, i) => (
+            {['Service', 'Item type', 'Qty / kg', 'Unit price', 'Line total', ''].map((h, i) => (
               <span key={i} className="text-caption text-warm-500 font-medium">{h}</span>
             ))}
           </div>
@@ -446,7 +499,7 @@ export function CreateOrderForm({
                   {/* Desktop row */}
                   <div
                     className="hidden md:grid items-center"
-                    style={{ gridTemplateColumns: '1.3fr 1.3fr 0.9fr 1fr 40px', gap: '10px' }}
+                    style={{ gridTemplateColumns: '1.2fr 1.2fr 0.8fr 0.9fr 1fr 40px', gap: '10px' }}
                   >
                     <select
                       value={line.serviceId}
@@ -509,6 +562,32 @@ export function CreateOrderForm({
                         </button>
                       </div>
                     )}
+                    {/* Unit price — static for a fixed price, a required bounded input for a range */}
+                    <div>
+                      {line.priceMin !== null && line.priceMax !== null && line.priceMin !== line.priceMax ? (
+                        <input
+                          type="number"
+                          step="0.01"
+                          min={line.priceMin}
+                          max={line.priceMax}
+                          value={line.unitPrice ?? ''}
+                          onChange={e => {
+                            const v = e.target.value
+                            const parsed = parseFloat(v)
+                            updateLine(i, { unitPrice: v === '' || isNaN(parsed) ? null : parsed })
+                          }}
+                          placeholder={`${line.priceMin.toFixed(2)}–${line.priceMax.toFixed(2)}`}
+                          className={`w-full border rounded-7 px-2.5 py-2 text-ui text-warm-950 text-right tnum focus:outline-none focus:shadow-focus-ring ${
+                            line.unitPrice !== null && (line.unitPrice < line.priceMin || line.unitPrice > line.priceMax)
+                              ? 'border-error-fg' : 'border-warm-400 focus:border-brand'
+                          }`}
+                        />
+                      ) : (
+                        <span className="tnum text-ui text-warm-950">
+                          {line.unitPrice !== null ? formatCurrency(line.unitPrice) : '—'}
+                        </span>
+                      )}
+                    </div>
                     <span className="tnum text-ui font-medium text-warm-950">
                       {line.totalPrice > 0 ? formatCurrency(line.totalPrice) : '—'}
                     </span>
@@ -522,6 +601,11 @@ export function CreateOrderForm({
                       ×
                     </button>
                   </div>
+                  {line.priceMin !== null && line.priceMax !== null && line.priceMin !== line.priceMax && (
+                    <p className="hidden md:block mt-1 px-1 text-caption text-warm-500">
+                      Range {formatPriceRange(line.priceMin, line.priceMax)}{line.priceNotes ? ` · ${line.priceNotes}` : ''}
+                    </p>
+                  )}
 
                   {/* Mobile card */}
                   <div className="md:hidden bg-white border border-warm-300 rounded-10 p-4 space-y-3">
@@ -597,6 +681,30 @@ export function CreateOrderForm({
                         >Remove</button>
                       )}
                     </div>
+                    {line.priceMin !== null && line.priceMax !== null && line.priceMin !== line.priceMax && (
+                      <div className="pt-1">
+                        <p className="text-caption text-warm-500 mb-1">
+                          Unit price — range {formatPriceRange(line.priceMin, line.priceMax)}{line.priceNotes ? ` · ${line.priceNotes}` : ''}
+                        </p>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min={line.priceMin}
+                          max={line.priceMax}
+                          value={line.unitPrice ?? ''}
+                          onChange={e => {
+                            const v = e.target.value
+                            const parsed = parseFloat(v)
+                            updateLine(i, { unitPrice: v === '' || isNaN(parsed) ? null : parsed })
+                          }}
+                          placeholder={`${line.priceMin.toFixed(2)}–${line.priceMax.toFixed(2)}`}
+                          className={`w-full border rounded-7 px-3 py-2 text-ui text-warm-950 text-right tnum focus:outline-none ${
+                            line.unitPrice !== null && (line.unitPrice < line.priceMin || line.unitPrice > line.priceMax)
+                              ? 'border-error-fg' : 'border-warm-400 focus:border-brand'
+                          }`}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {canAddException && (

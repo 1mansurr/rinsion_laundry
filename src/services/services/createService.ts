@@ -27,7 +27,7 @@ export async function createService(name: string): Promise<ServiceResult<Laundry
   const { data, error } = await supabase
     .from('services')
     .insert({ laundry_id: emp.laundry_id, name: name.trim(), pricing_mode: pricingMode })
-    .select('id, name, is_active, pricing_mode, kg_rate')
+    .select('id, name, is_active, pricing_mode, min_kg_rate, max_kg_rate, notes')
     .single()
 
   if (error) return { success: false, error: error.message }
@@ -41,7 +41,9 @@ export async function createService(name: string): Promise<ServiceResult<Laundry
       name: data.name,
       isActive: data.is_active,
       pricingMode: data.pricing_mode,
-      kgRate: data.kg_rate === null ? null : Number(data.kg_rate),
+      minKgRate: data.min_kg_rate === null ? null : Number(data.min_kg_rate),
+      maxKgRate: data.max_kg_rate === null ? null : Number(data.max_kg_rate),
+      notes: data.notes,
     },
   }
 }

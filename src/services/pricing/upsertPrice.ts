@@ -10,17 +10,31 @@ import type { ServiceResult } from '@/types/serviceResult'
 export async function upsertPrice(
   itemTypeId: string,
   serviceId: string,
-  price: number
+  minPrice: number,
+  maxPrice: number,
+  notes?: string | null
 ): Promise<ServiceResult<null>> {
   const supabase = createClient()
   const profile = await getMyProfile()
   const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
 
+  if (isNaN(minPrice) || isNaN(maxPrice) || minPrice < 0 || maxPrice < minPrice) {
+    return { success: false, error: 'Max price must be greater than or equal to min price.' }
+  }
+
   const { error } = await supabase
     .from('item_service_prices')
     .upsert(
-      { laundry_id: check.data.laundryId, item_type_id: itemTypeId, service_id: serviceId, price, is_active: true },
+      {
+        laundry_id: check.data.laundryId,
+        item_type_id: itemTypeId,
+        service_id: serviceId,
+        min_price: minPrice,
+        max_price: maxPrice,
+        notes: notes?.trim() || null,
+        is_active: true,
+      },
       { onConflict: 'laundry_id,item_type_id,service_id' }
     )
 

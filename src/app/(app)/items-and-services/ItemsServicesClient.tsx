@@ -12,6 +12,7 @@ import { upsertPrice } from '@/services/pricing/upsertPrice'
 import { togglePrice } from '@/services/pricing/togglePrice'
 import type { PriceCell } from '@/services/pricing/getPricingMatrix'
 import type { PricingMode, PricingModel } from '@/constants/statuses'
+import { formatPriceRange } from '@/utils/formatPriceRange'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -44,6 +45,42 @@ function ModeToggle({ value, onChange }: { value: PricingMode; onChange: (m: Pri
   )
 }
 
+/** Side-by-side Min/Max number inputs, shared by every price-editing surface below. */
+function RangeInputs({
+  min, max, onMinChange, onMaxChange, onKeyDown, onBlur, autoFocus,
+}: {
+  min: string
+  max: string
+  onMinChange: (v: string) => void
+  onMaxChange: (v: string) => void
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
+  onBlur?: () => void
+  autoFocus?: boolean
+}) {
+  return (
+    <div className="flex items-center gap-1">
+      <input
+        autoFocus={autoFocus}
+        value={min}
+        onChange={e => onMinChange(e.target.value)}
+        onKeyDown={onKeyDown}
+        onBlur={onBlur}
+        placeholder="Min"
+        className="w-16 border border-brand rounded-7 px-2 py-1 text-ui text-warm-950 text-right focus:outline-none focus:shadow-focus-ring"
+      />
+      <span className="text-warm-400">–</span>
+      <input
+        value={max}
+        onChange={e => onMaxChange(e.target.value)}
+        onKeyDown={onKeyDown}
+        onBlur={onBlur}
+        placeholder="Max"
+        className="w-16 border border-brand rounded-7 px-2 py-1 text-ui text-warm-950 text-right focus:outline-none focus:shadow-focus-ring"
+      />
+    </div>
+  )
+}
+
 export function ItemsServicesClient({ itemTypes: initItems, services: initServices, prices: initPrices, pricingModel }: Props) {
   const [tab, setTab] = useState<'items' | 'services' | 'pricing'>('items')
   const [items, setItems] = useState(initItems)
@@ -61,16 +98,21 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
   const [error, setError] = useState<string | null>(null)
   const [importOpen, setImportOpen] = useState(false)
   const [editingCell, setEditingCell] = useState<{ itemTypeId: string; serviceId: string } | null>(null)
-  const [cellPrice, setCellPrice] = useState('')
+  const [cellMin, setCellMin] = useState('')
+  const [cellMax, setCellMax] = useState('')
+  const [cellNotes, setCellNotes] = useState('')
   const [editingRateServiceId, setEditingRateServiceId] = useState<string | null>(null)
-  const [rateInput, setRateInput] = useState('')
+  const [rateMin, setRateMin] = useState('')
+  const [rateMax, setRateMax] = useState('')
+  const [rateNotes, setRateNotes] = useState('')
   const [selectedServiceId, setSelectedServiceId] = useState<string>('')
   // Mobile: expanded item card in pricing view
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null)
   // Exceptions editor (mixed mode, per_kg services only)
   const [addingExceptionFor, setAddingExceptionFor] = useState<string | null>(null)
   const [newExceptionItemTypeId, setNewExceptionItemTypeId] = useState('')
-  const [newExceptionPrice, setNewExceptionPrice] = useState('')
+  const [newExceptionMin, setNewExceptionMin] = useState('')
+  const [newExceptionMax, setNewExceptionMax] = useState('')
 
   function addItem() {
     if (!newItemName.trim()) return
@@ -107,12 +149,13 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
   }
 
   function handleServiceModeChange(svc: LaundryService, newMode: PricingMode) {
-    const newKgRate = newMode === 'per_kg' ? svc.kgRate : null
+    const newMinKgRate = newMode === 'per_kg' ? svc.minKgRate : null
+    const newMaxKgRate = newMode === 'per_kg' ? svc.maxKgRate : null
     setError(null)
     startTransition(async () => {
-      const res = await setServicePricing(svc.id, newMode, newKgRate)
+      const res = await setServicePricing(svc.id, newMode, newMinKgRate, newMaxKgRate, svc.notes)
       if (res.success) {
-        setServices(prev => prev.map(s => s.id === svc.id ? { ...s, pricingMode: newMode, kgRate: newKgRate } : s))
+        setServices(prev => prev.map(s => s.id === svc.id ? { ...s, pricingMode: newMode, minKgRate: newMinKgRate, maxKgRate: newMaxKgRate } : s))
       } else {
         setError(res.error)
       }
@@ -121,17 +164,24 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
 
   function startEditingRate(svc: LaundryService) {
     setEditingRateServiceId(svc.id)
-    setRateInput(svc.kgRate !== null ? svc.kgRate.toString() : '')
+    setRateMin(svc.minKgRate !== null ? svc.minKgRate.toString() : '')
+    setRateMax(svc.maxKgRate !== null ? svc.maxKgRate.toString() : '')
+    setRateNotes(svc.notes ?? '')
   }
 
   function saveRate(serviceId: string) {
-    const val = parseFloat(rateInput)
-    if (isNaN(val) || val < 0) { setEditingRateServiceId(null); return }
+    const minVal = parseFloat(rateMin)
+    const maxVal = rateMax.trim() === '' ? minVal : parseFloat(rateMax)
+    if (isNaN(minVal) || minVal < 0 || isNaN(maxVal) || maxVal < minVal) {
+      setError('Max rate must be greater than or equal to min rate.')
+      setEditingRateServiceId(null)
+      return
+    }
     setError(null)
     startTransition(async () => {
-      const res = await setServicePricing(serviceId, 'per_kg', val)
+      const res = await setServicePricing(serviceId, 'per_kg', minVal, maxVal, rateNotes)
       if (res.success) {
-        setServices(prev => prev.map(s => s.id === serviceId ? { ...s, kgRate: val } : s))
+        setServices(prev => prev.map(s => s.id === serviceId ? { ...s, minKgRate: minVal, maxKgRate: maxVal, notes: rateNotes.trim() || null } : s))
       } else {
         setError(res.error)
       }
@@ -144,19 +194,27 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
   }
 
   function savePrice(itemTypeId: string, serviceId: string) {
-    const val = parseFloat(cellPrice)
-    if (isNaN(val) || val < 0) { setEditingCell(null); return }
+    const minVal = parseFloat(cellMin)
+    const maxVal = cellMax.trim() === '' ? minVal : parseFloat(cellMax)
+    if (isNaN(minVal) || minVal < 0 || isNaN(maxVal) || maxVal < minVal) {
+      setError('Max price must be greater than or equal to min price.')
+      setEditingCell(null)
+      return
+    }
     startTransition(async () => {
-      const res = await upsertPrice(itemTypeId, serviceId, val)
+      const res = await upsertPrice(itemTypeId, serviceId, minVal, maxVal, cellNotes)
       if (res.success) {
         setPrices(prev => {
           const existing = prev.find(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId)
+          const notes = cellNotes.trim() || null
           if (existing) return prev.map(p =>
             p.itemTypeId === itemTypeId && p.serviceId === serviceId
-              ? { ...p, price: val, isActive: true } : p
+              ? { ...p, minPrice: minVal, maxPrice: maxVal, notes, isActive: true } : p
           )
-          return [...prev, { id: '', itemTypeId, serviceId, price: val, isActive: true }]
+          return [...prev, { id: '', itemTypeId, serviceId, minPrice: minVal, maxPrice: maxVal, notes, isActive: true }]
         })
+      } else {
+        setError(res.error)
       }
       setEditingCell(null)
     })
@@ -164,7 +222,9 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
 
   function startEditingCell(itemTypeId: string, serviceId: string, cell?: PriceCell) {
     setEditingCell({ itemTypeId, serviceId })
-    setCellPrice(cell ? cell.price.toString() : '')
+    setCellMin(cell ? cell.minPrice.toString() : '')
+    setCellMax(cell ? cell.maxPrice.toString() : '')
+    setCellNotes(cell?.notes ?? '')
   }
 
   function handleDisablePrice(itemTypeId: string, serviceId: string) {
@@ -181,24 +241,28 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
   function openAddException(serviceId: string) {
     setAddingExceptionFor(serviceId)
     setNewExceptionItemTypeId('')
-    setNewExceptionPrice('')
+    setNewExceptionMin('')
+    setNewExceptionMax('')
   }
 
   function saveException(serviceId: string) {
     const itemTypeId = newExceptionItemTypeId
-    const val = parseFloat(newExceptionPrice)
-    if (!itemTypeId || isNaN(val) || val < 0) return
+    const minVal = parseFloat(newExceptionMin)
+    const maxVal = newExceptionMax.trim() === '' ? minVal : parseFloat(newExceptionMax)
+    if (!itemTypeId || isNaN(minVal) || minVal < 0 || isNaN(maxVal) || maxVal < minVal) return
     startTransition(async () => {
-      const res = await upsertPrice(itemTypeId, serviceId, val)
+      const res = await upsertPrice(itemTypeId, serviceId, minVal, maxVal, null)
       if (res.success) {
         setPrices(prev => {
           const existing = prev.find(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId)
           if (existing) return prev.map(p =>
             p.itemTypeId === itemTypeId && p.serviceId === serviceId
-              ? { ...p, price: val, isActive: true } : p
+              ? { ...p, minPrice: minVal, maxPrice: maxVal, notes: null, isActive: true } : p
           )
-          return [...prev, { id: '', itemTypeId, serviceId, price: val, isActive: true }]
+          return [...prev, { id: '', itemTypeId, serviceId, minPrice: minVal, maxPrice: maxVal, notes: null, isActive: true }]
         })
+      } else {
+        setError(res.error)
       }
       setAddingExceptionFor(null)
     })
@@ -355,26 +419,34 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                               <p className="text-caption text-warm-500">Charged by total weight, not per item</p>
                             </div>
                             {isEditing ? (
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-caption text-warm-500">GHS</span>
+                              <div className="flex flex-col items-end gap-1.5">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-caption text-warm-500">GHS</span>
+                                  <RangeInputs
+                                    autoFocus
+                                    min={rateMin}
+                                    max={rateMax}
+                                    onMinChange={setRateMin}
+                                    onMaxChange={setRateMax}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter') saveRate(svc.id)
+                                      if (e.key === 'Escape') setEditingRateServiceId(null)
+                                    }}
+                                    onBlur={() => saveRate(svc.id)}
+                                  />
+                                  <span className="text-caption text-warm-500">/ kg</span>
+                                </div>
                                 <input
-                                  autoFocus
-                                  value={rateInput}
-                                  onChange={e => setRateInput(e.target.value)}
-                                  onKeyDown={e => {
-                                    if (e.key === 'Enter') saveRate(svc.id)
-                                    if (e.key === 'Escape') setEditingRateServiceId(null)
-                                  }}
-                                  onBlur={() => saveRate(svc.id)}
-                                  className="w-24 border border-brand rounded-7 px-2.5 py-1.5 text-ui text-warm-950 text-right focus:outline-none focus:shadow-focus-ring"
-                                  placeholder="0.00"
+                                  value={rateNotes}
+                                  onChange={e => setRateNotes(e.target.value)}
+                                  placeholder="Notes for staff (optional)"
+                                  className="w-56 border border-warm-300 rounded-7 px-2 py-1 text-caption text-warm-800 focus:outline-none focus:border-brand"
                                 />
-                                <span className="text-caption text-warm-500">/ kg</span>
                               </div>
-                            ) : svc.kgRate !== null ? (
+                            ) : svc.minKgRate !== null && svc.maxKgRate !== null ? (
                               <div className="flex items-center gap-3">
-                                <span className="tnum text-ui font-medium text-warm-950">
-                                  GHS {svc.kgRate.toFixed(2)} <span className="text-caption text-warm-400 font-normal">/ kg</span>
+                                <span className="tnum text-ui font-medium text-warm-950" title={svc.notes ?? undefined}>
+                                  {formatPriceRange(svc.minKgRate, svc.maxKgRate)} <span className="text-caption text-warm-400 font-normal">/ kg</span>
                                 </span>
                                 <button
                                   onClick={() => startEditingRate(svc)}
@@ -410,24 +482,26 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                                       <span className="text-ui text-warm-800">{item.name}</span>
                                       <div className="flex items-center gap-2">
                                         {isEditingCell ? (
-                                          <input
+                                          <RangeInputs
                                             autoFocus
-                                            value={cellPrice}
-                                            onChange={e => setCellPrice(e.target.value)}
+                                            min={cellMin}
+                                            max={cellMax}
+                                            onMinChange={setCellMin}
+                                            onMaxChange={setCellMax}
                                             onKeyDown={e => {
                                               if (e.key === 'Enter') savePrice(item.id, svc.id)
                                               if (e.key === 'Escape') setEditingCell(null)
                                             }}
                                             onBlur={() => savePrice(item.id, svc.id)}
-                                            className="w-20 border border-brand rounded-7 px-2 py-1 text-ui text-warm-950 text-right focus:outline-none focus:shadow-focus-ring"
                                           />
                                         ) : (
                                           <button
                                             onClick={() => startEditingCell(item.id, svc.id, cell)}
                                             disabled={isPending}
                                             className="tnum text-ui font-medium text-warm-950 hover:text-brand"
+                                            title={cell.notes ?? undefined}
                                           >
-                                            GHS {cell.price.toFixed(2)}
+                                            {formatPriceRange(cell.minPrice, cell.maxPrice)}
                                           </button>
                                         )}
                                         <button
@@ -455,16 +529,16 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                                       <option key={item.id} value={item.id}>{item.name}</option>
                                     ))}
                                   </select>
-                                  <input
-                                    value={newExceptionPrice}
-                                    onChange={e => setNewExceptionPrice(e.target.value)}
-                                    onKeyDown={e => e.key === 'Enter' && saveException(svc.id)}
-                                    placeholder="0.00"
-                                    className="w-20 border border-warm-300 rounded-7 px-2 py-1.5 text-ui text-warm-950 text-right focus:outline-none focus:border-brand"
+                                  <RangeInputs
+                                    min={newExceptionMin}
+                                    max={newExceptionMax}
+                                    onMinChange={setNewExceptionMin}
+                                    onMaxChange={setNewExceptionMax}
+                                    onKeyDown={e => { if (e.key === 'Enter') saveException(svc.id) }}
                                   />
                                   <button
                                     onClick={() => saveException(svc.id)}
-                                    disabled={!newExceptionItemTypeId || !newExceptionPrice || isPending}
+                                    disabled={!newExceptionItemTypeId || !newExceptionMin || isPending}
                                     className="text-caption text-brand font-medium disabled:opacity-40"
                                   >
                                     Add
@@ -525,7 +599,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
 
                       {/* Desktop: list view */}
                       <div className="hidden md:block bg-white border border-warm-300 rounded-10 overflow-hidden">
-                        <div className="grid px-5 py-2.5 bg-[#F4F0EA] border-b border-warm-200" style={{ gridTemplateColumns: '1fr 180px' }}>
+                        <div className="grid px-5 py-2.5 bg-[#F4F0EA] border-b border-warm-200" style={{ gridTemplateColumns: '1fr 260px' }}>
                           <span className="text-caption font-medium text-warm-500">Item type</span>
                           <span className="text-caption font-medium text-warm-500 text-right">Price (GHS)</span>
                         </div>
@@ -535,52 +609,64 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                           const hasPrice = cell?.isActive
 
                           return (
-                            <div key={item.id} className="flex items-center justify-between px-5 py-3.5 border-b border-warm-100 last:border-0">
-                              <span className="text-ui text-warm-950">{item.name}</span>
-                              <div className="flex items-center gap-3">
-                                {isEditing ? (
-                                  <input
-                                    autoFocus
-                                    value={cellPrice}
-                                    onChange={e => setCellPrice(e.target.value)}
-                                    onKeyDown={e => {
-                                      if (e.key === 'Enter') savePrice(item.id, currentServiceId)
-                                      if (e.key === 'Escape') setEditingCell(null)
-                                    }}
-                                    onBlur={() => savePrice(item.id, currentServiceId)}
-                                    className="w-24 border border-brand rounded-7 px-2.5 py-1.5 text-ui text-warm-950 text-right focus:outline-none focus:shadow-focus-ring"
-                                    placeholder="0.00"
-                                  />
-                                ) : hasPrice ? (
-                                  <>
-                                    <span className="tnum text-ui font-medium text-warm-950">
-                                      {cell!.price.toFixed(2)}
-                                    </span>
+                            <div key={item.id} className="border-b border-warm-100 last:border-0">
+                              <div className="flex items-center justify-between px-5 py-3.5">
+                                <span className="text-ui text-warm-950">{item.name}</span>
+                                <div className="flex items-center gap-3">
+                                  {isEditing ? (
+                                    <RangeInputs
+                                      autoFocus
+                                      min={cellMin}
+                                      max={cellMax}
+                                      onMinChange={setCellMin}
+                                      onMaxChange={setCellMax}
+                                      onKeyDown={e => {
+                                        if (e.key === 'Enter') savePrice(item.id, currentServiceId)
+                                        if (e.key === 'Escape') setEditingCell(null)
+                                      }}
+                                      onBlur={() => savePrice(item.id, currentServiceId)}
+                                    />
+                                  ) : hasPrice ? (
+                                    <>
+                                      <span className="tnum text-ui font-medium text-warm-950" title={cell!.notes ?? undefined}>
+                                        {formatPriceRange(cell!.minPrice, cell!.maxPrice)}
+                                      </span>
+                                      <button
+                                        onClick={() => startEditingCell(item.id, currentServiceId, cell)}
+                                        disabled={isPending}
+                                        className="text-caption text-warm-400 hover:text-warm-700"
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        onClick={() => handleDisablePrice(item.id, currentServiceId)}
+                                        disabled={isPending}
+                                        className="text-caption text-warm-400 hover:text-error-fg"
+                                      >
+                                        Remove
+                                      </button>
+                                    </>
+                                  ) : (
                                     <button
-                                      onClick={() => startEditingCell(item.id, currentServiceId, cell)}
+                                      onClick={() => startEditingCell(item.id, currentServiceId)}
                                       disabled={isPending}
-                                      className="text-caption text-warm-400 hover:text-warm-700"
+                                      className="text-ui text-warm-300 hover:text-warm-600 transition-colors"
                                     >
-                                      Edit
+                                      — Set price
                                     </button>
-                                    <button
-                                      onClick={() => handleDisablePrice(item.id, currentServiceId)}
-                                      disabled={isPending}
-                                      className="text-caption text-warm-400 hover:text-error-fg"
-                                    >
-                                      Remove
-                                    </button>
-                                  </>
-                                ) : (
-                                  <button
-                                    onClick={() => startEditingCell(item.id, currentServiceId)}
-                                    disabled={isPending}
-                                    className="text-ui text-warm-300 hover:text-warm-600 transition-colors"
-                                  >
-                                    — Set price
-                                  </button>
-                                )}
+                                  )}
+                                </div>
                               </div>
+                              {isEditing && (
+                                <div className="px-5 pb-3 -mt-1 flex justify-end">
+                                  <input
+                                    value={cellNotes}
+                                    onChange={e => setCellNotes(e.target.value)}
+                                    placeholder="Notes for staff (optional)"
+                                    className="w-64 border border-warm-300 rounded-7 px-2 py-1 text-caption text-warm-800 focus:outline-none focus:border-brand"
+                                  />
+                                </div>
+                              )}
                             </div>
                           )
                         })}
@@ -602,7 +688,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                                 <span className="text-ui font-medium text-warm-950">{item.name}</span>
                                 <div className="flex items-center gap-2">
                                   {previewCell?.isActive && (
-                                    <span className="tnum text-ui text-warm-500">GHS {previewCell.price.toFixed(2)}</span>
+                                    <span className="tnum text-ui text-warm-500">{formatPriceRange(previewCell.minPrice, previewCell.maxPrice)}</span>
                                   )}
                                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={`text-warm-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}>
                                     <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -617,35 +703,45 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                                     const isEditingThis = editingCell?.itemTypeId === item.id && editingCell?.serviceId === svc.id
 
                                     return (
-                                      <div key={svc.id} className="flex items-center justify-between px-4 py-2.5">
-                                        <span className="text-ui text-warm-700">{svc.name}</span>
-                                        {isEditingThis ? (
+                                      <div key={svc.id} className="px-4 py-2.5">
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-ui text-warm-700">{svc.name}</span>
+                                          {isEditingThis ? (
+                                            <RangeInputs
+                                              autoFocus
+                                              min={cellMin}
+                                              max={cellMax}
+                                              onMinChange={setCellMin}
+                                              onMaxChange={setCellMax}
+                                              onKeyDown={e => {
+                                                if (e.key === 'Enter') savePrice(item.id, svc.id)
+                                                if (e.key === 'Escape') setEditingCell(null)
+                                              }}
+                                              onBlur={() => savePrice(item.id, svc.id)}
+                                            />
+                                          ) : cell?.isActive ? (
+                                            <button
+                                              onClick={() => startEditingCell(item.id, svc.id, cell)}
+                                              className="tnum text-ui font-medium text-brand underline underline-offset-2"
+                                            >
+                                              {formatPriceRange(cell.minPrice, cell.maxPrice)}
+                                            </button>
+                                          ) : (
+                                            <button
+                                              onClick={() => startEditingCell(item.id, svc.id)}
+                                              className="text-caption text-warm-400 hover:text-brand"
+                                            >
+                                              + Set price
+                                            </button>
+                                          )}
+                                        </div>
+                                        {isEditingThis && (
                                           <input
-                                            autoFocus
-                                            value={cellPrice}
-                                            onChange={e => setCellPrice(e.target.value)}
-                                            onKeyDown={e => {
-                                              if (e.key === 'Enter') savePrice(item.id, svc.id)
-                                              if (e.key === 'Escape') setEditingCell(null)
-                                            }}
-                                            onBlur={() => savePrice(item.id, svc.id)}
-                                            className="w-20 border border-brand rounded-7 px-2.5 py-1.5 text-ui text-right focus:outline-none focus:shadow-focus-ring"
-                                            placeholder="0.00"
+                                            value={cellNotes}
+                                            onChange={e => setCellNotes(e.target.value)}
+                                            placeholder="Notes for staff (optional)"
+                                            className="mt-1.5 w-full border border-warm-300 rounded-7 px-2 py-1 text-caption text-warm-800 focus:outline-none focus:border-brand"
                                           />
-                                        ) : cell?.isActive ? (
-                                          <button
-                                            onClick={() => startEditingCell(item.id, svc.id, cell)}
-                                            className="tnum text-ui font-medium text-brand underline underline-offset-2"
-                                          >
-                                            GHS {cell.price.toFixed(2)}
-                                          </button>
-                                        ) : (
-                                          <button
-                                            onClick={() => startEditingCell(item.id, svc.id)}
-                                            className="text-caption text-warm-400 hover:text-brand"
-                                          >
-                                            + Set price
-                                          </button>
                                         )}
                                       </div>
                                     )

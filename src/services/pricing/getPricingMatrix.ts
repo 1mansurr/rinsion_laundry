@@ -7,7 +7,10 @@ export interface PriceCell {
   id: string
   itemTypeId: string
   serviceId: string
-  price: number
+  /** Equal to maxPrice for a fixed price; lower bound of a range otherwise. */
+  minPrice: number
+  maxPrice: number
+  notes: string | null
   isActive: boolean
 }
 
@@ -22,14 +25,16 @@ export async function getPricingMatrix(laundryId: string): Promise<PriceCell[]> 
       const supabase = createAdminClient()
       const { data } = await supabase
         .from('item_service_prices')
-        .select('id, item_type_id, service_id, price, is_active')
+        .select('id, item_type_id, service_id, min_price, max_price, notes, is_active')
         .eq('laundry_id', laundryId)
 
       return (data ?? []).map(r => ({
         id: r.id,
         itemTypeId: r.item_type_id,
         serviceId: r.service_id,
-        price: Number(r.price),
+        minPrice: Number(r.min_price),
+        maxPrice: Number(r.max_price),
+        notes: r.notes,
         isActive: r.is_active,
       }))
     },

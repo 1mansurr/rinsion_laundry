@@ -18,7 +18,9 @@ export interface ImportPreviewRow {
   itemTypeName: string | null
   itemTypeId: string | null
   unit: 'kg' | 'item'
-  price: number
+  minPrice: number
+  maxPrice: number
+  notes: string | null
   action: 'create' | 'update'
   error?: string
 }
@@ -41,27 +43,54 @@ interface RawRow {
   service: string
   itemType: string
   unit: string
-  price: string
+  minPrice: string
+  maxPrice: string
+  notes: string
   rowNumber: number
+}
+
+interface ColIndex {
+  service?: number
+  itemType?: number
+  unit?: number
+  minPrice?: number
+  maxPrice?: number
+  /** Legacy single-price template from before min/max — treated as both bounds. */
+  legacyPrice?: number
+  notes?: number
+}
+
+function matchHeader(colIndex: ColIndex, val: string, colNumber: number) {
+  if (val === 'service') colIndex.service = colNumber
+  else if (val === 'item type' || val === 'itemtype') colIndex.itemType = colNumber
+  else if (val === 'unit') colIndex.unit = colNumber
+  else if (val === 'min price' || val === 'min price (ghs)' || val === 'minprice') colIndex.minPrice = colNumber
+  else if (val === 'max price' || val === 'max price (ghs)' || val === 'maxprice') colIndex.maxPrice = colNumber
+  else if (val === 'notes') colIndex.notes = colNumber
+  else if (val === 'price') colIndex.legacyPrice = colNumber
 }
 
 function parseCsv(text: string): RawRow[] {
   const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0)
   if (lines.length === 0) return []
   const header = lines[0].split(',').map(h => h.trim().toLowerCase())
-  const serviceCol = header.indexOf('service')
-  const itemTypeCol = header.findIndex(h => h === 'item type' || h === 'itemtype')
-  const unitCol = header.indexOf('unit')
-  const priceCol = header.indexOf('price')
+  const colIndex: ColIndex = {}
+  header.forEach((h, i) => matchHeader(colIndex, h, i))
+
+  const get = (cols: string[], col?: number) => col !== undefined ? cols[col] ?? '' : ''
 
   const rows: RawRow[] = []
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(',').map(c => c.trim())
+    const minPrice = colIndex.minPrice !== undefined ? get(cols, colIndex.minPrice) : get(cols, colIndex.legacyPrice)
+    const maxPrice = colIndex.maxPrice !== undefined ? get(cols, colIndex.maxPrice) : get(cols, colIndex.legacyPrice)
     rows.push({
-      service: serviceCol >= 0 ? cols[serviceCol] ?? '' : '',
-      itemType: itemTypeCol >= 0 ? cols[itemTypeCol] ?? '' : '',
-      unit: unitCol >= 0 ? cols[unitCol] ?? '' : '',
-      price: priceCol >= 0 ? cols[priceCol] ?? '' : '',
+      service: get(cols, colIndex.service),
+      itemType: get(cols, colIndex.itemType),
+      unit: get(cols, colIndex.unit),
+      minPrice,
+      maxPrice,
+      notes: get(cols, colIndex.notes),
       rowNumber: i + 1,
     })
   }
@@ -78,13 +107,9 @@ async function parseXlsx(buffer: Buffer): Promise<RawRow[]> {
   const sheet = workbook.worksheets[0]
   if (!sheet) return []
 
-  const colIndex: { service?: number; itemType?: number; unit?: number; price?: number } = {}
+  const colIndex: ColIndex = {}
   sheet.getRow(1).eachCell((cell, colNumber) => {
-    const val = String(cell.value ?? '').trim().toLowerCase()
-    if (val === 'service') colIndex.service = colNumber
-    else if (val === 'item type' || val === 'itemtype') colIndex.itemType = colNumber
-    else if (val === 'unit') colIndex.unit = colNumber
-    else if (val === 'price') colIndex.price = colNumber
+    matchHeader(colIndex, String(cell.value ?? '').trim().toLowerCase(), colNumber)
   })
 
   const get = (row: ExcelJS.Row, col?: number) => col ? String(row.getCell(col).value ?? '').trim() : ''
@@ -94,9 +119,10 @@ async function parseXlsx(buffer: Buffer): Promise<RawRow[]> {
     if (rowNumber === 1) return
     const service = get(row, colIndex.service)
     const itemType = get(row, colIndex.itemType)
-    const price = get(row, colIndex.price)
-    if (!service && !itemType && !price) return
-    rows.push({ service, itemType, unit: get(row, colIndex.unit), price, rowNumber })
+    const minPrice = get(row, colIndex.minPrice ?? colIndex.legacyPrice)
+    const maxPrice = get(row, colIndex.maxPrice ?? colIndex.legacyPrice)
+    if (!service && !itemType && !minPrice && !maxPrice) return
+    rows.push({ service, itemType, unit: get(row, colIndex.unit), minPrice, maxPrice, notes: get(row, colIndex.notes), rowNumber })
   })
   return rows
 }
@@ -154,12 +180,12 @@ export async function parsePricingImport(formData: FormData): Promise<ServiceRes
     supabase.from('services').select('id, name').eq('laundry_id', laundryId).is('deleted_at', null),
     supabase.from('item_types').select('id, name').eq('laundry_id', laundryId).is('deleted_at', null),
     supabase.from('item_service_prices').select('item_type_id, service_id, is_active').eq('laundry_id', laundryId),
-    supabase.from('services').select('id, kg_rate').eq('laundry_id', laundryId),
+    supabase.from('services').select('id, min_kg_rate').eq('laundry_id', laundryId),
   ])
 
   const serviceByName = new Map((services ?? []).map(s => [s.name.trim().toLowerCase(), s.id as string]))
   const itemTypeByName = new Map((itemTypes ?? []).map(t => [t.name.trim().toLowerCase(), t.id as string]))
-  const kgRateById = new Map((kgRates ?? []).map(s => [s.id as string, s.kg_rate as number | null]))
+  const minKgRateById = new Map((kgRates ?? []).map(s => [s.id as string, s.min_kg_rate as number | null]))
   const hasActivePrice = new Set(
     (existingPrices ?? []).filter(p => p.is_active).map(p => `${p.item_type_id}:${p.service_id}`)
   )
@@ -167,37 +193,46 @@ export async function parsePricingImport(formData: FormData): Promise<ServiceRes
   const rows: ImportPreviewRow[] = rawRows.map(r => {
     const serviceName = r.service.trim()
     const unitRaw = r.unit.trim().toLowerCase()
-    const priceNum = parseFloat(r.price)
+    const notes = r.notes.trim() || null
+    const minPriceNum = parseFloat(r.minPrice)
+    // Blank Max Price is a convenience for a fixed price: it falls back to Min.
+    const maxPriceNum = r.maxPrice.trim() ? parseFloat(r.maxPrice) : minPriceNum
     const serviceId = serviceName ? serviceByName.get(serviceName.toLowerCase()) ?? null : null
 
     if (!serviceName) {
-      return { rowNumber: r.rowNumber, serviceName: '', serviceId: null, itemTypeName: null, itemTypeId: null, unit: 'item', price: 0, action: 'create', error: 'Missing service name.' }
+      return { rowNumber: r.rowNumber, serviceName: '', serviceId: null, itemTypeName: null, itemTypeId: null, unit: 'item', minPrice: 0, maxPrice: 0, notes, action: 'create', error: 'Missing service name.' }
     }
     if (unitRaw !== 'kg' && unitRaw !== 'item') {
-      return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName: null, itemTypeId: null, unit: 'item', price: 0, action: 'create', error: `Unit must be "kg" or "item", got "${r.unit || '(blank)'}".` }
+      return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName: null, itemTypeId: null, unit: 'item', minPrice: 0, maxPrice: 0, notes, action: 'create', error: `Unit must be "kg" or "item", got "${r.unit || '(blank)'}".` }
     }
-    if (isNaN(priceNum) || priceNum < 0) {
-      return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName: null, itemTypeId: null, unit: unitRaw, price: 0, action: 'create', error: `Invalid price "${r.price}".` }
+    if (isNaN(minPriceNum) || minPriceNum < 0) {
+      return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName: null, itemTypeId: null, unit: unitRaw, minPrice: 0, maxPrice: 0, notes, action: 'create', error: `Invalid Min Price "${r.minPrice}".` }
+    }
+    if (isNaN(maxPriceNum) || maxPriceNum < 0) {
+      return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName: null, itemTypeId: null, unit: unitRaw, minPrice: 0, maxPrice: 0, notes, action: 'create', error: `Invalid Max Price "${r.maxPrice}".` }
+    }
+    if (maxPriceNum < minPriceNum) {
+      return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName: null, itemTypeId: null, unit: unitRaw, minPrice: minPriceNum, maxPrice: maxPriceNum, notes, action: 'create', error: 'Max Price must be >= Min Price.' }
     }
 
     if (unitRaw === 'kg') {
       if (pricingModel === 'per_item') {
-        return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName: null, itemTypeId: null, unit: 'kg', price: priceNum, action: 'create', error: 'This laundry is fully per-item priced — weight-based (kg) rows are not allowed.' }
+        return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName: null, itemTypeId: null, unit: 'kg', minPrice: minPriceNum, maxPrice: maxPriceNum, notes, action: 'create', error: 'This laundry is fully per-item priced — weight-based (kg) rows are not allowed.' }
       }
-      const action: 'create' | 'update' = !serviceId || kgRateById.get(serviceId) == null ? 'create' : 'update'
-      return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName: null, itemTypeId: null, unit: 'kg', price: priceNum, action }
+      const action: 'create' | 'update' = !serviceId || minKgRateById.get(serviceId) == null ? 'create' : 'update'
+      return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName: null, itemTypeId: null, unit: 'kg', minPrice: minPriceNum, maxPrice: maxPriceNum, notes, action }
     }
 
     const itemTypeName = r.itemType.trim()
     if (!itemTypeName) {
-      return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName: null, itemTypeId: null, unit: 'item', price: priceNum, action: 'create', error: 'Item rows must include an Item Type.' }
+      return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName: null, itemTypeId: null, unit: 'item', minPrice: minPriceNum, maxPrice: maxPriceNum, notes, action: 'create', error: 'Item rows must include an Item Type.' }
     }
     if (pricingModel === 'per_kg') {
-      return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName, itemTypeId: itemTypeByName.get(itemTypeName.toLowerCase()) ?? null, unit: 'item', price: priceNum, action: 'create', error: 'This laundry is fully weight-priced — item-level rows are not allowed.' }
+      return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName, itemTypeId: itemTypeByName.get(itemTypeName.toLowerCase()) ?? null, unit: 'item', minPrice: minPriceNum, maxPrice: maxPriceNum, notes, action: 'create', error: 'This laundry is fully weight-priced — item-level rows are not allowed.' }
     }
     const itemTypeId = itemTypeByName.get(itemTypeName.toLowerCase()) ?? null
     const action: 'create' | 'update' = !serviceId || !itemTypeId || !hasActivePrice.has(`${itemTypeId}:${serviceId}`) ? 'create' : 'update'
-    return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName, itemTypeId, unit: 'item', price: priceNum, action }
+    return { rowNumber: r.rowNumber, serviceName, serviceId, itemTypeName, itemTypeId, unit: 'item', minPrice: minPriceNum, maxPrice: maxPriceNum, notes, action }
   })
 
   const errorCount = rows.filter(r => r.error).length
@@ -252,7 +287,7 @@ export async function commitPricingImport(rows: ImportPreviewRow[]): Promise<Ser
     if (!serviceId) { failedRows++; continue }
 
     if (row.unit === 'kg') {
-      const res = await setServicePricing(serviceId, 'per_kg', row.price)
+      const res = await setServicePricing(serviceId, 'per_kg', row.minPrice, row.maxPrice, row.notes)
       if (res.success) kgRatesSet++
       else failedRows++
       continue
@@ -260,7 +295,7 @@ export async function commitPricingImport(rows: ImportPreviewRow[]): Promise<Ser
 
     const itemTypeId = row.itemTypeId ?? (row.itemTypeName ? await resolveItemTypeId(row.itemTypeName) : null)
     if (!itemTypeId) { failedRows++; continue }
-    const res = await upsertPrice(itemTypeId, serviceId, row.price)
+    const res = await upsertPrice(itemTypeId, serviceId, row.minPrice, row.maxPrice, row.notes)
     if (res.success) pricesUpserted++
     else failedRows++
   }

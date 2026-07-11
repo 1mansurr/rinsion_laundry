@@ -73,11 +73,16 @@ export function ImportPricingModal({ open, onClose, onImported }: Props) {
   const errorRows = rows.filter(r => r.error)
 
   const columns: ColumnDef<ImportPreviewRow>[] = [
-    { key: 'row', header: '#', width: '48px', cell: r => r.rowNumber },
-    { key: 'service', header: 'Service', width: '1.4fr', cell: r => r.serviceName },
-    { key: 'item', header: 'Item Type', width: '1.4fr', cell: r => r.itemTypeName ?? '—' },
-    { key: 'unit', header: 'Unit', width: '80px', cell: r => r.unit },
-    { key: 'price', header: 'Price', width: '90px', align: 'right', cell: r => r.error ? '—' : r.price.toFixed(2) },
+    { key: 'row', header: '#', width: '40px', cell: r => r.rowNumber },
+    { key: 'service', header: 'Service', width: '1.2fr', cell: r => r.serviceName },
+    { key: 'item', header: 'Item Type', width: '1.2fr', cell: r => r.itemTypeName ?? '—' },
+    { key: 'unit', header: 'Unit', width: '64px', cell: r => r.unit },
+    { key: 'min', header: 'Min', width: '70px', align: 'right', cell: r => r.error ? '—' : r.minPrice.toFixed(2) },
+    { key: 'max', header: 'Max', width: '70px', align: 'right', cell: r => r.error ? '—' : r.maxPrice.toFixed(2) },
+    {
+      key: 'notes', header: 'Notes', width: '1fr',
+      cell: r => <span className="truncate block text-caption text-warm-600" title={r.notes ?? undefined}>{r.notes ?? '—'}</span>,
+    },
     {
       key: 'status', header: 'Status', width: '1.2fr',
       cell: r => r.error
@@ -98,7 +103,7 @@ export function ImportPricingModal({ open, onClose, onImported }: Props) {
       description={step === 'upload'
         ? 'Upload an Excel or CSV file to set prices in bulk instead of one at a time.'
         : `${validRows.length} valid row${validRows.length === 1 ? '' : 's'}${errorRows.length > 0 ? `, ${errorRows.length} with errors (will be skipped)` : ''}`}
-      maxWidth={step === 'preview' ? 'max-w-2xl' : 'max-w-lg'}
+      maxWidth={step === 'preview' ? 'max-w-4xl' : 'max-w-lg'}
     >
       {step === 'upload' ? (
         <div className="space-y-4">

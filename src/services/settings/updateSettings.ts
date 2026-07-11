@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { requireRole } from '@/lib/auth'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { ROLES } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
 import type { LaundrySettings } from './getSettings'
@@ -39,11 +39,13 @@ export async function updateSettings(patch: Partial<LaundrySettings>): Promise<S
       .from('services')
       .update({ pricing_mode: 'per_kg' })
       .eq('laundry_id', emp.laundry_id)
+    revalidateTag(`reference-data-${emp.laundry_id}`)
   } else if (patch.pricingModel === 'per_item') {
     await supabase
       .from('services')
-      .update({ pricing_mode: 'per_item', kg_rate: null })
+      .update({ pricing_mode: 'per_item', min_kg_rate: null, max_kg_rate: null })
       .eq('laundry_id', emp.laundry_id)
+    revalidateTag(`reference-data-${emp.laundry_id}`)
   }
 
   const changed = Object.entries(patch).map(([k, v]) => `${k}=${v}`).join(', ')
