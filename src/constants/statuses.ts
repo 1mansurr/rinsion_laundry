@@ -45,9 +45,33 @@ export type PaymentMethod = (typeof PAYMENT_METHODS)[number]
 export const EMPLOYEE_ROLES = ['admin', 'employee'] as const
 export type EmployeeRole = (typeof EMPLOYEE_ROLES)[number]
 
+/** Named accessors for EMPLOYEE_ROLES — use instead of bare 'admin'/'employee' string literals. */
+export const ROLES: Record<'ADMIN' | 'EMPLOYEE', EmployeeRole> = {
+  ADMIN: 'admin',
+  EMPLOYEE: 'employee',
+}
+
 export const PRICING_MODES = ['per_item', 'per_kg'] as const
 export type PricingMode = (typeof PRICING_MODES)[number]
 
 /** Laundry-level choice: 'mixed' lets each service independently be per_item or per_kg */
 export const PRICING_MODELS = ['per_item', 'per_kg', 'mixed'] as const
 export type PricingModel = (typeof PRICING_MODELS)[number]
+
+export const JOIN_REQUEST_STATUSES = ['pending', 'approved', 'rejected'] as const
+export type JoinRequestStatus = (typeof JOIN_REQUEST_STATUSES)[number]
+
+export const JOIN_REQUEST_STATUS: Record<'PENDING' | 'APPROVED' | 'REJECTED', JoinRequestStatus> = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+}
+
+export const SMS_STATUSES = ['queued', 'sent', 'failed'] as const
+export type SmsStatus = (typeof SMS_STATUSES)[number]
+
+export const SMS_STATUS: Record<'QUEUED' | 'SENT' | 'FAILED', SmsStatus> = {
+  QUEUED: 'queued',
+  SENT: 'sent',
+  FAILED: 'failed',
+}

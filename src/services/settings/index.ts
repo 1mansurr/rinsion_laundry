@@ -5,6 +5,7 @@ import { getMyProfile } from '@/services/employees/getMyProfile'
 import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { generateJoinPin } from '@/utils/generateJoinPin'
+import { ROLES } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
 import type { PricingModel } from '@/constants/statuses'
 
@@ -42,7 +43,7 @@ export async function getSettings(): Promise<LaundrySettings | null> {
 export async function updateSettings(patch: Partial<LaundrySettings>): Promise<ServiceResult<null>> {
   const supabase = createClient()
   const profile = await getMyProfile()
-  const check = requireRole(profile, 'admin')
+  const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const emp = { id: check.data.id, laundry_id: check.data.laundryId }
 
@@ -108,7 +109,7 @@ export async function getLaundry(): Promise<{ id: string; name: string; laundryC
 export async function regenerateJoinPin(): Promise<ServiceResult<{ joinPin: string }>> {
   const supabase = createClient()
   const profile = await getMyProfile()
-  const check = requireRole(profile, 'admin')
+  const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const emp = { id: check.data.id, laundry_id: check.data.laundryId }
 
@@ -136,7 +137,7 @@ export async function updateLaundryName(name: string): Promise<ServiceResult<nul
 
   const supabase = createClient()
   const profile = await getMyProfile()
-  const check = requireRole(profile, 'admin')
+  const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const emp = { id: check.data.id, laundry_id: check.data.laundryId }
 

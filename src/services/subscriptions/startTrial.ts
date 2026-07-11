@@ -5,6 +5,7 @@ import { getMyProfile } from '@/services/employees/getMyProfile'
 import { requireRole } from '@/lib/auth'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { PLANS, TRIAL_DAYS } from '@/constants/plans'
+import { ROLES } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
 /**
@@ -16,7 +17,7 @@ import type { ServiceResult } from '@/types/serviceResult'
 export async function startTrial(): Promise<ServiceResult<null>> {
   const supabase = createClient()
   const profile = await getMyProfile()
-  const check = requireRole(profile, 'admin')
+  const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const emp = { laundry_id: check.data.laundryId }
 

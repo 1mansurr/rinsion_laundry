@@ -5,6 +5,7 @@ import { getMyProfile } from '@/services/employees/getMyProfile'
 import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { PLANS } from '@/constants/plans'
+import { ROLES } from '@/constants/statuses'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -24,7 +25,7 @@ export async function createBranch(name: string): Promise<ServiceResult<{ id: st
 
   const supabase = createClient()
   const profile = await getMyProfile()
-  const check = requireRole(profile, 'admin')
+  const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const emp = { id: check.data.id, laundry_id: check.data.laundryId }
 

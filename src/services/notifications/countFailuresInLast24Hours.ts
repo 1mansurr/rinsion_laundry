@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { SMS_STATUS } from '@/constants/statuses'
 
 /** Counts failed customer-facing SMS sends for this laundry in the rolling prior 24 hours.
  *  Used to determine whether a new failure should count toward the SMS quota cap.
@@ -13,7 +14,7 @@ export async function countFailuresInLast24Hours(laundryId: string): Promise<num
     .from('sms_messages')
     .select('id', { count: 'exact', head: true })
     .eq('laundry_id', laundryId)
-    .eq('status', 'failed')
+    .eq('status', SMS_STATUS.FAILED)
     .gte('created_at', since)
 
   return count ?? 0

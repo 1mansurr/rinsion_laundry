@@ -5,6 +5,7 @@ import { getMyProfile } from '@/services/employees/getMyProfile'
 import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
+import { ROLES } from '@/constants/statuses'
 import type { PaymentMethod } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -16,7 +17,7 @@ export async function recordRefund(input: {
 }): Promise<ServiceResult<null>> {
   const supabase = createClient()
   const profile = await getMyProfile()
-  const check = requireRole(profile, 'admin')
+  const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const emp = { id: check.data.id, laundry_id: check.data.laundryId }
 

@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase'
 import { smsProvider } from '@/lib/sms'
+import { ROLES } from '@/constants/statuses'
 
 export type RenewalReminderTrigger = 'RENEWAL_REMINDER_3_DAYS' | 'RENEWAL_REMINDER_1_DAY' | 'RENEWAL_REMINDER_DAY_OF'
 
@@ -25,7 +26,7 @@ export async function sendRenewalReminderSms(
     .from('employees')
     .select('phone')
     .eq('laundry_id', laundryId)
-    .eq('role', 'admin')
+    .eq('role', ROLES.ADMIN)
     .eq('is_active', true)
     .order('created_at', { ascending: true })
     .limit(1)

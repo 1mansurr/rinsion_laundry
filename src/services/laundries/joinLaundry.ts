@@ -2,6 +2,7 @@
 
 import { createClient, createAdminClient } from '@/lib/supabase'
 import { getVerifiedUserId } from '@/lib/auth'
+import { JOIN_REQUEST_STATUS } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
 export interface MyJoinRequestStatus {
@@ -37,7 +38,7 @@ export async function submitJoinRequest(pin: string): Promise<ServiceResult<null
     .select('id')
     .eq('laundry_id', laundry.id)
     .eq('auth_user_id', user.id)
-    .eq('status', 'pending')
+    .eq('status', JOIN_REQUEST_STATUS.PENDING)
     .maybeSingle()
   if (pending) return { success: true, data: null }
 

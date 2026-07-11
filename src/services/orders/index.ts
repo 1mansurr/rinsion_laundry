@@ -5,7 +5,7 @@ import { getMyProfile } from '@/services/employees/getMyProfile'
 import { revalidatePath } from 'next/cache'
 import { generatePickupCode } from '@/utils/generatePickupCode'
 import { WRITE_BLOCKED_STATUSES } from '@/constants/subscriptionStatuses'
-import { ORDER_STATUS_TRANSITIONS } from '@/constants/statuses'
+import { ORDER_STATUS_TRANSITIONS, ROLES } from '@/constants/statuses'
 import type { OrderStatus, OrderPriority, PricingMode } from '@/constants/statuses'
 import type { SubscriptionStatus } from '@/constants/subscriptionStatuses'
 import type { ServiceResult } from '@/types/serviceResult'
@@ -108,7 +108,7 @@ export async function createOrder(input: CreateOrderInput): Promise<ServiceResul
   const taxRate = Number(settingsRow?.tax_rate ?? 0)
   const taxAmount = Math.round(subtotal * taxRate) / 100
   const total = subtotal + taxAmount
-  const branchId = emp.role === 'admin' ? input.branchId : emp.branch_id
+  const branchId = emp.role === ROLES.ADMIN ? input.branchId : emp.branch_id
 
   // pickup_code is unique per laundry — regenerate and retry on conflict.
   // The whole write (orders + order_items + order_notes + order_status_history

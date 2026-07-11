@@ -5,6 +5,7 @@ import { getMyProfile } from '@/services/employees/getMyProfile'
 import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { PLANS } from '@/constants/plans'
+import { ROLES } from '@/constants/statuses'
 import type { EmployeeRole } from '@/constants/statuses'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
 import type { ServiceResult } from '@/types/serviceResult'
@@ -57,7 +58,7 @@ export async function getEmployees(): Promise<Employee[]> {
 export async function createEmployee(input: CreateEmployeeInput): Promise<ServiceResult<{ tempPassword: string }>> {
   const supabase = createClient()
   const profile = await getMyProfile()
-  const check = requireRole(profile, 'admin')
+  const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const caller = { id: check.data.id, laundry_id: check.data.laundryId }
 
@@ -131,7 +132,7 @@ export async function createEmployee(input: CreateEmployeeInput): Promise<Servic
 export async function toggleEmployee(employeeId: string, isActive: boolean): Promise<ServiceResult<null>> {
   const supabase = createClient()
   const profile = await getMyProfile()
-  const check = requireRole(profile, 'admin')
+  const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const caller = { id: check.data.id, laundry_id: check.data.laundryId }
   if (caller.id === employeeId) return { success: false, error: 'Cannot deactivate your own account.' }

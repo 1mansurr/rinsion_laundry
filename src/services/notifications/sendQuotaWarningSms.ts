@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase'
 import { sendSystemSms } from './sendSms'
+import { ROLES } from '@/constants/statuses'
 
 /**
  * Sends the 70% SMS quota warning to the laundry admin.
@@ -23,7 +24,7 @@ export async function sendQuotaWarningSms(
     .from('employees')
     .select('phone, first_name')
     .eq('laundry_id', laundryId)
-    .eq('role', 'admin')
+    .eq('role', ROLES.ADMIN)
     .eq('is_active', true)
     .order('created_at', { ascending: true })
     .limit(1)

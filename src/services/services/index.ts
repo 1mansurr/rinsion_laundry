@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
+import { ROLES } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
 import type { PricingMode } from '@/constants/statuses'
 
@@ -41,7 +42,7 @@ export async function setServicePricing(
 ): Promise<ServiceResult<null>> {
   const supabase = createClient()
   const profile = await getMyProfile()
-  const check = requireRole(profile, 'admin')
+  const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
 
   const { error } = await supabase
@@ -63,7 +64,7 @@ export async function setServicePricing(
 export async function createService(name: string): Promise<ServiceResult<LaundryService>> {
   const supabase = createClient()
   const profile = await getMyProfile()
-  const check = requireRole(profile, 'admin')
+  const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const emp = { laundry_id: check.data.laundryId }
 

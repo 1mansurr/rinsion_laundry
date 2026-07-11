@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
+import { ROLES } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
 export interface ItemType {
@@ -27,7 +28,7 @@ export async function getItemTypes(laundryId: string): Promise<ItemType[]> {
 export async function createItemType(name: string): Promise<ServiceResult<ItemType>> {
   const supabase = createClient()
   const profile = await getMyProfile()
-  const check = requireRole(profile, 'admin')
+  const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
 
   const { data, error } = await supabase

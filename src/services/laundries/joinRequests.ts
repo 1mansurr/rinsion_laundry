@@ -5,6 +5,7 @@ import { getMyProfile } from '@/services/employees/getMyProfile'
 import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { PLANS } from '@/constants/plans'
+import { ROLES, JOIN_REQUEST_STATUS } from '@/constants/statuses'
 import type { EmployeeRole } from '@/constants/statuses'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
 import type { ServiceResult } from '@/types/serviceResult'
@@ -21,13 +22,13 @@ export interface PendingJoinRequest {
 export async function getPendingJoinRequests(): Promise<PendingJoinRequest[]> {
   const supabase = createClient()
   const profile = await getMyProfile()
-  if (!profile || profile.role !== 'admin') return []
+  if (!profile || profile.role !== ROLES.ADMIN) return []
 
   const { data } = await supabase
     .from('join_requests')
     .select('id, first_name, last_name, email, phone, created_at')
     .eq('laundry_id', profile.laundryId)
-    .eq('status', 'pending')
+    .eq('status', JOIN_REQUEST_STATUS.PENDING)
     .order('created_at', { ascending: true })
 
   return (data ?? []).map(r => ({
@@ -47,7 +48,7 @@ export async function approveJoinRequest(
 ): Promise<ServiceResult<null>> {
   const supabase = createClient()
   const profile = await getMyProfile()
-  const check = requireRole(profile, 'admin')
+  const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const emp = { id: check.data.id, laundry_id: check.data.laundryId }
 
@@ -58,7 +59,7 @@ export async function approveJoinRequest(
     .eq('laundry_id', emp.laundry_id)
     .single()
   if (!request) return { success: false, error: 'Request not found.' }
-  if (request.status !== 'pending') return { success: false, error: 'This request has already been resolved.' }
+  if (request.status !== JOIN_REQUEST_STATUS.PENDING) return { success: false, error: 'This request has already been resolved.' }
 
   // Plan limit check — same guard as adding an employee directly
   const { data: sub } = await supabase
@@ -97,7 +98,7 @@ export async function approveJoinRequest(
 
   const { error: reqErr } = await supabase
     .from('join_requests')
-    .update({ status: 'approved', resolved_at: new Date().toISOString(), resolved_by_employee_id: emp.id })
+    .update({ status: JOIN_REQUEST_STATUS.APPROVED, resolved_at: new Date().toISOString(), resolved_by_employee_id: emp.id })
     .eq('id', requestId)
   if (reqErr) return { success: false, error: reqErr.message }
 
@@ -115,13 +116,13 @@ export async function approveJoinRequest(
 export async function rejectJoinRequest(requestId: string): Promise<ServiceResult<null>> {
   const supabase = createClient()
   const profile = await getMyProfile()
-  const check = requireRole(profile, 'admin')
+  const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const emp = { id: check.data.id, laundry_id: check.data.laundryId }
 
   const { error } = await supabase
     .from('join_requests')
-    .update({ status: 'rejected', resolved_at: new Date().toISOString(), resolved_by_employee_id: emp.id })
+    .update({ status: JOIN_REQUEST_STATUS.REJECTED, resolved_at: new Date().toISOString(), resolved_by_employee_id: emp.id })
     .eq('id', requestId)
     .eq('laundry_id', emp.laundry_id)
   if (error) return { success: false, error: error.message }
