@@ -42,22 +42,17 @@ export async function recordPayment(input: {
     }
   }
 
-  const { error } = await supabase.from('payments').insert({
-    order_id: input.orderId,
-    recorded_by_employee_id: emp.id,
-    amount: input.amount,
-    payment_method: input.paymentMethod,
+  // payments + activity_logs insert run atomically in record_payment_tx —
+  // see supabase/migrations/20240007000000_order_write_transactions.sql.
+  const { error } = await supabase.rpc('record_payment_tx', {
+    p_order_id: input.orderId,
+    p_laundry_id: emp.laundry_id,
+    p_employee_id: emp.id,
+    p_amount: input.amount,
+    p_method: input.paymentMethod,
   })
 
   if (error) return { success: false, error: error.message }
-
-  await supabase.from('activity_logs').insert({
-    laundry_id: emp.laundry_id,
-    order_id: input.orderId,
-    employee_id: emp.id,
-    action_type: 'PAYMENT_RECORDED',
-    description: `Payment of GHS ${input.amount.toFixed(2)} recorded via ${input.paymentMethod}`,
-  })
 
   revalidatePath(`/orders/${input.orderId}`)
   return { success: true, data: null }

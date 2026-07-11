@@ -110,87 +110,62 @@ export async function createOrder(input: CreateOrderInput): Promise<ServiceResul
   const total = subtotal + taxAmount
   const branchId = emp.role === 'admin' ? input.branchId : emp.branch_id
 
-  // pickup_code is unique per laundry — regenerate and retry on conflict
+  // pickup_code is unique per laundry — regenerate and retry on conflict.
+  // The whole write (orders + order_items + order_notes + order_status_history
+  // + activity_logs + customers.last_visit_date) runs atomically in create_order_tx —
+  // see supabase/migrations/20240007000000_order_write_transactions.sql.
   let pickupCode = generatePickupCode()
-  let order: { id: string } | null = null
-  let orderErr: { code?: string; message: string } | null = null
+  let created: { order_id: string; order_number: string; pickup_code: string } | null = null
+  let rpcErr: { code?: string; message: string } | null = null
   for (let attempt = 0; attempt < 5; attempt++) {
     const result = await supabase
-      .from('orders')
-      .insert({
-        order_number: orderNumber,
-        pickup_code: pickupCode,
-        laundry_id: emp.laundry_id,
-        branch_id: branchId,
-        customer_id: input.customerId,
-        created_by_employee_id: emp.id,
-        status: 'received',
-        priority: input.priority,
-        pickup_date: input.pickupDate ?? null,
-        subtotal,
-        tax_amount: taxAmount,
-        total,
+      .rpc('create_order_tx', {
+        p_order_number: orderNumber,
+        p_pickup_code: pickupCode,
+        p_laundry_id: emp.laundry_id,
+        p_branch_id: branchId,
+        p_customer_id: input.customerId,
+        p_employee_id: emp.id,
+        p_priority: input.priority,
+        p_pickup_date: input.pickupDate ?? null,
+        p_subtotal: subtotal,
+        p_tax_amount: taxAmount,
+        p_total: total,
+        p_items: input.items.map(item => ({
+          item_type_id: item.itemTypeId ?? null,
+          service_id: item.serviceId,
+          quantity: item.quantity,
+          unit_price: item.unitPrice,
+          total_price: item.totalPrice,
+          pricing_mode: item.pricingMode,
+        })),
+        p_note: input.notes?.trim() || null,
       })
-      .select('id')
       .single()
 
-    if (!result.error) { order = result.data; orderErr = null; break }
-    orderErr = result.error
+    if (!result.error) {
+      created = result.data as { order_id: string; order_number: string; pickup_code: string }
+      rpcErr = null
+      break
+    }
+    rpcErr = result.error
     if (result.error.code !== '23505' || !result.error.message.includes('pickup_code')) break
     pickupCode = generatePickupCode()
   }
 
-  if (!order) return { success: false, error: orderErr?.message ?? 'Failed to create order.' }
+  if (!created) return { success: false, error: rpcErr?.message ?? 'Failed to create order.' }
+  const order = created
 
-  await supabase.from('order_items').insert(
-    input.items.map(item => ({
-      order_id: order.id,
-      item_type_id: item.itemTypeId ?? null,
-      service_id: item.serviceId,
-      quantity: item.quantity,
-      unit_price: item.unitPrice,
-      total_price: item.totalPrice,
-      pricing_mode: item.pricingMode,
-    }))
-  )
-
-  if (input.notes?.trim()) {
-    await supabase.from('order_notes').insert({
-      order_id: order.id,
-      created_by_type: 'employee',
-      created_by_id: emp.id,
-      note: input.notes.trim(),
-    })
-  }
-
-  await supabase.from('order_status_history').insert({
-    order_id: order.id,
-    employee_id: emp.id,
-    previous_status: null,
-    new_status: 'received',
-  })
-
-  await supabase.from('activity_logs').insert({
-    laundry_id: emp.laundry_id,
-    order_id: order.id,
-    employee_id: emp.id,
-    action_type: 'ORDER_CREATED',
-    description: `Order ${orderNumber} created`,
-  })
-
-  // Update customer last_visit_date
-  await supabase
-    .from('customers')
-    .update({ last_visit_date: new Date().toISOString().split('T')[0] })
-    .eq('id', input.customerId)
-
-  // Send order-created SMS — non-blocking, failure doesn't fail the order
+  // Send order-created SMS — non-blocking, fires after the transaction has committed
   import('@/services/notifications/sendOrderCreatedSms')
-    .then(m => m.sendOrderCreatedSms(order.id))
+    .then(m => m.sendOrderCreatedSms(order.order_id))
     .catch(() => null)
 
   revalidatePath('/orders')
-  return { success: true, data: { orderId: order.id, orderNumber, pickupCode } }
+  return {
+    success: true,
+    data: { orderId: order.order_id, orderNumber: order.order_number, pickupCode: order.pickup_code },
+  }
 }
 
 export async function getOrder(id: string) {
