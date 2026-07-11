@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { requireRole } from '@/lib/auth'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { ROLES } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
 import type { ItemType } from './getItemTypes'
@@ -22,6 +22,7 @@ export async function createItemType(name: string): Promise<ServiceResult<ItemTy
 
   if (error) return { success: false, error: error.message }
 
+  revalidateTag(`reference-data-${check.data.laundryId}`)
   revalidatePath('/items-and-services')
   return { success: true, data: { id: data.id, name: data.name, isActive: data.is_active } }
 }
