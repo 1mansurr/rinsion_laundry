@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase'
+import { revalidateTag } from 'next/cache'
 import { PLANS, CYCLE_DAYS } from '@/constants/plans'
 import type { PlanKey } from '@/constants/plans'
 
@@ -61,5 +62,8 @@ export async function recordCycleRenewalPayment(
     description: `${input.plan} renewal recorded by ${input.recordedByEmail}. New cycle: ${cycleStart} → ${cycleEnd}`,
   })
 
+  // Un-blocking a laundry must take effect immediately, not after
+  // getActiveSubscription()'s 60s cache TTL.
+  revalidateTag('subscription')
   return { success: true }
 }

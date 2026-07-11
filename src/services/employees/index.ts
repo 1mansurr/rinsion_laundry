@@ -3,7 +3,7 @@
 import { createAdminClient, createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { requireRole } from '@/lib/auth'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { PLANS } from '@/constants/plans'
 import { ROLES } from '@/constants/statuses'
 import type { EmployeeRole } from '@/constants/statuses'
@@ -145,6 +145,9 @@ export async function toggleEmployee(employeeId: string, isActive: boolean): Pro
 
   if (error) return { success: false, error: error.message }
 
+  // Deactivation must take effect immediately, not after the getMyProfile()
+  // cache's 5-minute TTL — every write-path service gates on that cached profile.
+  revalidateTag('employee-profile')
   revalidatePath('/employees')
   return { success: true, data: null }
 }

@@ -4,7 +4,7 @@ import { createAdminClient, createClient } from '@/lib/supabase'
 import { INTERNAL_ADMIN_EMAILS } from '@/constants/internalAdmins'
 import { PLANS, TRIAL_DAYS } from '@/constants/plans'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
 
 export async function startTrial(
@@ -58,6 +58,7 @@ export async function startTrial(
     description: `Trial started by Rinsion admin ${user.email}`,
   })
 
+  revalidateTag('subscription')
   revalidatePath('/internal/laundries')
   return { success: true, data: { subscriptionId: sub.id } }
 }

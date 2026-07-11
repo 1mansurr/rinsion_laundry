@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase'
+import { revalidateTag } from 'next/cache'
 import { sendRenewalReminderSms, type RenewalReminderTrigger } from '@/services/notifications/sendRenewalReminderSms'
 import { GRACE_PERIOD_SOFT_DAYS, GRACE_PERIOD_HARD_DAYS } from '@/constants/plans'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
@@ -124,6 +125,10 @@ export async function advanceSubscriptionStatus(): Promise<AdvanceResult> {
       errors.push(`laundry ${subs[i].laundry_id}: ${e instanceof Error ? e.message : String(e)}`)
     }
   })
+
+  // Blocked laundries must reflect immediately, not after
+  // getActiveSubscription()'s 60s cache TTL.
+  if (transitioned > 0) revalidateTag('subscription')
 
   return { processed: subs.length, transitioned, remindersSent, errors }
 }

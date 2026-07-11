@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase'
+import { revalidateTag } from 'next/cache'
 import { PLANS } from '@/constants/plans'
 import { computeProrateAmount } from './computeProrateAmount'
 
@@ -54,5 +55,8 @@ export async function recordUpgradePayment(
     description: `Upgraded to Growth by ${input.recordedByEmail}. Prorate: GHS ${amount}. Cycle unchanged: ${input.cycleStartDate} → ${input.cycleEndDate}`,
   })
 
+  // The new plan/quota must take effect immediately, not after
+  // getActiveSubscription()'s 60s cache TTL.
+  revalidateTag('subscription')
   return { success: true }
 }
