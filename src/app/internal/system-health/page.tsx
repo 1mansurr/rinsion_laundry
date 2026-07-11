@@ -1,17 +1,19 @@
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase'
+import { listLaundries } from '@/services/platform/listLaundries'
 
 export default async function SystemHealthPage() {
   const supabase = createAdminClient()
   const since24h = new Date(Date.now() - 86400000).toISOString()
 
   const [
-    { count: totalLaundries },
+    laundries,
     { count: smsFailures24h },
     { count: smsSent24h },
     { data: recentLogs },
     { data: recentFailedSms },
   ] = await Promise.all([
-    supabase.from('laundries').select('*', { count: 'exact', head: true }),
+    listLaundries(),
     supabase.from('sms_messages').select('*', { count: 'exact', head: true })
       .eq('status', 'failed').gte('created_at', since24h),
     supabase.from('sms_messages').select('*', { count: 'exact', head: true })
@@ -38,11 +40,48 @@ export default async function SystemHealthPage() {
       <h1 className="text-h2 font-semibold text-warm-950">System Health</h1>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card label="Total Laundries" value={totalLaundries ?? 0} />
+        <Card label="Total Laundries" value={laundries.length} />
         <Card label="SMS Sent (24h)" value={smsSentCount} />
         <Card label="SMS Failures (24h)" value={smsFailCount} warn={smsFailCount > 5} />
         <Card label="SMS Success Rate" value={`${successRate}%`} warn={successRate < 90} />
       </div>
+
+      <Section
+        title="Laundries"
+        action={
+          <Link href="/internal/provision" className="text-caption text-brand hover:text-brand-hover font-medium">
+            + Provision Laundry
+          </Link>
+        }
+      >
+        {laundries.length === 0 ? (
+          <p className="text-ui text-warm-500 px-5 py-4">No laundries yet.</p>
+        ) : (
+          <div className="divide-y divide-warm-100">
+            {laundries.map(l => (
+              <Link
+                key={l.id}
+                href={`/internal/laundries/${l.id}`}
+                className="flex items-center justify-between px-5 py-3 hover:bg-warm-50 transition-colors"
+              >
+                <div>
+                  <p className="text-ui font-medium text-warm-950">{l.name}</p>
+                  <p className="text-caption text-warm-500 mt-0.5">
+                    {l.laundryCode} · {l.subscriptionPlan ?? '—'} · {l.subscriptionStatus ?? '—'}
+                  </p>
+                </div>
+                <span className={`text-caption px-2 py-0.5 rounded-full font-medium ${
+                  l.ownerStatus === 'accepted' ? 'bg-green-50 text-green-700'
+                    : l.ownerStatus === 'pending' ? 'bg-amber-50 text-amber-700'
+                    : 'bg-warm-100 text-warm-500'
+                }`}>
+                  {l.ownerStatus === 'accepted' ? 'Owner active' : l.ownerStatus === 'pending' ? 'Invite pending' : 'No owner'}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </Section>
 
       <Section title={`Failed SMS — last 24h (${smsFailCount})`}>
         {(recentFailedSms ?? []).length === 0 ? (
@@ -95,11 +134,12 @@ function Card({ label, value, warn }: { label: string; value: number | string; w
   )
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="bg-white rounded-10 border border-warm-200">
-      <div className="px-5 py-3.5 border-b border-warm-100">
+      <div className="px-5 py-3.5 border-b border-warm-100 flex items-center justify-between">
         <h2 className="text-ui font-semibold text-warm-950">{title}</h2>
+        {action}
       </div>
       {children}
     </div>

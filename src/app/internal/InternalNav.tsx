@@ -4,11 +4,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV = [
-  { href: '/internal/system-health',   label: 'System Health' },
-  { href: '/internal/subscriptions',   label: 'Subscriptions' },
-  { href: '/internal/manual-payments', label: 'Manual Payments' },
-  { href: '/internal/sms-health',      label: 'SMS Health' },
-  { href: '/internal/alerts',          label: 'Alerts' },
+  { href: '/internal/system-health',    label: 'System Health' },
+  { href: '/internal/provision',        label: 'Provision Laundry' },
+  { href: '/internal/subscriptions',    label: 'Subscriptions' },
+  { href: '/internal/manual-payments',  label: 'Manual Payments' },
+  { href: '/internal/sms-health',       label: 'SMS Health' },
+  { href: '/internal/alerts',           label: 'Alerts' },
+  { href: '/internal/platform-admins',  label: 'Platform Admins' },
 ]
 
 export function InternalNav() {
@@ -31,16 +33,6 @@ export function InternalNav() {
           </Link>
         )
       })}
-      {/* /internal and /platform share the same platform_admins clearance,
-          so anyone who reached this nav can always reach /platform too. */}
-      <div className="pt-2 mt-2 border-t border-warm-100">
-        <Link
-          href="/platform"
-          className="block px-3 py-2 rounded-7 text-ui text-warm-700 hover:bg-warm-100 hover:text-warm-950 transition-colors"
-        >
-          Platform →
-        </Link>
-      </div>
     </nav>
   )
 }

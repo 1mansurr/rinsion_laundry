@@ -9,8 +9,8 @@ export default async function PlatformAdminsPage() {
   ])
 
   return (
-    <div>
-      <h1 className="text-xl font-semibold text-warm-950 mb-6">Platform Admins</h1>
+    <div className="p-6 max-w-3xl mx-auto">
+      <h1 className="text-h2 font-semibold text-warm-950 mb-6">Platform Admins</h1>
       <PlatformAdminsClient admins={admins} currentAdminId={callerId ?? ''} />
     </div>
   )

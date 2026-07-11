@@ -36,7 +36,7 @@ export function ProvisionForm({ templates }: Props) {
     startTransition(async () => {
       const res = await provisionLaundry({ name: name.trim(), ownerPhone: ownerPhone.trim(), templateKey, prices })
       if (!res.success) { setError(res.error); return }
-      router.push(`/platform/${res.data.laundryId}`)
+      router.push(`/internal/laundries/${res.data.laundryId}`)
     })
   }
 
