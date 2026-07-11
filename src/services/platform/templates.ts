@@ -16,6 +16,7 @@ export interface TemplateService {
   pricingMode: 'per_item' | 'per_kg'
   /** Only for per_kg services */
   kgRate?: { min: number; max: number }
+  notes?: string | null
 }
 
 export interface TemplatePriceCell {
@@ -23,6 +24,7 @@ export interface TemplatePriceCell {
   service: string
   min: number
   max: number
+  notes?: string | null
 }
 
 export interface Template {

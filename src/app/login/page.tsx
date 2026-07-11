@@ -36,7 +36,7 @@ export default function LoginPage() {
               type="button"
               aria-pressed={identity === 'phone'}
               onClick={() => setIdentity('phone')}
-              className={`flex-1 rounded-5 py-1.5 text-ui font-medium transition-colors ${
+              className={`flex-1 rounded-5 py-1.5 text-ui font-medium transition-colors focus:outline-none focus:shadow-focus-ring ${
                 identity === 'phone' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-600 hover:text-warm-800'
               }`}
             >
@@ -46,7 +46,7 @@ export default function LoginPage() {
               type="button"
               aria-pressed={identity === 'email'}
               onClick={() => setIdentity('email')}
-              className={`flex-1 rounded-5 py-1.5 text-ui font-medium transition-colors ${
+              className={`flex-1 rounded-5 py-1.5 text-ui font-medium transition-colors focus:outline-none focus:shadow-focus-ring ${
                 identity === 'email' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-600 hover:text-warm-800'
               }`}
             >
