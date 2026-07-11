@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
-import { getVerifiedUserId } from '@/lib/auth'
+import { getMyProfile } from '@/services/employees/getMyProfile'
 import { revalidatePath } from 'next/cache'
 import type { PaymentMethod } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
@@ -12,16 +12,9 @@ export async function recordPayment(input: {
   paymentMethod: PaymentMethod
 }): Promise<ServiceResult<null>> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('id, laundry_id')
-    .eq('auth_user_id', userId)
-    .single()
-
-  if (!emp) return { success: false, error: 'Employee not found.' }
+  const profile = await getMyProfile()
+  if (!profile) return { success: false, error: 'Not authenticated.' }
+  const emp = { id: profile.id, laundry_id: profile.laundryId }
 
   if (input.amount <= 0) return { success: false, error: 'Amount must be greater than 0.' }
 

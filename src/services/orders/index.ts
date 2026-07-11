@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
-import { getVerifiedUserId } from '@/lib/auth'
+import { getMyProfile } from '@/services/employees/getMyProfile'
 import { revalidatePath } from 'next/cache'
 import { generatePickupCode } from '@/utils/generatePickupCode'
 import { WRITE_BLOCKED_STATUSES } from '@/constants/subscriptionStatuses'
@@ -80,17 +80,9 @@ export async function getOrders(laundryId: string, status?: OrderStatus): Promis
 
 export async function createOrder(input: CreateOrderInput): Promise<ServiceResult<{ orderId: string; orderNumber: string; pickupCode: string }>> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('id, laundry_id, branch_id, role')
-    .eq('auth_user_id', userId)
-    .eq('is_active', true)
-    .single()
-
-  if (!emp) return { success: false, error: 'Employee not found.' }
+  const profile = await getMyProfile()
+  if (!profile) return { success: false, error: 'Not authenticated.' }
+  const emp = { id: profile.id, laundry_id: profile.laundryId, branch_id: profile.branchId, role: profile.role }
 
   // Subscription write-block check
   const { data: sub } = await supabase
@@ -303,16 +295,9 @@ export async function updateOrderStatus(
   newStatus: OrderStatus
 ): Promise<ServiceResult<null>> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('id, laundry_id')
-    .eq('auth_user_id', userId)
-    .single()
-
-  if (!emp) return { success: false, error: 'Employee not found.' }
+  const profile = await getMyProfile()
+  if (!profile) return { success: false, error: 'Not authenticated.' }
+  const emp = { id: profile.id, laundry_id: profile.laundryId }
 
   const { data: order } = await supabase
     .from('orders')

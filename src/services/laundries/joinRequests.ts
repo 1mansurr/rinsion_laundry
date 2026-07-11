@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
-import { getVerifiedUserId } from '@/lib/auth'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { PLANS } from '@/constants/plans'
 import type { EmployeeRole } from '@/constants/statuses'
@@ -19,20 +20,13 @@ export interface PendingJoinRequest {
 
 export async function getPendingJoinRequests(): Promise<PendingJoinRequest[]> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return []
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('laundry_id, role')
-    .eq('auth_user_id', userId)
-    .single()
-  if (!emp || emp.role !== 'admin') return []
+  const profile = await getMyProfile()
+  if (!profile || profile.role !== 'admin') return []
 
   const { data } = await supabase
     .from('join_requests')
     .select('id, first_name, last_name, email, phone, created_at')
-    .eq('laundry_id', emp.laundry_id)
+    .eq('laundry_id', profile.laundryId)
     .eq('status', 'pending')
     .order('created_at', { ascending: true })
 
@@ -52,15 +46,10 @@ export async function approveJoinRequest(
   branchId: string
 ): Promise<ServiceResult<null>> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('id, laundry_id, role')
-    .eq('auth_user_id', userId)
-    .single()
-  if (!emp || emp.role !== 'admin') return { success: false, error: 'Admin only.' }
+  const profile = await getMyProfile()
+  const check = requireRole(profile, 'admin')
+  if (!check.success) return check
+  const emp = { id: check.data.id, laundry_id: check.data.laundryId }
 
   const { data: request } = await supabase
     .from('join_requests')
@@ -125,15 +114,10 @@ export async function approveJoinRequest(
 
 export async function rejectJoinRequest(requestId: string): Promise<ServiceResult<null>> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('id, laundry_id, role')
-    .eq('auth_user_id', userId)
-    .single()
-  if (!emp || emp.role !== 'admin') return { success: false, error: 'Admin only.' }
+  const profile = await getMyProfile()
+  const check = requireRole(profile, 'admin')
+  if (!check.success) return check
+  const emp = { id: check.data.id, laundry_id: check.data.laundryId }
 
   const { error } = await supabase
     .from('join_requests')

@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
-import { getVerifiedUserId } from '@/lib/auth'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -25,20 +26,13 @@ export async function getItemTypes(laundryId: string): Promise<ItemType[]> {
 
 export async function createItemType(name: string): Promise<ServiceResult<ItemType>> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('laundry_id, role')
-    .eq('auth_user_id', userId)
-    .single()
-
-  if (!emp || emp.role !== 'admin') return { success: false, error: 'Admin only.' }
+  const profile = await getMyProfile()
+  const check = requireRole(profile, 'admin')
+  if (!check.success) return check
 
   const { data, error } = await supabase
     .from('item_types')
-    .insert({ laundry_id: emp.laundry_id, name: name.trim() })
+    .insert({ laundry_id: check.data.laundryId, name: name.trim() })
     .select('id, name, is_active')
     .single()
 

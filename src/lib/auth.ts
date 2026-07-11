@@ -1,5 +1,8 @@
 import { headers } from 'next/headers'
 import type { createClient } from './supabase'
+import type { MyProfile } from '@/services/employees/getMyProfile'
+import type { EmployeeRole } from '@/constants/statuses'
+import type { ServiceResult } from '@/types/serviceResult'
 
 type SessionClient = ReturnType<typeof createClient>
 
@@ -15,4 +18,15 @@ export async function getVerifiedUserId(supabase: SessionClient): Promise<string
 
   const { data: { user } } = await supabase.auth.getUser()
   return user?.id ?? null
+}
+
+/**
+ * The single admin-role gate for services. Pass the result of getMyProfile().
+ * Collapses "no session", "no active employee row", and "wrong role" into
+ * the same ServiceResult shape every write-path service already returns.
+ */
+export function requireRole(profile: MyProfile | null, role: EmployeeRole): ServiceResult<MyProfile> {
+  if (!profile) return { success: false, error: 'Not authenticated.' }
+  if (profile.role !== role) return { success: false, error: 'Admin only.' }
+  return { success: true, data: profile }
 }

@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
-import { getVerifiedUserId } from '@/lib/auth'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { PLANS } from '@/constants/plans'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
@@ -11,15 +12,10 @@ export async function createBranch(name: string): Promise<ServiceResult<{ id: st
   if (!name.trim()) return { success: false, error: 'Branch name cannot be empty.' }
 
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('id, laundry_id, role')
-    .eq('auth_user_id', userId)
-    .single()
-  if (!emp || emp.role !== 'admin') return { success: false, error: 'Admin only.' }
+  const profile = await getMyProfile()
+  const check = requireRole(profile, 'admin')
+  if (!check.success) return check
+  const emp = { id: check.data.id, laundry_id: check.data.laundryId }
 
   const { data: sub } = await supabase
     .from('subscriptions')

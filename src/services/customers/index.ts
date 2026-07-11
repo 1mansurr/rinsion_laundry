@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
-import { getVerifiedUserId } from '@/lib/auth'
+import { getMyProfile } from '@/services/employees/getMyProfile'
 import { revalidatePath } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -41,16 +41,9 @@ export async function createCustomer(input: {
   phone: string
 }): Promise<ServiceResult<Customer>> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('laundry_id')
-    .eq('auth_user_id', userId)
-    .single()
-
-  if (!emp) return { success: false, error: 'Employee not found.' }
+  const profile = await getMyProfile()
+  if (!profile) return { success: false, error: 'Not authenticated.' }
+  const emp = { laundry_id: profile.laundryId }
 
   // Phone uniqueness check — return existing if found
   const { data: existing } = await supabase

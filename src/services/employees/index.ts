@@ -1,7 +1,8 @@
 'use server'
 
 import { createAdminClient, createClient } from '@/lib/supabase'
-import { getVerifiedUserId } from '@/lib/auth'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { PLANS } from '@/constants/plans'
 import type { EmployeeRole } from '@/constants/statuses'
@@ -31,21 +32,13 @@ export interface CreateEmployeeInput {
 
 export async function getEmployees(): Promise<Employee[]> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return []
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('laundry_id')
-    .eq('auth_user_id', userId)
-    .single()
-
-  if (!emp) return []
+  const profile = await getMyProfile()
+  if (!profile) return []
 
   const { data } = await supabase
     .from('employees')
     .select('id, first_name, last_name, email, phone, role, branch_id, is_active, branches(name)')
-    .eq('laundry_id', emp.laundry_id)
+    .eq('laundry_id', profile.laundryId)
     .order('created_at', { ascending: true })
 
   return (data ?? []).map(r => ({
@@ -63,16 +56,10 @@ export async function getEmployees(): Promise<Employee[]> {
 
 export async function createEmployee(input: CreateEmployeeInput): Promise<ServiceResult<{ tempPassword: string }>> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: caller } = await supabase
-    .from('employees')
-    .select('laundry_id, role')
-    .eq('auth_user_id', userId)
-    .single()
-
-  if (!caller || caller.role !== 'admin') return { success: false, error: 'Admin only.' }
+  const profile = await getMyProfile()
+  const check = requireRole(profile, 'admin')
+  if (!check.success) return check
+  const caller = { id: check.data.id, laundry_id: check.data.laundryId }
 
   // Plan limit check
   const { data: sub } = await supabase
@@ -132,7 +119,7 @@ export async function createEmployee(input: CreateEmployeeInput): Promise<Servic
 
   await supabase.from('activity_logs').insert({
     laundry_id: caller.laundry_id,
-    employee_id: caller.laundry_id,
+    employee_id: caller.id,
     action_type: 'EMPLOYEE_CREATED',
     description: `Employee ${input.firstName} ${input.lastName} (${input.email}) added`,
   })
@@ -143,16 +130,10 @@ export async function createEmployee(input: CreateEmployeeInput): Promise<Servic
 
 export async function toggleEmployee(employeeId: string, isActive: boolean): Promise<ServiceResult<null>> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: caller } = await supabase
-    .from('employees')
-    .select('id, laundry_id, role')
-    .eq('auth_user_id', userId)
-    .single()
-
-  if (!caller || caller.role !== 'admin') return { success: false, error: 'Admin only.' }
+  const profile = await getMyProfile()
+  const check = requireRole(profile, 'admin')
+  if (!check.success) return check
+  const caller = { id: check.data.id, laundry_id: check.data.laundryId }
   if (caller.id === employeeId) return { success: false, error: 'Cannot deactivate your own account.' }
 
   const { error } = await supabase
@@ -169,21 +150,13 @@ export async function toggleEmployee(employeeId: string, isActive: boolean): Pro
 
 export async function getBranches(): Promise<{ id: string; name: string }[]> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return []
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('laundry_id')
-    .eq('auth_user_id', userId)
-    .single()
-
-  if (!emp) return []
+  const profile = await getMyProfile()
+  if (!profile) return []
 
   const { data } = await supabase
     .from('branches')
     .select('id, name')
-    .eq('laundry_id', emp.laundry_id)
+    .eq('laundry_id', profile.laundryId)
     .order('created_at', { ascending: true })
 
   return (data ?? []).map(r => ({ id: r.id, name: r.name }))

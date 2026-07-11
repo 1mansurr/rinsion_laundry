@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
-import { getVerifiedUserId } from '@/lib/auth'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { generateJoinPin } from '@/utils/generateJoinPin'
 import type { ServiceResult } from '@/types/serviceResult'
@@ -18,20 +19,13 @@ export interface LaundrySettings {
 
 export async function getSettings(): Promise<LaundrySettings | null> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return null
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('laundry_id')
-    .eq('auth_user_id', userId)
-    .single()
-  if (!emp) return null
+  const profile = await getMyProfile()
+  if (!profile) return null
 
   const { data } = await supabase
     .from('settings')
     .select('allow_partial_payments, allow_express_orders, require_pickup_code, allow_customer_submissions, pricing_model, tax_rate')
-    .eq('laundry_id', emp.laundry_id)
+    .eq('laundry_id', profile.laundryId)
     .single()
 
   if (!data) return null
@@ -47,15 +41,10 @@ export async function getSettings(): Promise<LaundrySettings | null> {
 
 export async function updateSettings(patch: Partial<LaundrySettings>): Promise<ServiceResult<null>> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('id, laundry_id, role')
-    .eq('auth_user_id', userId)
-    .single()
-  if (!emp || emp.role !== 'admin') return { success: false, error: 'Admin only.' }
+  const profile = await getMyProfile()
+  const check = requireRole(profile, 'admin')
+  if (!check.success) return check
+  const emp = { id: check.data.id, laundry_id: check.data.laundryId }
 
   const dbPatch: Record<string, boolean | string | number> = { updated_at: new Date().toISOString() }
   if (patch.allowPartialPayments !== undefined) dbPatch.allow_partial_payments = patch.allowPartialPayments
@@ -103,20 +92,13 @@ export async function updateSettings(patch: Partial<LaundrySettings>): Promise<S
 
 export async function getLaundry(): Promise<{ id: string; name: string; laundryCode: string; joinPin: string } | null> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return null
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('laundry_id')
-    .eq('auth_user_id', userId)
-    .single()
-  if (!emp) return null
+  const profile = await getMyProfile()
+  if (!profile) return null
 
   const { data } = await supabase
     .from('laundries')
     .select('id, name, laundry_code, join_pin')
-    .eq('id', emp.laundry_id)
+    .eq('id', profile.laundryId)
     .single()
 
   if (!data) return null
@@ -125,15 +107,10 @@ export async function getLaundry(): Promise<{ id: string; name: string; laundryC
 
 export async function regenerateJoinPin(): Promise<ServiceResult<{ joinPin: string }>> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('id, laundry_id, role')
-    .eq('auth_user_id', userId)
-    .single()
-  if (!emp || emp.role !== 'admin') return { success: false, error: 'Admin only.' }
+  const profile = await getMyProfile()
+  const check = requireRole(profile, 'admin')
+  if (!check.success) return check
+  const emp = { id: check.data.id, laundry_id: check.data.laundryId }
 
   const joinPin = generateJoinPin()
   const { error } = await supabase
@@ -158,15 +135,10 @@ export async function updateLaundryName(name: string): Promise<ServiceResult<nul
   if (!name.trim()) return { success: false, error: 'Name cannot be empty.' }
 
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('id, laundry_id, role')
-    .eq('auth_user_id', userId)
-    .single()
-  if (!emp || emp.role !== 'admin') return { success: false, error: 'Admin only.' }
+  const profile = await getMyProfile()
+  const check = requireRole(profile, 'admin')
+  if (!check.success) return check
+  const emp = { id: check.data.id, laundry_id: check.data.laundryId }
 
   const { error } = await supabase
     .from('laundries')

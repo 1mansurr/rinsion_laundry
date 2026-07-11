@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
-import { getVerifiedUserId } from '@/lib/auth'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
 import type { PaymentMethod } from '@/constants/statuses'
@@ -14,17 +15,10 @@ export async function recordRefund(input: {
   reason?: string
 }): Promise<ServiceResult<null>> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('id, laundry_id, role')
-    .eq('auth_user_id', userId)
-    .single()
-
-  if (!emp) return { success: false, error: 'Employee not found.' }
-  if (emp.role !== 'admin') return { success: false, error: 'Admin only.' }
+  const profile = await getMyProfile()
+  const check = requireRole(profile, 'admin')
+  if (!check.success) return check
+  const emp = { id: check.data.id, laundry_id: check.data.laundryId }
 
   if (input.amount <= 0) return { success: false, error: 'Amount must be greater than 0.' }
 

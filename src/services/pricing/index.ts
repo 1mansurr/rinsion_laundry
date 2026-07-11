@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
-import { getVerifiedUserId } from '@/lib/auth'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -35,21 +36,14 @@ export async function upsertPrice(
   price: number
 ): Promise<ServiceResult<null>> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('laundry_id, role')
-    .eq('auth_user_id', userId)
-    .single()
-
-  if (!emp || emp.role !== 'admin') return { success: false, error: 'Admin only.' }
+  const profile = await getMyProfile()
+  const check = requireRole(profile, 'admin')
+  if (!check.success) return check
 
   const { error } = await supabase
     .from('item_service_prices')
     .upsert(
-      { laundry_id: emp.laundry_id, item_type_id: itemTypeId, service_id: serviceId, price, is_active: true },
+      { laundry_id: check.data.laundryId, item_type_id: itemTypeId, service_id: serviceId, price, is_active: true },
       { onConflict: 'laundry_id,item_type_id,service_id' }
     )
 

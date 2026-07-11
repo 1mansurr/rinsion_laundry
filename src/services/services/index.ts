@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
-import { getVerifiedUserId } from '@/lib/auth'
+import { getMyProfile } from '@/services/employees/getMyProfile'
+import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
 import type { PricingMode } from '@/constants/statuses'
@@ -39,15 +40,9 @@ export async function setServicePricing(
   kgRate: number | null
 ): Promise<ServiceResult<null>> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('laundry_id, role')
-    .eq('auth_user_id', userId)
-    .single()
-  if (!emp || emp.role !== 'admin') return { success: false, error: 'Admin only.' }
+  const profile = await getMyProfile()
+  const check = requireRole(profile, 'admin')
+  if (!check.success) return check
 
   const { error } = await supabase
     .from('services')
@@ -56,7 +51,7 @@ export async function setServicePricing(
       kg_rate: pricingMode === 'per_kg' ? kgRate : null,
     })
     .eq('id', serviceId)
-    .eq('laundry_id', emp.laundry_id)
+    .eq('laundry_id', check.data.laundryId)
 
   if (error) return { success: false, error: error.message }
 
@@ -67,16 +62,10 @@ export async function setServicePricing(
 
 export async function createService(name: string): Promise<ServiceResult<LaundryService>> {
   const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-  if (!userId) return { success: false, error: 'Not authenticated.' }
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('laundry_id, role')
-    .eq('auth_user_id', userId)
-    .single()
-
-  if (!emp || emp.role !== 'admin') return { success: false, error: 'Admin only.' }
+  const profile = await getMyProfile()
+  const check = requireRole(profile, 'admin')
+  if (!check.success) return check
+  const emp = { laundry_id: check.data.laundryId }
 
   // New services in a fully weight-based laundry default to per_kg too;
   // 'mixed' and 'per_item' laundries default new services to per_item.
