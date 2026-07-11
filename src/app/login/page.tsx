@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 import Link from 'next/link'
 import { signIn } from './actions'
@@ -9,6 +10,7 @@ const initialState = { error: null }
 
 export default function LoginPage() {
   const [state, action] = useFormState(signIn, initialState)
+  const [identity, setIdentity] = useState<'phone' | 'email'>('phone')
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-canvas px-4">
@@ -27,20 +29,63 @@ export default function LoginPage() {
             </div>
           )}
 
-          <div>
-            <label htmlFor="email" className="block text-label font-medium text-warm-800 mb-1">
+          <input type="hidden" name="identity" value={identity} />
+
+          <div className="flex rounded-7 border border-warm-300 p-1">
+            <button
+              type="button"
+              aria-pressed={identity === 'phone'}
+              onClick={() => setIdentity('phone')}
+              className={`flex-1 rounded-5 py-1.5 text-ui font-medium transition-colors ${
+                identity === 'phone' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-600 hover:text-warm-800'
+              }`}
+            >
+              Phone
+            </button>
+            <button
+              type="button"
+              aria-pressed={identity === 'email'}
+              onClick={() => setIdentity('email')}
+              className={`flex-1 rounded-5 py-1.5 text-ui font-medium transition-colors ${
+                identity === 'email' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-600 hover:text-warm-800'
+              }`}
+            >
               Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-              placeholder="you@example.com"
-            />
+            </button>
           </div>
+
+          {identity === 'phone' ? (
+            <div key="phone">
+              <label htmlFor="phone" className="block text-label font-medium text-warm-800 mb-1">
+                Phone
+              </label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                required
+                className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+                placeholder="024 123 4567"
+              />
+            </div>
+          ) : (
+            <div key="email">
+              <label htmlFor="email" className="block text-label font-medium text-warm-800 mb-1">
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+                placeholder="you@example.com"
+              />
+            </div>
+          )}
 
           <div>
             <div className="flex items-center justify-between mb-1">

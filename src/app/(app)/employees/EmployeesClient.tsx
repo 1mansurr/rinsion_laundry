@@ -2,46 +2,48 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { createEmployee } from '@/services/employees/createEmployee'
+import { inviteEmployee } from '@/services/employees/inviteEmployee'
+import { resendInvite } from '@/services/employees/resendInvite'
 import { toggleEmployee } from '@/services/employees/toggleEmployee'
 import type { Employee } from '@/services/employees/getEmployees'
+import type { PendingInvite } from '@/services/employees/getPendingInvites'
 import { approveJoinRequest } from '@/services/laundries/approveJoinRequest'
 import { rejectJoinRequest } from '@/services/laundries/rejectJoinRequest'
 import type { PendingJoinRequest } from '@/services/laundries/getPendingJoinRequests'
 
 interface Props {
   employees: Employee[]
-  branches: { id: string; name: string }[]
   activeCount: number
   employeeLimit: number
   pendingRequests: PendingJoinRequest[]
+  pendingInvites: PendingInvite[]
   currentEmployeeId: string
-  isMultiBranch?: boolean
 }
 
-export function EmployeesClient({ employees: init, branches, activeCount: initActiveCount, employeeLimit, pendingRequests: initRequests, currentEmployeeId, isMultiBranch = false }: Props) {
+export function EmployeesClient({
+  employees: init, activeCount: initActiveCount, employeeLimit,
+  pendingRequests: initRequests, pendingInvites: initInvites, currentEmployeeId,
+}: Props) {
   const [employees, setEmployees] = useState(init)
   const [activeCount, setActiveCount] = useState(initActiveCount)
   const [showForm, setShowForm] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [newCreds, setNewCreds] = useState<{ email: string; password: string } | null>(null)
+  const [inviteMessage, setInviteMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  // Pending join requests
+  // Pending join requests (self-serve join-by-PIN flow, unrelated to invites)
   const [requests, setRequests] = useState(initRequests)
   const [requestError, setRequestError] = useState<string | null>(null)
   const [resolvingId, setResolvingId] = useState<string | null>(null)
   const [approveRole, setApproveRole] = useState<Record<string, 'admin' | 'employee'>>({})
-  const [approveBranch, setApproveBranch] = useState<Record<string, string>>({})
 
   function roleFor(id: string) { return approveRole[id] ?? 'employee' }
-  function branchFor(id: string) { return approveBranch[id] ?? branches[0]?.id ?? '' }
 
   function handleApprove(request: PendingJoinRequest) {
     setRequestError(null)
     setResolvingId(request.id)
     startTransition(async () => {
-      const res = await approveJoinRequest(request.id, roleFor(request.id), branchFor(request.id))
+      const res = await approveJoinRequest(request.id, roleFor(request.id))
       if (res.success) {
         setRequests(prev => prev.filter(r => r.id !== request.id))
         setActiveCount(c => c + 1)
@@ -52,8 +54,6 @@ export function EmployeesClient({ employees: init, branches, activeCount: initAc
           email: request.email,
           phone: request.phone,
           role: roleFor(request.id),
-          branchId: branchFor(request.id),
-          branchName: branches.find(b => b.id === branchFor(request.id))?.name ?? '',
           isActive: true,
         }])
       } else {
@@ -77,44 +77,68 @@ export function EmployeesClient({ employees: init, branches, activeCount: initAc
     })
   }
 
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [email, setEmail] = useState('')
+  // Pending invites
+  const [invites, setInvites] = useState(initInvites)
+  const [resendingId, setResendingId] = useState<string | null>(null)
+  const [inviteError, setInviteError] = useState<string | null>(null)
+
+  function handleResend(inviteId: string) {
+    setInviteError(null)
+    setResendingId(inviteId)
+    startTransition(async () => {
+      const res = await resendInvite(inviteId)
+      if (!res.success) setInviteError(res.error)
+      setResendingId(null)
+    })
+  }
+
   const [phone, setPhone] = useState('')
   const [role, setRole] = useState<'admin' | 'employee'>('employee')
-  const [branchId, setBranchId] = useState(branches[0]?.id ?? '')
 
   const atLimit = activeCount >= employeeLimit
 
   function resetForm() {
-    setFirstName(''); setLastName(''); setEmail(''); setPhone('')
-    setRole('employee'); setBranchId(branches[0]?.id ?? '')
+    setPhone('')
+    setRole('employee')
     setError(null)
   }
 
   function handleAdd() {
-    if (!firstName.trim() || !lastName.trim() || !email.trim() || !phone.trim() || !branchId) {
-      setError('All fields are required.'); return
+    if (!phone.trim()) {
+      setError('Phone number is required.'); return
     }
     setError(null)
     startTransition(async () => {
-      const res = await createEmployee({ firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), phone: phone.trim(), role, branchId })
+      const res = await inviteEmployee({ phone: phone.trim(), role })
       if (res.success) {
-        setNewCreds({ email: email.trim(), password: res.data.tempPassword })
+        setInviteMessage(
+          res.data.linked
+            ? `${phone.trim()} already has a Rinsion account — linked as ${role}.`
+            : `Invite sent to ${phone.trim()}.`
+        )
         setShowForm(false)
+        const invitedPhone = phone.trim()
         resetForm()
-        setActiveCount(c => c + 1)
-        setEmployees(prev => [...prev, {
-          id: crypto.randomUUID(),
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          email: email.trim(),
-          phone: phone.trim(),
-          role,
-          branchId,
-          branchName: branches.find(b => b.id === branchId)?.name ?? '',
-          isActive: true,
-        }])
+        if (res.data.linked) {
+          setActiveCount(c => c + 1)
+          setEmployees(prev => [...prev, {
+            id: crypto.randomUUID(),
+            firstName: '',
+            lastName: '',
+            email: null,
+            phone: invitedPhone,
+            role,
+            isActive: true,
+          }])
+        } else {
+          setInvites(prev => [...prev, {
+            id: crypto.randomUUID(),
+            phone: invitedPhone,
+            role,
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          }])
+        }
       } else {
         setError(res.error)
       }
@@ -137,14 +161,10 @@ export function EmployeesClient({ employees: init, branches, activeCount: initAc
         <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700">{error}</div>
       )}
 
-      {newCreds && (
+      {inviteMessage && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-          <p className="text-sm font-semibold text-green-800 mb-2">Employee added. Share these credentials:</p>
-          <div className="bg-white rounded-lg border border-green-200 p-3 font-mono text-sm space-y-1">
-            <p><span className="text-gray-500">Email:</span> {newCreds.email}</p>
-            <p><span className="text-gray-500">Password:</span> <strong>{newCreds.password}</strong></p>
-          </div>
-          <button onClick={() => setNewCreds(null)} className="mt-3 text-xs text-green-700 underline">Dismiss</button>
+          <p className="text-sm font-semibold text-green-800">{inviteMessage}</p>
+          <button onClick={() => setInviteMessage(null)} className="mt-2 text-xs text-green-700 underline">Dismiss</button>
         </div>
       )}
 
@@ -172,15 +192,6 @@ export function EmployeesClient({ employees: init, branches, activeCount: initAc
                   <option value="employee">Employee</option>
                   <option value="admin">Admin</option>
                 </select>
-                {isMultiBranch && (
-                  <select
-                    value={branchFor(req.id)}
-                    onChange={e => setApproveBranch(prev => ({ ...prev, [req.id]: e.target.value }))}
-                    className="border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
-                  >
-                    {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                  </select>
-                )}
                 <button
                   onClick={() => handleApprove(req)}
                   disabled={isPending && resolvingId === req.id}
@@ -221,11 +232,8 @@ export function EmployeesClient({ employees: init, branches, activeCount: initAc
         )
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-900">New Employee</h2>
+          <h2 className="text-sm font-semibold text-gray-900">Invite Employee</h2>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="First Name" value={firstName} onChange={setFirstName} placeholder="Kwame" />
-            <Field label="Last Name" value={lastName} onChange={setLastName} placeholder="Asante" />
-            <Field label="Email" value={email} onChange={setEmail} placeholder="kwame@example.com" type="email" />
             <Field label="Phone" value={phone} onChange={setPhone} placeholder="024 123 4567" />
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Role</label>
@@ -238,18 +246,6 @@ export function EmployeesClient({ employees: init, branches, activeCount: initAc
                 <option value="admin">Admin</option>
               </select>
             </div>
-            {isMultiBranch && (
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Branch</label>
-                <select
-                  value={branchId}
-                  onChange={e => setBranchId(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
-                >
-                  {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                </select>
-              </div>
-            )}
           </div>
           <div className="flex gap-2 pt-1">
             <button
@@ -257,7 +253,7 @@ export function EmployeesClient({ employees: init, branches, activeCount: initAc
               disabled={isPending}
               className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
             >
-              {isPending ? 'Adding…' : 'Add Employee'}
+              {isPending ? 'Sending…' : 'Send Invite'}
             </button>
             <button
               onClick={() => { setShowForm(false); resetForm() }}
@@ -266,6 +262,33 @@ export function EmployeesClient({ employees: init, branches, activeCount: initAc
               Cancel
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Pending invites */}
+      {invites.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-50">
+          <p className="px-5 py-3 text-sm font-semibold text-gray-900">
+            Invited <span className="font-normal text-gray-400">({invites.length})</span>
+          </p>
+          {inviteError && (
+            <p className="px-5 py-2 text-sm text-red-600">{inviteError}</p>
+          )}
+          {invites.map(inv => (
+            <div key={inv.id} className="flex items-center justify-between px-5 py-3.5">
+              <div>
+                <p className="text-sm font-medium text-gray-900 capitalize">{inv.role}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{inv.phone} · Invited</p>
+              </div>
+              <button
+                onClick={() => handleResend(inv.id)}
+                disabled={isPending && resendingId === inv.id}
+                className="text-xs text-gray-400 hover:text-gray-700 ml-4 flex-shrink-0 disabled:opacity-50"
+              >
+                Resend
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
@@ -287,7 +310,7 @@ export function EmployeesClient({ employees: init, branches, activeCount: initAc
                 </span>
                 {!emp.isActive && <span className="text-xs text-gray-400">· Inactive</span>}
               </div>
-              <p className="text-xs text-gray-400 mt-0.5">{emp.email} · {emp.phone}{isMultiBranch ? ` · ${emp.branchName}` : ''}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{[emp.email, emp.phone].filter(Boolean).join(' · ')}</p>
             </div>
             {emp.id !== currentEmployeeId && (
               <button

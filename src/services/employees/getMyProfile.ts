@@ -12,7 +12,7 @@ export interface MyProfile {
   role: EmployeeRole
   firstName: string
   lastName: string
-  email: string
+  email: string | null
   phone: string
   laundryName: string
 }
@@ -25,7 +25,7 @@ interface EmployeeRow {
   role: string
   first_name: string
   last_name: string
-  email: string
+  email: string | null
   phone: string
   laundries: { name: string } | null
 }

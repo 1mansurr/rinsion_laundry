@@ -81,6 +81,12 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse
   }
 
+  // Invite accept page: the invitee has no session at all — possession of
+  // the token is the authorization, validated server-side in acceptInvite.
+  if (pathname.startsWith('/i/')) {
+    return supabaseResponse
+  }
+
   // Let / through — app/page.tsx handles the redirect
   if (pathname === '/') {
     return supabaseResponse

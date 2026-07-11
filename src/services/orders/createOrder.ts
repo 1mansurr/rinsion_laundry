@@ -2,17 +2,16 @@
 
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
+import { getSoleBranchId } from '@/services/branches/getSoleBranchId'
 import { revalidatePath } from 'next/cache'
 import { generatePickupCode } from '@/utils/generatePickupCode'
 import { WRITE_BLOCKED_STATUSES } from '@/constants/subscriptionStatuses'
-import { ROLES } from '@/constants/statuses'
 import type { OrderPriority, PricingMode } from '@/constants/statuses'
 import type { SubscriptionStatus } from '@/constants/subscriptionStatuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
 export interface CreateOrderInput {
   customerId: string
-  branchId: string
   priority: OrderPriority
   pickupDate?: string
   notes?: string
@@ -32,7 +31,7 @@ export async function createOrder(input: CreateOrderInput): Promise<ServiceResul
   const supabase = createClient()
   const profile = await getMyProfile()
   if (!profile) return { success: false, error: 'Not authenticated.' }
-  const emp = { id: profile.id, laundry_id: profile.laundryId, branch_id: profile.branchId, role: profile.role }
+  const emp = { id: profile.id, laundry_id: profile.laundryId }
 
   // Subscription write-block check
   const { data: sub } = await supabase
@@ -115,7 +114,8 @@ export async function createOrder(input: CreateOrderInput): Promise<ServiceResul
   const taxRate = Number(settingsRow?.tax_rate ?? 0)
   const taxAmount = Math.round(subtotal * taxRate) / 100
   const total = subtotal + taxAmount
-  const branchId = emp.role === ROLES.ADMIN ? input.branchId : emp.branch_id
+  const branchId = await getSoleBranchId(emp.laundry_id)
+  if (!branchId) return { success: false, error: 'No branch found for this laundry.' }
 
   // pickup_code is unique per laundry — regenerate and retry on conflict.
   // The whole write (orders + order_items + order_notes + order_status_history

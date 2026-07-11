@@ -19,10 +19,7 @@ import { formatCurrency } from '@/utils/formatCurrency'
 import { formatPriceRange } from '@/utils/formatPriceRange'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
-
-interface Branch { id: string; name: string }
 
 interface LineItem {
   itemTypeId: string
@@ -44,12 +41,8 @@ interface Props {
   services: LaundryService[]
   prices: PriceCell[]
   customers: Customer[]
-  branches: Branch[]
-  isAdmin: boolean
-  defaultBranchId: string
   preselectedCustomer?: Customer | null
   allowExpressOrders?: boolean
-  isMultiBranch?: boolean
 }
 
 const EMPTY_LINE: LineItem = {
@@ -64,9 +57,8 @@ const PRIORITY_LABELS: Record<OrderPriority, string> = {
 }
 
 export function CreateOrderForm({
-  itemTypes, services, prices, customers, branches,
-  isAdmin, defaultBranchId, preselectedCustomer,
-  allowExpressOrders = true, isMultiBranch = false,
+  itemTypes, services, prices, customers, preselectedCustomer,
+  allowExpressOrders = true,
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -89,7 +81,6 @@ export function CreateOrderForm({
   const [inlineIsPending, startInlineTransition] = useTransition()
 
   // Order fields
-  const [branchId, setBranchId] = useState(defaultBranchId)
   const [priority, setPriority] = useState<OrderPriority>('normal')
   const [pickupDate, setPickupDate] = useState('')
   const [notes, setNotes] = useState('')
@@ -252,7 +243,6 @@ export function CreateOrderForm({
     setError(null)
     const input: CreateOrderInput = {
       customerId: selectedCustomer.id,
-      branchId,
       priority,
       pickupDate: pickupDate || undefined,
       notes: notes || undefined,
@@ -428,42 +418,28 @@ export function CreateOrderForm({
           )}
         </section>
 
-        {/* Branch (admin only) + Priority */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {isAdmin && isMultiBranch && (
-            <Select
-              label="Branch"
-              value={branchId}
-              onChange={e => setBranchId(e.target.value)}
-            >
-              {branches.map(b => (
-                <option key={b.id} value={b.id}>{b.name}</option>
+        {/* Priority */}
+        {allowExpressOrders && (
+          <div>
+            <p className="text-label font-medium text-warm-700 mb-2">Priority</p>
+            <div className="flex rounded-[8px] p-1" style={{ background: '#F1ECE4' }}>
+              {(['normal', 'express', 'urgent'] as const).map(p => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPriority(p)}
+                  className={`flex-1 py-1.5 rounded-[6px] text-[14px] capitalize transition-colors ${
+                    priority === p
+                      ? 'bg-white font-semibold text-warm-950 shadow-sm'
+                      : 'font-medium text-[#6B6259] hover:text-warm-800'
+                  }`}
+                >
+                  {PRIORITY_LABELS[p]}
+                </button>
               ))}
-            </Select>
-          )}
-
-          {allowExpressOrders && (
-            <div className={isAdmin ? '' : 'sm:col-span-2'}>
-              <p className="text-label font-medium text-warm-700 mb-2">Priority</p>
-              <div className="flex rounded-[8px] p-1" style={{ background: '#F1ECE4' }}>
-                {(['normal', 'express', 'urgent'] as const).map(p => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setPriority(p)}
-                    className={`flex-1 py-1.5 rounded-[6px] text-[14px] capitalize transition-colors ${
-                      priority === p
-                        ? 'bg-white font-semibold text-warm-950 shadow-sm'
-                        : 'font-medium text-[#6B6259] hover:text-warm-800'
-                    }`}
-                  >
-                    {PRIORITY_LABELS[p]}
-                  </button>
-                ))}
-              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Pickup date */}
         <Input

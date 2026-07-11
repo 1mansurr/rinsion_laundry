@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getEmployees } from '@/services/employees/getEmployees'
-import { getBranches } from '@/services/employees/getBranches'
+import { getPendingInvites } from '@/services/employees/getPendingInvites'
 import { getPendingJoinRequests } from '@/services/laundries/getPendingJoinRequests'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
 import { PLANS } from '@/constants/plans'
@@ -22,11 +22,11 @@ export default async function EmployeesPage() {
     )
   }
 
-  const [employees, branches, subscription, pendingRequests] = await Promise.all([
+  const [employees, subscription, pendingRequests, pendingInvites] = await Promise.all([
     getEmployees(),
-    getBranches(),
     getActiveSubscription(profile.laundryId),
     getPendingJoinRequests(),
+    getPendingInvites(),
   ])
 
   const plan = (subscription?.plan ?? 'starter') as SubscriptionPlan
@@ -44,12 +44,11 @@ export default async function EmployeesPage() {
       </div>
       <EmployeesClient
         employees={employees}
-        branches={branches}
         activeCount={activeCount}
         employeeLimit={limit}
         pendingRequests={pendingRequests}
+        pendingInvites={pendingInvites}
         currentEmployeeId={profile.id}
-        isMultiBranch={branches.length > 1}
       />
     </div>
   )

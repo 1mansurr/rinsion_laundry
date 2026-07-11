@@ -7,7 +7,6 @@ import { getCustomers } from '@/services/customers/getCustomers'
 import { getCustomer } from '@/services/customers/getCustomer'
 import type { Customer } from '@/services/customers/getCustomers'
 import { getSettings } from '@/services/settings/getSettings'
-import { getBranchesList } from '@/services/branches'
 import { CreateOrderForm } from './CreateOrderForm'
 
 interface Props {
@@ -20,12 +19,11 @@ export default async function NewOrderPage({ searchParams }: Props) {
 
   const customerId = searchParams.customerId
 
-  const [itemTypes, services, prices, customers, branches, settings] = await Promise.all([
+  const [itemTypes, services, prices, customers, settings] = await Promise.all([
     getItemTypes(profile.laundryId),
     getServices(profile.laundryId),
     getPricingMatrix(profile.laundryId),
     getCustomers(profile.laundryId),
-    getBranchesList(profile.laundryId),
     getSettings(),
   ])
 
@@ -45,7 +43,6 @@ export default async function NewOrderPage({ searchParams }: Props) {
     }
   }
 
-  const isMultiBranch = branches.length > 1
   const hasSetup = itemTypes.some(i => i.isActive) && services.some(s => s.isActive)
 
   return (
@@ -63,12 +60,8 @@ export default async function NewOrderPage({ searchParams }: Props) {
           services={services}
           prices={prices}
           customers={customers}
-          branches={branches}
-          isAdmin={profile.role === 'admin'}
-          defaultBranchId={profile.branchId}
           preselectedCustomer={preselectedCustomer}
           allowExpressOrders={settings?.allowExpressOrders ?? true}
-          isMultiBranch={isMultiBranch}
         />
       )}
     </div>

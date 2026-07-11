@@ -46,6 +46,7 @@ export const SMS_TRIGGER_EVENTS = [
   'RENEWAL_REMINDER_1_DAY',
   'RENEWAL_REMINDER_DAY_OF',
   'QUOTA_WARNING_70',
+  'EMPLOYEE_INVITE',
 ] as const
 
 export type SmsTriggerEvent = (typeof SMS_TRIGGER_EVENTS)[number]
@@ -60,6 +61,9 @@ export const ACTIVITY_ACTION_TYPES = {
   CUSTOMER_UPDATED:                 'CUSTOMER_UPDATED',
   EMPLOYEE_ADDED:                   'EMPLOYEE_ADDED',
   EMPLOYEE_DISABLED:                'EMPLOYEE_DISABLED',
+  EMPLOYEE_INVITED:                 'EMPLOYEE_INVITED',
+  EMPLOYEE_ACCEPTED:                'EMPLOYEE_ACCEPTED',
+  INVITE_RESENT:                    'INVITE_RESENT',
   SMS_SENT:                         'SMS_SENT',
   SMS_FAILED:                       'SMS_FAILED',
   SMS_QUOTA_EXCEEDED:               'SMS_QUOTA_EXCEEDED',
@@ -74,6 +78,10 @@ export const ACTIVITY_ACTION_TYPES = {
   INTERNAL_LAUNDRY_CREATED:         'INTERNAL_LAUNDRY_CREATED',
   INTERNAL_TRIAL_STARTED:           'INTERNAL_TRIAL_STARTED',
   INTERNAL_PAYMENT_RESOLVED:        'INTERNAL_PAYMENT_RESOLVED',
+  LAUNDRY_PROVISIONED:              'LAUNDRY_PROVISIONED',
+  TRIAL_UPDATED:                    'TRIAL_UPDATED',
+  LAUNDRY_SUSPENDED:                'LAUNDRY_SUSPENDED',
+  LAUNDRY_REACTIVATED:              'LAUNDRY_REACTIVATED',
 } as const
 
 export type ActivityActionType = (typeof ACTIVITY_ACTION_TYPES)[keyof typeof ACTIVITY_ACTION_TYPES]

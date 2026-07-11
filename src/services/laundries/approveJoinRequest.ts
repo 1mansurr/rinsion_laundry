@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
+import { getSoleBranchId } from '@/services/branches/getSoleBranchId'
 import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { PLANS } from '@/constants/plans'
@@ -12,8 +13,7 @@ import type { ServiceResult } from '@/types/serviceResult'
 
 export async function approveJoinRequest(
   requestId: string,
-  role: EmployeeRole,
-  branchId: string
+  role: EmployeeRole
 ): Promise<ServiceResult<null>> {
   const supabase = createClient()
   const profile = await getMyProfile()
@@ -52,6 +52,9 @@ export async function approveJoinRequest(
   if ((count ?? 0) >= limit) {
     return { success: false, error: `Your ${plan} plan allows up to ${limit} employees. Upgrade to add more.` }
   }
+
+  const branchId = await getSoleBranchId(emp.laundry_id)
+  if (!branchId) return { success: false, error: 'No branch found for this laundry.' }
 
   const { error: empErr } = await supabase.from('employees').insert({
     auth_user_id: request.auth_user_id,

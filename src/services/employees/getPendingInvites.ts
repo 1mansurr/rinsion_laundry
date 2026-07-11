@@ -4,34 +4,31 @@ import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import type { EmployeeRole } from '@/constants/statuses'
 
-export interface Employee {
+export interface PendingInvite {
   id: string
-  firstName: string
-  lastName: string
-  email: string | null
   phone: string
   role: EmployeeRole
-  isActive: boolean
+  createdAt: string
+  expiresAt: string
 }
 
-export async function getEmployees(): Promise<Employee[]> {
-  const supabase = createClient()
+export async function getPendingInvites(): Promise<PendingInvite[]> {
   const profile = await getMyProfile()
   if (!profile) return []
 
+  const supabase = createClient()
   const { data } = await supabase
-    .from('employees')
-    .select('id, first_name, last_name, email, phone, role, is_active')
+    .from('pending_invites')
+    .select('id, phone, role, created_at, expires_at')
     .eq('laundry_id', profile.laundryId)
+    .is('accepted_at', null)
     .order('created_at', { ascending: true })
 
   return (data ?? []).map(r => ({
     id: r.id,
-    firstName: r.first_name,
-    lastName: r.last_name,
-    email: r.email,
     phone: r.phone,
     role: r.role as EmployeeRole,
-    isActive: r.is_active,
+    createdAt: r.created_at,
+    expiresAt: r.expires_at,
   }))
 }

@@ -1,0 +1,110 @@
+'use server'
+
+import { createAdminClient, type DbClient } from '@/lib/supabase'
+import { requirePlatformAdmin } from '@/services/platform/requirePlatformAdmin'
+import { createInvite } from '@/services/employees/createInvite'
+import { TEMPLATES } from '@/services/platform/templates'
+import { generateJoinPin } from '@/utils/generateJoinPin'
+import { TRIAL_DAYS, PLANS } from '@/constants/plans'
+import type { TemplateKey, TemplatePriceCell } from '@/services/platform/templates'
+import type { ServiceResult } from '@/types/serviceResult'
+
+export interface ProvisionLaundryInput {
+  name: string
+  ownerPhone: string
+  templateKey: TemplateKey
+  /** Admin-edited copy of the template's price matrix — same item/service pairs, real prices */
+  prices: TemplatePriceCell[]
+}
+
+export interface ProvisionLaundryResult {
+  laundryId: string
+  laundryCode: string
+}
+
+export async function provisionLaundry(input: ProvisionLaundryInput): Promise<ServiceResult<ProvisionLaundryResult>> {
+  const platformAdminId = await requirePlatformAdmin()
+  if (!platformAdminId) return { success: false, error: 'Unauthorized.' }
+
+  const template = TEMPLATES[input.templateKey]
+  if (!template) return { success: false, error: 'Unknown template.' }
+  if (!input.name.trim()) return { success: false, error: 'Laundry name is required.' }
+
+  const admin = createAdminClient()
+
+  const servicesPayload = template.services.map(s => ({
+    name: s.name,
+    pricing_mode: s.pricingMode,
+    min_kg_rate: s.kgRate?.min ?? null,
+    max_kg_rate: s.kgRate?.max ?? null,
+    notes: null,
+  }))
+
+  const pricesPayload = input.prices.map(p => ({
+    item_type_name: p.itemType,
+    service_name: p.service,
+    min_price: p.min,
+    max_price: p.max,
+    notes: null,
+  }))
+
+  let data: { laundry_id: string; branch_id: string } | null = null
+  let lastError: { code?: string; message: string } | null = null
+  let laundryCode = ''
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    laundryCode = await generateLaundryCode(admin, attempt)
+    const result = await admin
+      .rpc('provision_laundry_tx', {
+        p_laundry_code: laundryCode,
+        p_laundry_name: input.name.trim(),
+        p_branch_code: `${laundryCode}-01`,
+        p_branch_name: 'Main Branch',
+        p_join_pin: generateJoinPin(),
+        p_trial_days: TRIAL_DAYS,
+        p_sms_quota: PLANS.trial.smsQuota,
+        p_item_types: template.itemTypes,
+        p_services: servicesPayload,
+        p_prices: pricesPayload,
+        p_platform_admin_id: platformAdminId,
+      })
+      .single()
+
+    if (!result.error) {
+      data = result.data as { laundry_id: string; branch_id: string }
+      lastError = null
+      break
+    }
+    lastError = result.error
+    if (result.error.code !== '23505') break
+  }
+
+  if (!data) return { success: false, error: lastError?.message ?? 'Failed to provision laundry.' }
+
+  const laundryId = data.laundry_id
+
+  const inviteResult = await createInvite(laundryId, input.ownerPhone, 'admin', platformAdminId)
+  if (!inviteResult.success) return { success: false, error: inviteResult.error }
+
+  // Deferred handover SMS — fires after the provisioning transaction has committed.
+  if (!inviteResult.data.linked) {
+    const token = inviteResult.data.token
+    const laundryName = input.name.trim()
+    import('@/services/notifications/sendSms')
+      .then(m => m.sendSystemSms({
+        laundryId,
+        phone: input.ownerPhone,
+        message: `${laundryName} is ready on Rinsion. Set your password: https://rinsion.app/i/${token}`,
+        triggerEvent: 'EMPLOYEE_INVITE',
+      }))
+      .catch(() => null)
+  }
+
+  return { success: true, data: { laundryId, laundryCode } }
+}
+
+async function generateLaundryCode(admin: DbClient, attempt: number): Promise<string> {
+  const { count } = await admin.from('laundries').select('id', { count: 'exact', head: true })
+  const next = (count ?? 0) + 1 + attempt
+  return `RNSN-${String(next).padStart(3, '0')}`
+}

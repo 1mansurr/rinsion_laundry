@@ -68,3 +68,11 @@ export function createAdminClient() {
     }
   )
 }
+
+/**
+ * Shared client type so service functions that accept an injectable client
+ * (e.g. getSoleBranchId, used both under a session and, unauthenticated,
+ * from acceptInvite) can type that parameter without importing
+ * @supabase/supabase-js themselves.
+ */
+export type DbClient = ReturnType<typeof createAdminClient>

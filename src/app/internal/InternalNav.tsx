@@ -8,7 +8,6 @@ const NAV = [
   { href: '/internal/subscriptions',   label: 'Subscriptions' },
   { href: '/internal/manual-payments', label: 'Manual Payments' },
   { href: '/internal/sms-health',      label: 'SMS Health' },
-  { href: '/internal/laundries',       label: 'Laundries' },
   { href: '/internal/alerts',          label: 'Alerts' },
 ]
 
