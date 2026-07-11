@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getLaundry } from '@/services/settings'
+import { getLaundry } from '@/services/settings/getLaundry'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { LaundryForm } from './LaundryForm'
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { updateOrderStatus } from '@/services/orders'
+import { updateOrderStatus } from '@/services/orders/updateOrderStatus'
 import { verifyAndCollect } from '@/services/orders/verifyAndCollect'
 import { recordPayment } from '@/services/payments/recordPayment'
 import { resendPickupCodeSms } from '@/services/notifications/resendPickupCodeSms'

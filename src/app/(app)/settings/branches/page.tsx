@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getBranches } from '@/services/employees'
+import { getBranches } from '@/services/employees/getBranches'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
 import { PLANS } from '@/constants/plans'
 import { RestrictedCard } from '@/components/app/RestrictedCard'

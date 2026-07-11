@@ -1,8 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
-import { getOrder } from '@/services/orders'
-import { getItemTypes } from '@/services/items'
+import { getOrder } from '@/services/orders/getOrder'
+import { getItemTypes } from '@/services/items/getItemTypes'
 import type { OrderStatus, OrderPriority, PricingMode } from '@/constants/statuses'
 
 export interface OrderDetailData {

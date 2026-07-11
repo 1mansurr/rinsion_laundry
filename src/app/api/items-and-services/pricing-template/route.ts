@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 import ExcelJS from 'exceljs'
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getItemTypes } from '@/services/items'
-import { getServices } from '@/services/services'
-import { getPricingMatrix } from '@/services/pricing'
+import { getItemTypes } from '@/services/items/getItemTypes'
+import { getServices } from '@/services/services/getServices'
+import { getPricingMatrix } from '@/services/pricing/getPricingMatrix'
 
 export const runtime = 'nodejs'
 

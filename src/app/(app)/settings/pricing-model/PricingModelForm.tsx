@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { updateSettings } from '@/services/settings'
+import { updateSettings } from '@/services/settings/updateSettings'
 import { PRICING_MODELS, type PricingModel } from '@/constants/statuses'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { updateLaundryName, regenerateJoinPin } from '@/services/settings'
+import { updateLaundryName } from '@/services/settings/updateLaundryName'
+import { regenerateJoinPin } from '@/services/settings/regenerateJoinPin'
 
 export function LaundryForm({ currentName, laundryCode, joinPin: initJoinPin }: { currentName: string; laundryCode: string; joinPin: string }) {
   const [name, setName] = useState(currentName)

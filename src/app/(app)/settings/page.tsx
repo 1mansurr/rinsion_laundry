@@ -8,7 +8,7 @@ import { LaundryForm } from './laundry/LaundryForm'
 import { WorkflowToggles } from './workflow/WorkflowToggles'
 import { BranchesClient } from './branches/BranchesClient'
 import { PricingModelForm } from './pricing-model/PricingModelForm'
-import type { LaundrySettings } from '@/services/settings'
+import type { LaundrySettings } from '@/services/settings/getSettings'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
 
 type PanelKey = 'laundry' | 'workflow' | 'branches' | 'pricingModel'

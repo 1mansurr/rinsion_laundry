@@ -5,7 +5,7 @@ import { searchForPickup } from '@/services/orders/searchForPickup'
 import { getOrderBalance } from '@/services/orders/getOrderBalance'
 import { verifyAndCollect } from '@/services/orders/verifyAndCollect'
 import { recordPayment } from '@/services/payments/recordPayment'
-import type { OrderListItem } from '@/services/orders'
+import type { OrderListItem } from '@/services/orders/getOrders'
 import { PAYMENT_METHODS, type PaymentMethod } from '@/constants/statuses'
 import { formatCurrency } from '@/utils/formatCurrency'
 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getBranches } from '@/services/employees'
+import { getBranches } from '@/services/employees/getBranches'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
 import { PLANS } from '@/constants/plans'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'

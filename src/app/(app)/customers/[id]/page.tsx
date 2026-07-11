@@ -1,7 +1,7 @@
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getCustomer } from '@/services/customers'
+import { getCustomer } from '@/services/customers/getCustomer'
 import { StatusBadge } from '@/components/app/StatusBadge'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { formatDate } from '@/utils/formatDate'

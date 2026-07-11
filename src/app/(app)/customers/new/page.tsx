@@ -1,7 +1,7 @@
 'use client'
 
 import { useFormState, useFormStatus } from 'react-dom'
-import { createCustomer } from '@/services/customers'
+import { createCustomer } from '@/services/customers/createCustomer'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 

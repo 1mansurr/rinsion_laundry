@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getSettings } from '@/services/settings'
+import { getSettings } from '@/services/settings/getSettings'
 
 export async function GET() {
   const profile = await getMyProfile()

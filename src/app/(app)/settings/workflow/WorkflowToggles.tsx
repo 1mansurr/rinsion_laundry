@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { updateSettings, type LaundrySettings } from '@/services/settings'
+import { updateSettings } from '@/services/settings/updateSettings'
+import type { LaundrySettings } from '@/services/settings/getSettings'
 
 type BooleanSettingKey = { [K in keyof LaundrySettings]: LaundrySettings[K] extends boolean ? K : never }[keyof LaundrySettings]
 

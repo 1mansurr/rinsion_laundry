@@ -2,13 +2,14 @@
 
 import { useState, useTransition, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createOrder, type CreateOrderInput } from '@/services/orders'
+import { createOrder } from '@/services/orders/createOrder'
+import type { CreateOrderInput } from '@/services/orders/createOrder'
 import { recordPayment } from '@/services/payments/recordPayment'
-import { createCustomer } from '@/services/customers'
-import type { ItemType } from '@/services/items'
-import type { LaundryService } from '@/services/services'
-import type { PriceCell } from '@/services/pricing'
-import type { Customer } from '@/services/customers'
+import { createCustomer } from '@/services/customers/createCustomer'
+import type { ItemType } from '@/services/items/getItemTypes'
+import type { LaundryService } from '@/services/services/getServices'
+import type { PriceCell } from '@/services/pricing/getPricingMatrix'
+import type { Customer } from '@/services/customers/getCustomers'
 import { PAYMENT_METHODS, type OrderPriority, type PaymentMethod, type PricingMode } from '@/constants/statuses'
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {

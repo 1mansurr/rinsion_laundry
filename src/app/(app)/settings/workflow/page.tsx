@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getSettings } from '@/services/settings'
+import { getSettings } from '@/services/settings/getSettings'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { WorkflowToggles } from './WorkflowToggles'
 

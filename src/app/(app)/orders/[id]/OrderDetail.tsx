@@ -3,7 +3,7 @@
 import { useState, useTransition, Fragment } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { updateOrderStatus } from '@/services/orders'
+import { updateOrderStatus } from '@/services/orders/updateOrderStatus'
 import { verifyAndCollect } from '@/services/orders/verifyAndCollect'
 import { recordPayment } from '@/services/payments/recordPayment'
 import { recordRefund } from '@/services/payments/recordRefund'

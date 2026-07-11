@@ -4,36 +4,7 @@ import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { revalidatePath } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
-
-export interface Customer {
-  id: string
-  customerCode: string
-  firstName: string
-  lastName: string
-  phone: string
-  lastVisitDate: string | null
-  createdAt: string
-}
-
-export async function getCustomers(laundryId: string): Promise<Customer[]> {
-  const supabase = createClient()
-  const { data } = await supabase
-    .from('customers')
-    .select('id, customer_code, first_name, last_name, phone, last_visit_date, created_at')
-    .eq('laundry_id', laundryId)
-    .is('deleted_at', null)
-    .order('last_visit_date', { ascending: false, nullsFirst: false })
-
-  return (data ?? []).map(r => ({
-    id: r.id,
-    customerCode: r.customer_code,
-    firstName: r.first_name,
-    lastName: r.last_name,
-    phone: r.phone,
-    lastVisitDate: r.last_visit_date,
-    createdAt: r.created_at,
-  }))
-}
+import type { Customer } from './getCustomers'
 
 export async function createCustomer(input: {
   firstName: string
@@ -98,19 +69,4 @@ export async function createCustomer(input: {
       createdAt: data.created_at,
     },
   }
-}
-
-export async function getCustomer(id: string) {
-  const supabase = createClient()
-  const { data } = await supabase
-    .from('customers')
-    .select(`
-      id, customer_code, first_name, last_name, phone, first_visit_date, last_visit_date, created_at,
-      orders(id, order_number, status, total, created_at, pickup_date)
-    `)
-    .eq('id', id)
-    .is('deleted_at', null)
-    .single()
-
-  return data
 }

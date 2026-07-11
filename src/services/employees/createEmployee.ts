@@ -3,24 +3,12 @@
 import { createAdminClient, createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { requireRole } from '@/lib/auth'
-import { revalidatePath, revalidateTag } from 'next/cache'
+import { revalidatePath } from 'next/cache'
 import { PLANS } from '@/constants/plans'
 import { ROLES } from '@/constants/statuses'
 import type { EmployeeRole } from '@/constants/statuses'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
 import type { ServiceResult } from '@/types/serviceResult'
-
-export interface Employee {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  role: EmployeeRole
-  branchId: string
-  branchName: string
-  isActive: boolean
-}
 
 export interface CreateEmployeeInput {
   firstName: string
@@ -29,30 +17,6 @@ export interface CreateEmployeeInput {
   phone: string
   role: EmployeeRole
   branchId: string
-}
-
-export async function getEmployees(): Promise<Employee[]> {
-  const supabase = createClient()
-  const profile = await getMyProfile()
-  if (!profile) return []
-
-  const { data } = await supabase
-    .from('employees')
-    .select('id, first_name, last_name, email, phone, role, branch_id, is_active, branches(name)')
-    .eq('laundry_id', profile.laundryId)
-    .order('created_at', { ascending: true })
-
-  return (data ?? []).map(r => ({
-    id: r.id,
-    firstName: r.first_name,
-    lastName: r.last_name,
-    email: r.email,
-    phone: r.phone,
-    role: r.role as EmployeeRole,
-    branchId: r.branch_id,
-    branchName: (r.branches as unknown as { name: string } | null)?.name ?? '',
-    isActive: r.is_active,
-  }))
 }
 
 export async function createEmployee(input: CreateEmployeeInput): Promise<ServiceResult<{ tempPassword: string }>> {
@@ -127,43 +91,6 @@ export async function createEmployee(input: CreateEmployeeInput): Promise<Servic
 
   revalidatePath('/employees')
   return { success: true, data: { tempPassword } }
-}
-
-export async function toggleEmployee(employeeId: string, isActive: boolean): Promise<ServiceResult<null>> {
-  const supabase = createClient()
-  const profile = await getMyProfile()
-  const check = requireRole(profile, ROLES.ADMIN)
-  if (!check.success) return check
-  const caller = { id: check.data.id, laundry_id: check.data.laundryId }
-  if (caller.id === employeeId) return { success: false, error: 'Cannot deactivate your own account.' }
-
-  const { error } = await supabase
-    .from('employees')
-    .update({ is_active: isActive })
-    .eq('id', employeeId)
-    .eq('laundry_id', caller.laundry_id)
-
-  if (error) return { success: false, error: error.message }
-
-  // Deactivation must take effect immediately, not after the getMyProfile()
-  // cache's 5-minute TTL — every write-path service gates on that cached profile.
-  revalidateTag('employee-profile')
-  revalidatePath('/employees')
-  return { success: true, data: null }
-}
-
-export async function getBranches(): Promise<{ id: string; name: string }[]> {
-  const supabase = createClient()
-  const profile = await getMyProfile()
-  if (!profile) return []
-
-  const { data } = await supabase
-    .from('branches')
-    .select('id, name')
-    .eq('laundry_id', profile.laundryId)
-    .order('created_at', { ascending: true })
-
-  return (data ?? []).map(r => ({ id: r.id, name: r.name }))
 }
 
 function generateTempPassword(): string {

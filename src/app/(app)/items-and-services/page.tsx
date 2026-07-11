@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation'
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getItemTypes } from '@/services/items'
-import { getServices } from '@/services/services'
-import { getPricingMatrix } from '@/services/pricing'
-import { getSettings } from '@/services/settings'
+import { getItemTypes } from '@/services/items/getItemTypes'
+import { getServices } from '@/services/services/getServices'
+import { getPricingMatrix } from '@/services/pricing/getPricingMatrix'
+import { getSettings } from '@/services/settings/getSettings'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { ItemsServicesClient } from './ItemsServicesClient'
 

@@ -2,8 +2,12 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { createEmployee, toggleEmployee, type Employee } from '@/services/employees'
-import { approveJoinRequest, rejectJoinRequest, type PendingJoinRequest } from '@/services/laundries/joinRequests'
+import { createEmployee } from '@/services/employees/createEmployee'
+import { toggleEmployee } from '@/services/employees/toggleEmployee'
+import type { Employee } from '@/services/employees/getEmployees'
+import { approveJoinRequest } from '@/services/laundries/approveJoinRequest'
+import { rejectJoinRequest } from '@/services/laundries/rejectJoinRequest'
+import type { PendingJoinRequest } from '@/services/laundries/getPendingJoinRequests'
 
 interface Props {
   employees: Employee[]
