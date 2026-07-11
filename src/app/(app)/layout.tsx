@@ -6,17 +6,18 @@ import { CommandPalette } from '@/components/ui/CommandPalette'
 import { ProfileProvider } from '@/contexts/ProfileContext'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
-import { createClient } from '@/lib/supabase'
 
 type BannerVariant = 'info' | 'warning' | 'destructive'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await getMyProfile()
   if (!profile) {
-    // Sign out first to avoid infinite redirect loop for accounts with no employee record.
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    redirect('/login')
+    // Middleware already guarantees an authenticated session reaches this layout,
+    // so a missing profile means signup was interrupted before an employee row
+    // was created (e.g. user closed the tab before choosing join/create laundry).
+    // Send them back to finish that flow instead of /login, which would just
+    // bounce back here via middleware's authenticated-user redirect (infinite loop).
+    redirect('/signup/choose')
   }
 
   const subscription = await getActiveSubscription(profile.laundryId)

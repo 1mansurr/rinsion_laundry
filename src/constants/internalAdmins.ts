@@ -11,5 +11,5 @@
  */
 
 export const INTERNAL_ADMIN_EMAILS: readonly string[] = [
-  'smaliduyakubu@st.knust.edu.gh',
+  'saymmmohammed265@gmail.com',
 ] as const
