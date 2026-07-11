@@ -8,6 +8,17 @@ import { PLANS } from '@/constants/plans'
 import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
+export async function getBranchesList(laundryId: string): Promise<{ id: string; name: string }[]> {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('branches')
+    .select('id, name')
+    .eq('laundry_id', laundryId)
+    .order('name')
+
+  return data ?? []
+}
+
 export async function createBranch(name: string): Promise<ServiceResult<{ id: string; name: string; branchCode: string }>> {
   if (!name.trim()) return { success: false, error: 'Branch name cannot be empty.' }
 

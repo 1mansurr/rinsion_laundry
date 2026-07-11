@@ -5,7 +5,7 @@ import { getServices } from '@/services/services'
 import { getPricingMatrix } from '@/services/pricing'
 import { getCustomers, getCustomer, type Customer } from '@/services/customers'
 import { getSettings } from '@/services/settings'
-import { createClient } from '@/lib/supabase'
+import { getBranchesList } from '@/services/branches'
 import { CreateOrderForm } from './CreateOrderForm'
 
 interface Props {
@@ -16,19 +16,16 @@ export default async function NewOrderPage({ searchParams }: Props) {
   const profile = await getMyProfile()
   if (!profile) redirect('/login')
 
-  const supabase = createClient()
   const customerId = searchParams.customerId
 
-  const [itemTypes, services, prices, customers, branchesRes, settings] = await Promise.all([
+  const [itemTypes, services, prices, customers, branches, settings] = await Promise.all([
     getItemTypes(profile.laundryId),
     getServices(profile.laundryId),
     getPricingMatrix(profile.laundryId),
     getCustomers(profile.laundryId),
-    supabase.from('branches').select('id, name').eq('laundry_id', profile.laundryId).order('name'),
+    getBranchesList(profile.laundryId),
     getSettings(),
   ])
-
-  const branches = (branchesRes.data ?? []).map(b => ({ id: b.id, name: b.name }))
 
   let preselectedCustomer: Customer | null = null
   if (customerId) {

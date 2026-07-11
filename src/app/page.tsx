@@ -1,19 +1,10 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
-import { getVerifiedUserId } from '@/lib/auth'
+import { getSignupStatus } from '@/services/laundries/getSignupStatus'
 
 export default async function HomePage() {
-  const supabase = createClient()
-  const userId = await getVerifiedUserId(supabase)
-
-  if (!userId) redirect('/login')
-
-  const { data: emp } = await supabase
-    .from('employees')
-    .select('id')
-    .eq('auth_user_id', userId)
-    .maybeSingle()
+  const status = await getSignupStatus()
+  if (!status.authenticated) redirect('/login')
 
   // Signed up but hasn't finished Add Laundry / Join Laundry yet
-  redirect(emp ? '/dashboard' : '/signup/choose')
+  redirect(status.hasEmployee ? '/dashboard' : '/signup/choose')
 }
