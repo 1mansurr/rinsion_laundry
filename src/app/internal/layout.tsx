@@ -1,12 +1,16 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { isInternalAdmin } from '@/services/admin/isInternalAdmin'
+import { createClient } from '@/lib/supabase'
+import { requirePlatformAdmin } from '@/services/platform/requirePlatformAdmin'
 import { InternalNav } from './InternalNav'
 import { Wordmark } from '@/components/ui/Wordmark'
 
 export default async function InternalLayout({ children }: { children: React.ReactNode }) {
-  const adminEmail = await isInternalAdmin()
-  if (!adminEmail) notFound()
+  const platformAdminId = await requirePlatformAdmin()
+  if (!platformAdminId) notFound()
+
+  const { data: { user } } = await createClient().auth.getUser()
+  const adminLabel = user?.email ?? user?.phone ?? 'Platform admin'
 
   return (
     <div className="min-h-screen bg-canvas flex">
@@ -16,7 +20,7 @@ export default async function InternalLayout({ children }: { children: React.Rea
             <Wordmark size="sm" />
             <span className="text-caption font-semibold text-warm-700">Internal</span>
           </div>
-          <p className="text-micro text-warm-500 mt-0.5 truncate">{adminEmail}</p>
+          <p className="text-micro text-warm-500 mt-0.5 truncate">{adminLabel}</p>
         </div>
         <div className="flex-1 py-3">
           <InternalNav />

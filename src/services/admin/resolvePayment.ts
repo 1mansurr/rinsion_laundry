@@ -1,7 +1,7 @@
 'use server'
 
 import { createAdminClient, createClient } from '@/lib/supabase'
-import { isInternalAdminEmail } from '@/lib/internal-admins'
+import { requirePlatformAdmin } from '@/services/platform/requirePlatformAdmin'
 import { recordCycleRenewalPayment } from '@/services/subscriptions/recordCycleRenewalPayment'
 import { recordUpgradePayment } from '@/services/subscriptions/recordUpgradePayment'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
@@ -13,10 +13,13 @@ export async function resolvePayment(
   pendingPaymentId: string,
   resolution: 'paid' | 'rejected'
 ): Promise<ServiceResult<null>> {
+  const platformAdminId = await requirePlatformAdmin()
+  if (!platformAdminId) return { success: false, error: 'Unauthorized.' }
+
   const sessionClient = createClient()
   const { data: { user } } = await sessionClient.auth.getUser()
-  if (!user?.email || !isInternalAdminEmail(user.email)) {
-    return { success: false, error: 'Unauthorized.' }
+  if (!user?.email) {
+    return { success: false, error: 'A platform admin email is required to record this payment.' }
   }
 
   const supabase = createAdminClient()
@@ -72,8 +75,7 @@ export async function resolvePayment(
 
   await supabase.from('activity_logs').insert({
     laundry_id: pending.laundry_id,
-    employee_id: null,
-    internal_admin_email: user.email,
+    platform_admin_id: platformAdminId,
     action_type: ACTIVITY_ACTION_TYPES.INTERNAL_PAYMENT_RESOLVED,
     description: `Pending payment ${resolution} by Rinsion admin ${user.email}`,
   })

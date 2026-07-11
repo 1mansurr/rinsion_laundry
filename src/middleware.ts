@@ -1,6 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { INTERNAL_ADMIN_EMAILS } from '@/constants/internalAdmins'
 
 // Builds a pass-through response that forwards the verified user ID to server
 // components via a request header, avoiding a second auth.getUser() call there.
@@ -46,19 +45,14 @@ export async function middleware(request: NextRequest) {
   // uses asymmetric ES256 signing keys), avoiding a network round trip to the
   // Auth server on every request that getUser() would require.
   const { data } = await supabase.auth.getClaims()
-  const user = data?.claims ? { id: data.claims.sub, email: data.claims.email } : null
+  const user = data?.claims ? { id: data.claims.sub } : null
 
   const { pathname } = request.nextUrl
 
-  if (pathname.startsWith('/internal')) {
-    if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
-    if (!INTERNAL_ADMIN_EMAILS.includes(user.email ?? '')) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-    return withUserId(supabaseResponse, request, user.id)
-  }
+  // /internal and /platform both require platform_admins clearance, checked
+  // server-side in their own layouts (needs the service-role client, which
+  // stays out of middleware) — here they just need a valid session, same as
+  // every other authenticated route below.
 
   if (pathname.startsWith('/login')) {
     if (user) {

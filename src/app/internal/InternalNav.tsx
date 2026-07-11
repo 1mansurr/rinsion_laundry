@@ -31,6 +31,16 @@ export function InternalNav() {
           </Link>
         )
       })}
+      {/* /internal and /platform share the same platform_admins clearance,
+          so anyone who reached this nav can always reach /platform too. */}
+      <div className="pt-2 mt-2 border-t border-warm-100">
+        <Link
+          href="/platform"
+          className="block px-3 py-2 rounded-7 text-ui text-warm-700 hover:bg-warm-100 hover:text-warm-950 transition-colors"
+        >
+          Platform →
+        </Link>
+      </div>
     </nav>
   )
 }
