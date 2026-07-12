@@ -19,7 +19,6 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { ImportPricingModal } from './ImportPricingModal'
 
 interface Props {
   itemTypes: ItemType[]
@@ -99,7 +98,6 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
   const [newItemName, setNewItemName] = useState('')
   const [newServiceName, setNewServiceName] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [importOpen, setImportOpen] = useState(false)
   const [deleteItemTarget, setDeleteItemTarget] = useState<ItemType | null>(null)
   const [deleteServiceTarget, setDeleteServiceTarget] = useState<LaundryService | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
@@ -436,11 +434,6 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
       {/* Pricing tab */}
       {tab === 'pricing' && (
         <div className="space-y-8">
-          <div className="flex justify-end">
-            <Button variant="secondary" size="sm" onClick={() => setImportOpen(true)}>
-              Import Pricing
-            </Button>
-          </div>
           {activeServices.length === 0 ? (
             <EmptyState
               headline="Nothing to price yet"
@@ -816,11 +809,6 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
           )}
         </div>
       )}
-
-      <ImportPricingModal
-        open={importOpen}
-        onClose={() => setImportOpen(false)}
-      />
 
       <ConfirmDialog
         open={!!deleteItemTarget}

@@ -3,9 +3,8 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateLaundrySetup, completeOnboarding } from './actions'
-import { createService } from '@/services/services/createService'
+import { toggleService } from '@/services/services/toggleService'
 import { setServicePricing } from '@/services/services/setServicePricing'
-import { createItemType } from '@/services/items/createItemType'
 import { upsertPrice } from '@/services/pricing/upsertPrice'
 import { updateSettings } from '@/services/settings/updateSettings'
 import { startTrial } from '@/services/subscriptions/startTrial'
@@ -28,10 +27,12 @@ interface Props {
   defaultLaundryName: string
   defaultBranchId: string
   defaultBranchName: string
+  /** Item types & services already seeded when the laundry was created — the
+   * wizard selects from and prices these rather than creating new rows, so
+   * it doesn't double up on the default catalog. */
+  itemTypes: { id: string; name: string }[]
+  services: { id: string; name: string }[]
 }
-
-const DEFAULT_SERVICES = ['Wash Only', 'Wash + Iron', 'Dry Clean']
-const DEFAULT_ITEMS = ['Shirt', 'Trouser', 'Suit', 'Dress', 'Bed Sheet']
 
 function smsCharColor(len: number) {
   if (len > 160) return 'text-error-fg'
@@ -45,7 +46,7 @@ function buildSmsPreview(laundryName: string, branchName: string) {
   return `Hi [Customer]! Your laundry from ${name} (${branch}) is ready for pickup. Your code is 12345. Reply STOP to opt out.`
 }
 
-export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchId, defaultBranchName }: Props) {
+export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchId, defaultBranchName, itemTypes, services }: Props) {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [isPending, startTransition] = useTransition()
@@ -55,8 +56,9 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
   const [laundryName, setLaundryName] = useState(defaultLaundryName)
   const [branchName, setBranchName] = useState(defaultBranchName)
 
-  // Step 2 — services (toggle)
-  const [selectedServices, setSelectedServices] = useState<string[]>(['Wash Only', 'Wash + Iron'])
+  // Step 2 — services (toggle). All start selected since laundry creation
+  // already seeded them as active; unchecking one deactivates it.
+  const [selectedServices, setSelectedServices] = useState<string[]>(services.map(s => s.id))
 
   // Step 3 — pricing model
   const [pricingModel, setPricingModel] = useState<PricingModel>('per_item')
@@ -93,31 +95,17 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
   }
 
   async function saveServices() {
-    if (selectedServices.length === 0) {
-      // Skip is allowed for steps > 1
-      setStep(3)
-      return
-    }
     setError('')
     startTransition(async () => {
-      // Create default items and selected services. The pricing-model step comes
-      // next and cascades onto every service in the laundry, so it's fine for
-      // these to start out with whatever pricing_mode the laundry currently has.
-      const [serviceResults, itemResults] = await Promise.all([
-        Promise.all(selectedServices.map(name => createService(name))),
-        Promise.all(DEFAULT_ITEMS.map(name => createItemType(name))),
-      ])
+      // Item types and services already exist from laundry creation — just
+      // deactivate the ones the admin didn't pick. The pricing-model step
+      // comes next and cascades onto every service, so it's fine for these
+      // to start out with whatever pricing_mode the laundry currently has.
+      const deselected = services.filter(s => !selectedServices.includes(s.id))
+      await Promise.all(deselected.map(s => toggleService(s.id, false)))
 
-      const svcIds = serviceResults
-        .filter(r => r.success)
-        .map((r, i) => ({ name: selectedServices[i], id: (r as { success: true; data: { id: string } }).data.id }))
-
-      const itemIds = itemResults
-        .filter(r => r.success)
-        .map((r, i) => ({ name: DEFAULT_ITEMS[i], id: (r as { success: true; data: { id: string } }).data.id }))
-
-      setCreatedServiceIds(svcIds)
-      setCreatedItemIds(itemIds)
+      setCreatedServiceIds(services.filter(s => selectedServices.includes(s.id)))
+      setCreatedItemIds(itemTypes)
       setStep(3)
     })
   }
@@ -180,9 +168,9 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
     router.push('/dashboard')
   }
 
-  function toggleService(name: string) {
+  function toggleServiceSelection(id: string) {
     setSelectedServices(prev =>
-      prev.includes(name) ? prev.filter(s => s !== name) : [...prev, name]
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
     )
   }
 
@@ -304,20 +292,20 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
               </div>
 
               <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
-                {DEFAULT_SERVICES.map(svc => {
-                  const checked = selectedServices.includes(svc)
+                {services.map(svc => {
+                  const checked = selectedServices.includes(svc.id)
                   return (
                     <label
-                      key={svc}
+                      key={svc.id}
                       className="flex items-center gap-3 px-5 py-3.5 border-b border-warm-100 last:border-0 cursor-pointer hover:bg-warm-50 transition-colors"
                     >
                       <input
                         type="checkbox"
                         checked={checked}
-                        onChange={() => toggleService(svc)}
+                        onChange={() => toggleServiceSelection(svc.id)}
                         className="w-4 h-4 rounded border-warm-300 accent-brand"
                       />
-                      <span className="text-ui text-warm-950">{svc}</span>
+                      <span className="text-ui text-warm-950">{svc.name}</span>
                     </label>
                   )
                 })}
