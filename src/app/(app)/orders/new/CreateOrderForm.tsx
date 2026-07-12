@@ -20,6 +20,7 @@ import { formatPriceRange } from '@/utils/formatPriceRange'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
+import { SearchableSelect } from '@/components/ui/SearchableSelect'
 
 interface LineItem {
   itemTypeId: string
@@ -477,31 +478,23 @@ export function CreateOrderForm({
                     className="hidden md:grid items-center"
                     style={{ gridTemplateColumns: '1.2fr 1.2fr 0.8fr 0.9fr 1fr 40px', gap: '10px' }}
                   >
-                    <select
+                    <SearchableSelect
                       value={line.serviceId}
-                      onChange={e => updateLine(i, { serviceId: e.target.value })}
-                      className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring appearance-none"
-                    >
-                      <option value="">Select service…</option>
-                      {usableServices.map(s => (
-                        <option key={s.id} value={s.id}>{s.name}</option>
-                      ))}
-                    </select>
+                      onChange={v => updateLine(i, { serviceId: v })}
+                      options={usableServices.map(s => ({ value: s.id, label: s.name }))}
+                      placeholder="Select service…"
+                    />
                     <div>
                       {line.pricingMode === 'per_kg' ? (
                         <span className="text-caption text-warm-400 italic">Priced by weight</span>
                       ) : (
-                        <select
+                        <SearchableSelect
                           value={line.itemTypeId}
-                          onChange={e => updateLine(i, { itemTypeId: e.target.value })}
+                          onChange={v => updateLine(i, { itemTypeId: v })}
+                          options={availableItemTypes.map(t => ({ value: t.id, label: t.name }))}
                           disabled={!line.serviceId}
-                          className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring appearance-none disabled:opacity-40"
-                        >
-                          <option value="">Select item…</option>
-                          {availableItemTypes.map(t => (
-                            <option key={t.id} value={t.id}>{t.name}</option>
-                          ))}
-                        </select>
+                          placeholder="Select item…"
+                        />
                       )}
                     </div>
                     {/* Qty stepper (per_item) or weight input (per_kg) */}
@@ -588,33 +581,25 @@ export function CreateOrderForm({
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <p className="text-caption text-warm-500 mb-1">Service</p>
-                        <select
+                        <SearchableSelect
                           value={line.serviceId}
-                          onChange={e => updateLine(i, { serviceId: e.target.value })}
-                          className="w-full border border-warm-400 rounded-7 px-2.5 py-2 text-[14px] text-warm-950 bg-white focus:outline-none focus:border-brand"
-                        >
-                          <option value="">Select…</option>
-                          {usableServices.map(s => (
-                            <option key={s.id} value={s.id}>{s.name}</option>
-                          ))}
-                        </select>
+                          onChange={v => updateLine(i, { serviceId: v })}
+                          options={usableServices.map(s => ({ value: s.id, label: s.name }))}
+                          placeholder="Select…"
+                        />
                       </div>
                       <div>
                         <p className="text-caption text-warm-500 mb-1">Item type</p>
                         {line.pricingMode === 'per_kg' ? (
                           <p className="text-[14px] text-warm-400 italic py-2">Priced by weight</p>
                         ) : (
-                          <select
+                          <SearchableSelect
                             value={line.itemTypeId}
-                            onChange={e => updateLine(i, { itemTypeId: e.target.value })}
+                            onChange={v => updateLine(i, { itemTypeId: v })}
+                            options={availableItemTypes.map(t => ({ value: t.id, label: t.name }))}
                             disabled={!line.serviceId}
-                            className="w-full border border-warm-400 rounded-7 px-2.5 py-2 text-[14px] text-warm-950 bg-white focus:outline-none focus:border-brand disabled:opacity-40"
-                          >
-                            <option value="">Select…</option>
-                            {availableItemTypes.map(t => (
-                              <option key={t.id} value={t.id}>{t.name}</option>
-                            ))}
-                          </select>
+                            placeholder="Select…"
+                          />
                         )}
                       </div>
                     </div>
