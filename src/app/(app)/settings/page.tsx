@@ -111,6 +111,7 @@ const NAV_ITEMS = [
   { href: '/settings/subscription', label: 'Subscription', desc: 'Plan, billing, upgrades and payment history' },
   { href: '/settings/sms-usage',    label: 'SMS Usage',    desc: 'Cycle usage, message log and quota' },
   { href: '/settings/recycle-bin',  label: 'Recycle Bin',  desc: 'Restore deleted customers, orders, items and services' },
+  { href: '/settings/danger-zone',  label: 'Danger Zone',  desc: "Permanently close this laundry's Rinsion account" },
 ]
 
 export default function SettingsPage() {

@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { inviteEmployee } from '@/services/employees/inviteEmployee'
 import { resendInvite } from '@/services/employees/resendInvite'
 import { toggleEmployee } from '@/services/employees/toggleEmployee'
 import { removeEmployee } from '@/services/employees/removeEmployee'
+import { deleteMyAccount } from '@/services/employees/deleteMyAccount'
 import type { Employee } from '@/services/employees/getEmployees'
 import type { PendingInvite } from '@/services/employees/getPendingInvites'
 import { approveJoinRequest } from '@/services/laundries/approveJoinRequest'
@@ -26,6 +28,7 @@ export function EmployeesClient({
   employees: init, activeCount: initActiveCount, employeeLimit,
   pendingRequests: initRequests, pendingInvites: initInvites, currentEmployeeId,
 }: Props) {
+  const router = useRouter()
   const [employees, setEmployees] = useState(init)
   const [activeCount, setActiveCount] = useState(initActiveCount)
   const [showForm, setShowForm] = useState(false)
@@ -172,6 +175,21 @@ export function EmployeesClient({
         setRemoveTarget(null)
       } else {
         setRemoveError(res.error)
+      }
+    })
+  }
+
+  const [deleteAccountOpen, setDeleteAccountOpen] = useState(false)
+  const [deleteAccountError, setDeleteAccountError] = useState<string | null>(null)
+
+  function handleDeleteMyAccount() {
+    setDeleteAccountError(null)
+    startTransition(async () => {
+      const res = await deleteMyAccount()
+      if (res.success) {
+        router.push('/login')
+      } else {
+        setDeleteAccountError(res.error)
       }
     })
   }
@@ -351,6 +369,15 @@ export function EmployeesClient({
                 </button>
               </div>
             )}
+            {emp.id === currentEmployeeId && (
+              <button
+                onClick={() => setDeleteAccountOpen(true)}
+                disabled={isPending}
+                className="text-xs text-gray-400 hover:text-red-600 ml-4 flex-shrink-0"
+              >
+                Delete my account
+              </button>
+            )}
           </div>
         ))}
       </div>
@@ -364,6 +391,18 @@ export function EmployeesClient({
         isPending={isPending}
         error={removeError}
         onConfirm={handleRemove}
+      />
+
+      <ConfirmDialog
+        open={deleteAccountOpen}
+        onClose={() => { setDeleteAccountOpen(false); setDeleteAccountError(null) }}
+        title="Delete my account"
+        message="Delete your own Rinsion login? You'll be signed out immediately. An admin can restore your account from Settings → Recycle Bin if this was a mistake."
+        confirmLabel="Delete my account"
+        requireTypedText="DELETE"
+        isPending={isPending}
+        error={deleteAccountError}
+        onConfirm={handleDeleteMyAccount}
       />
     </div>
   )

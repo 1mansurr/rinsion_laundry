@@ -65,6 +65,8 @@ export const ACTIVITY_ACTION_TYPES = {
   EMPLOYEE_ACCEPTED:                'EMPLOYEE_ACCEPTED',
   EMPLOYEE_REMOVED:                 'EMPLOYEE_REMOVED',
   EMPLOYEE_RESTORED:                'EMPLOYEE_RESTORED',
+  EMPLOYEE_SELF_DELETED:            'EMPLOYEE_SELF_DELETED',
+  LAUNDRY_ACCOUNT_DELETED:          'LAUNDRY_ACCOUNT_DELETED',
   INVITE_RESENT:                    'INVITE_RESENT',
   SMS_SENT:                         'SMS_SENT',
   SMS_FAILED:                       'SMS_FAILED',

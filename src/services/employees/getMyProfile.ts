@@ -27,7 +27,7 @@ interface EmployeeRow {
   last_name: string
   email: string | null
   phone: string
-  laundries: { name: string } | null
+  laundries: { name: string; deleted_at: string | null } | null
 }
 
 // Cached for 5 min — employee profile is stable between navigations.
@@ -38,12 +38,18 @@ const fetchEmployeeRow = unstable_cache(
     const supabase = createAdminClient()
     const { data } = await supabase
       .from('employees')
-      .select('id, auth_user_id, laundry_id, branch_id, role, first_name, last_name, email, phone, laundries(name)')
+      .select('id, auth_user_id, laundry_id, branch_id, role, first_name, last_name, email, phone, laundries(name, deleted_at)')
       .eq('auth_user_id', userId)
       .eq('is_active', true)
       .is('deleted_at', null)
       .single()
-    return (data as EmployeeRow | null) ?? null
+    const row = data as EmployeeRow | null
+    // A closed laundry (deleteLaundryAccount) must bounce every one of its
+    // employees the same way an individually-removed employee is bounced —
+    // treat this exactly like "no employee row" rather than adding a second
+    // check at every call site.
+    if (row?.laundries?.deleted_at) return null
+    return row ?? null
   },
   ['employee-profile'],
   { revalidate: 300, tags: ['employee-profile'] },
@@ -60,7 +66,7 @@ function buildProfile(data: EmployeeRow): MyProfile {
     lastName: data.last_name,
     email: data.email,
     phone: data.phone,
-    laundryName: (data.laundries as { name: string } | null)?.name ?? '',
+    laundryName: data.laundries?.name ?? '',
   }
 }
 
