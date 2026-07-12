@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/lib/supabase'
 import { requirePlatformAdmin } from '@/services/platform/requirePlatformAdmin'
 import { generateInviteToken } from '@/utils/inviteToken'
+import { getBaseUrl } from '@/utils/getBaseUrl'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -41,11 +42,12 @@ export async function resendOwnerInvite(inviteId: string): Promise<ServiceResult
   })
 
   const laundryName = laundry?.name ?? 'Rinsion'
+  const baseUrl = getBaseUrl()
   import('@/services/notifications/sendSms')
     .then(m => m.sendSystemSms({
       laundryId: invite.laundry_id,
       phone: invite.phone,
-      message: `${laundryName} is ready on Rinsion. Set your password: https://rinsion.app/i/${token}`,
+      message: `${laundryName} is ready on Rinsion. Set your password: ${baseUrl}/i/${token}`,
       triggerEvent: 'EMPLOYEE_INVITE',
     }))
     .catch(() => null)

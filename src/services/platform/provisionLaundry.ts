@@ -4,6 +4,7 @@ import { createAdminClient, type DbClient } from '@/lib/supabase'
 import { requirePlatformAdmin } from '@/services/platform/requirePlatformAdmin'
 import { createInvite } from '@/services/employees/createInvite'
 import { generateJoinPin } from '@/utils/generateJoinPin'
+import { getBaseUrl } from '@/utils/getBaseUrl'
 import { TRIAL_DAYS, PLANS } from '@/constants/plans'
 import type { TemplateKey, TemplateService, TemplatePriceCell } from '@/services/platform/templates'
 import type { PricingModel } from '@/constants/statuses'
@@ -95,11 +96,12 @@ export async function provisionLaundry(input: ProvisionLaundryInput): Promise<Se
   if (!inviteResult.data.linked) {
     const token = inviteResult.data.token
     const laundryName = input.name.trim()
+    const baseUrl = getBaseUrl()
     import('@/services/notifications/sendSms')
       .then(m => m.sendSystemSms({
         laundryId,
         phone: input.ownerPhone,
-        message: `${laundryName} is ready on Rinsion. Set your password: https://rinsion.app/i/${token}`,
+        message: `${laundryName} is ready on Rinsion. Set your password: ${baseUrl}/i/${token}`,
         triggerEvent: 'EMPLOYEE_INVITE',
       }))
       .catch(() => null)

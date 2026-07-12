@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { requireRole } from '@/lib/auth'
 import { generateInviteToken } from '@/utils/inviteToken'
+import { getBaseUrl } from '@/utils/getBaseUrl'
 import { revalidatePath } from 'next/cache'
 import { ROLES } from '@/constants/statuses'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
@@ -53,11 +54,12 @@ export async function resendInvite(inviteId: string): Promise<ServiceResult<null
   })
 
   const laundryName = caller.laundryName
+  const baseUrl = getBaseUrl()
   import('@/services/notifications/sendSms')
     .then(m => m.sendSystemSms({
       laundryId: caller.laundryId,
       phone: invite.phone,
-      message: `${laundryName} added you as staff on Rinsion. Set your password: https://rinsion.app/i/${token}`,
+      message: `${laundryName} added you as staff on Rinsion. Set your password: ${baseUrl}/i/${token}`,
       triggerEvent: 'EMPLOYEE_INVITE',
     }))
     .catch(() => null)

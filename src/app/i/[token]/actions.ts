@@ -20,5 +20,10 @@ export async function acceptInvite(
   const result = await employeesService.acceptInvite({ token, firstName, lastName, password })
   if (!result.success) return { error: result.error }
 
-  redirect('/dashboard')
+  // Account creation always succeeded here — signedIn only reflects whether
+  // the auto-sign-in also worked. If it didn't, send them to /login to sign
+  // in manually rather than redirecting to /dashboard on no session at all
+  // (which would otherwise silently fall through to whatever session, if
+  // any, was already active in that browser).
+  redirect(result.data.signedIn ? '/dashboard' : '/login')
 }

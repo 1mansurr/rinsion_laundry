@@ -5,6 +5,7 @@ import { getMyProfile } from '@/services/employees/getMyProfile'
 import { createInvite } from '@/services/employees/createInvite'
 import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
+import { getBaseUrl } from '@/utils/getBaseUrl'
 import { ROLES } from '@/constants/statuses'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
 import type { EmployeeRole } from '@/constants/statuses'
@@ -38,11 +39,14 @@ export async function inviteEmployee(input: InviteEmployeeInput): Promise<Servic
   if (!result.data.linked) {
     const token = result.data.token
     const laundryName = caller.laundryName
+    // Captured synchronously (within the request) since headers() isn't safe
+    // to call once we're inside the deferred .then() below.
+    const baseUrl = getBaseUrl()
     import('@/services/notifications/sendSms')
       .then(m => m.sendSystemSms({
         laundryId: caller.laundryId,
         phone: input.phone,
-        message: `${laundryName} added you as staff on Rinsion. Set your password: https://rinsion.app/i/${token}`,
+        message: `${laundryName} added you as staff on Rinsion. Set your password: ${baseUrl}/i/${token}`,
         triggerEvent: 'EMPLOYEE_INVITE',
       }))
       .catch(() => null)

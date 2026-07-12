@@ -18,7 +18,7 @@ export interface AcceptInviteInput {
  * Public / unauthenticated — possession of the token is the authorization.
  * Runs entirely on the service-role client since there is no session yet.
  */
-export async function acceptInvite(input: AcceptInviteInput): Promise<ServiceResult<null>> {
+export async function acceptInvite(input: AcceptInviteInput): Promise<ServiceResult<{ signedIn: boolean }>> {
   const firstName = input.firstName.trim()
   const lastName = input.lastName.trim()
   if (!firstName || !lastName) return { success: false, error: 'First and last name are required.' }
@@ -74,7 +74,13 @@ export async function acceptInvite(input: AcceptInviteInput): Promise<ServiceRes
 
   // Auto-sign-in so the invitee lands straight in the dashboard — uses the
   // request-bound session client internally, so this sets the real cookie.
-  await signIn({ phone: invite.phone, password: input.password })
+  // Result is checked (not just awaited-and-ignored): if this silently fails,
+  // no new session cookie gets set, and whoever's browser this is stays on
+  // its previous session (e.g. the inviting admin's, if opened in the same
+  // browser) — landing on /dashboard would then misleadingly show *their*
+  // dashboard instead of failing visibly. The caller must redirect to
+  // /login instead of /dashboard when signedIn is false.
+  const signInResult = await signIn({ phone: invite.phone, password: input.password })
 
-  return { success: true, data: null }
+  return { success: true, data: { signedIn: signInResult.success } }
 }
