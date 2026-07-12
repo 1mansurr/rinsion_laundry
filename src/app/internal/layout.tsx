@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { requirePlatformAdmin } from '@/services/platform/requirePlatformAdmin'
@@ -7,7 +7,9 @@ import { Wordmark } from '@/components/ui/Wordmark'
 
 export default async function InternalLayout({ children }: { children: React.ReactNode }) {
   const platformAdminId = await requirePlatformAdmin()
-  if (!platformAdminId) notFound()
+  // Not a 404 — this is a real page a non-platform-admin just isn't allowed
+  // into. Send them back to the app with a dismissable notice instead.
+  if (!platformAdminId) redirect('/dashboard?error=unauthorized')
 
   const { data: { user } } = await createClient().auth.getUser()
   const adminLabel = user?.email ?? user?.phone ?? 'Platform admin'
