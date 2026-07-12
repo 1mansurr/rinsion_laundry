@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase'
+import { encryptField } from '@/lib/crypto'
 import { getSoleBranchId } from '@/services/branches/getSoleBranchId'
 import { signIn } from '@/services/auth/signIn'
 import { hashInviteToken } from '@/utils/inviteToken'
@@ -54,7 +55,7 @@ export async function acceptInvite(input: AcceptInviteInput): Promise<ServiceRes
     role: invite.role,
     first_name: firstName,
     last_name: lastName,
-    phone: invite.phone,
+    phone: encryptField(invite.phone),
   })
   if (empErr) {
     await admin.auth.admin.deleteUser(authData.user.id)

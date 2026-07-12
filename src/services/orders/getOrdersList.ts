@@ -1,6 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField, computeBlindIndex } from '@/lib/crypto'
+import { normalizeCustomerPhone } from '@/utils/normalizeCustomerPhone'
 
 export interface OrderListRow {
   id: string
@@ -28,14 +30,20 @@ export async function getOrdersList(
   const from = (page - 1) * perPage
   const to = from + perPage - 1
 
-  // For search, first find matching customer IDs by name/phone
+  // For search, first find matching customer IDs by name/phone. phone is
+  // encrypted at rest — ciphertext can't substring-match, so phone search
+  // only matches a full, exact phone number via the blind index.
   let matchedCustomerIds: string[] | null = null
   if (q) {
+    const qDigits = q.replace(/\D/g, '')
+    const orFilter = qDigits.length >= 9
+      ? `first_name.ilike.*${q}*,last_name.ilike.*${q}*,phone_bidx.eq.${computeBlindIndex(normalizeCustomerPhone(q))}`
+      : `first_name.ilike.*${q}*,last_name.ilike.*${q}*`
     const { data: custs } = await supabase
       .from('customers')
       .select('id')
       .eq('laundry_id', laundryId)
-      .or(`first_name.ilike.*${q}*,last_name.ilike.*${q}*,phone.ilike.*${q}*`)
+      .or(orFilter)
       .limit(50)
     matchedCustomerIds = (custs ?? []).map(c => c.id)
   }
@@ -82,7 +90,7 @@ export async function getOrdersList(
       orderNumber: o.order_number,
       customerName: `${fn} ${ln}`.trim(),
       customerInitials: `${fn[0] ?? ''}${ln[0] ?? ''}`.toUpperCase(),
-      customerPhone: cust?.phone ?? '',
+      customerPhone: cust ? decryptField(cust.phone) ?? '' : '',
       branchName: branch?.name ?? '',
       pieces: items.filter(i => i.pricing_mode !== 'per_kg').reduce((s, i) => s + (i.quantity ?? 0), 0),
       kg: items.filter(i => i.pricing_mode === 'per_kg').reduce((s, i) => s + (i.quantity ?? 0), 0),

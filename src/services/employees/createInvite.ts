@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase'
+import { encryptField } from '@/lib/crypto'
 import { getSoleBranchId } from '@/services/branches/getSoleBranchId'
 import { toAuthPhone } from '@/utils/toAuthPhone'
 import { generateInviteToken } from '@/utils/inviteToken'
@@ -52,7 +53,7 @@ export async function createInvite(
       role,
       first_name: priorRow?.first_name ?? '',
       last_name: priorRow?.last_name ?? '',
-      phone,
+      phone: encryptField(phone),
     })
     if (empErr) return { success: false, error: empErr.message }
 

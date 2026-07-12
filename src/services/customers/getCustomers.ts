@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField } from '@/lib/crypto'
 
 export interface Customer {
   id: string
@@ -26,7 +27,7 @@ export async function getCustomers(laundryId: string): Promise<Customer[]> {
     customerCode: r.customer_code,
     firstName: r.first_name,
     lastName: r.last_name,
-    phone: r.phone,
+    phone: decryptField(r.phone) ?? '',
     lastVisitDate: r.last_visit_date,
     createdAt: r.created_at,
   }))

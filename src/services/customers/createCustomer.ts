@@ -1,6 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField, encryptField, computeBlindIndex } from '@/lib/crypto'
+import { normalizeCustomerPhone } from '@/utils/normalizeCustomerPhone'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { revalidatePath } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
@@ -16,12 +18,15 @@ export async function createCustomer(input: {
   if (!profile) return { success: false, error: 'Not authenticated.' }
   const emp = { laundry_id: profile.laundryId }
 
+  const normalizedPhone = normalizeCustomerPhone(input.phone)
+  const phoneBidx = computeBlindIndex(normalizedPhone)
+
   // Phone uniqueness check — return existing if found
   const { data: existing } = await supabase
     .from('customers')
     .select('id, customer_code, first_name, last_name, phone, last_visit_date, created_at')
     .eq('laundry_id', emp.laundry_id)
-    .eq('phone', input.phone.trim())
+    .eq('phone_bidx', phoneBidx)
     .is('deleted_at', null)
     .maybeSingle()
 
@@ -33,7 +38,7 @@ export async function createCustomer(input: {
         customerCode: existing.customer_code,
         firstName: existing.first_name,
         lastName: existing.last_name,
-        phone: existing.phone,
+        phone: decryptField(existing.phone) ?? '',
         lastVisitDate: existing.last_visit_date,
         createdAt: existing.created_at,
       },
@@ -49,7 +54,8 @@ export async function createCustomer(input: {
       customer_code: customerCode,
       first_name: input.firstName.trim(),
       last_name: input.lastName.trim(),
-      phone: input.phone.trim(),
+      phone: encryptField(normalizedPhone),
+      phone_bidx: phoneBidx,
     })
     .select('id, customer_code, first_name, last_name, phone, last_visit_date, created_at')
     .single()
@@ -64,7 +70,7 @@ export async function createCustomer(input: {
       customerCode: data.customer_code,
       firstName: data.first_name,
       lastName: data.last_name,
-      phone: data.phone,
+      phone: decryptField(data.phone) ?? '',
       lastVisitDate: data.last_visit_date,
       createdAt: data.created_at,
     },

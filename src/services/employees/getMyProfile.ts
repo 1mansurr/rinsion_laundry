@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { unstable_cache } from 'next/cache'
 import { createClient, createAdminClient } from '@/lib/supabase'
+import { decryptField } from '@/lib/crypto'
 import { getVerifiedUserId } from '@/lib/auth'
 import type { EmployeeRole } from '@/constants/statuses'
 
@@ -64,8 +65,8 @@ function buildProfile(data: EmployeeRow): MyProfile {
     role: data.role as EmployeeRole,
     firstName: data.first_name,
     lastName: data.last_name,
-    email: data.email,
-    phone: data.phone,
+    email: decryptField(data.email),
+    phone: decryptField(data.phone) ?? '',
     laundryName: data.laundries?.name ?? '',
   }
 }

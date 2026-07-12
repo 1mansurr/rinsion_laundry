@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField } from '@/lib/crypto'
 
 export async function getCustomer(id: string) {
   const supabase = createClient()
@@ -14,5 +15,6 @@ export async function getCustomer(id: string) {
     .is('deleted_at', null)
     .single()
 
-  return data
+  if (!data) return data
+  return { ...data, phone: decryptField(data.phone) ?? '' }
 }

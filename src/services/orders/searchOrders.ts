@@ -1,6 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField, computeBlindIndex } from '@/lib/crypto'
+import { normalizeCustomerPhone } from '@/utils/normalizeCustomerPhone'
 import type { OrderStatus, OrderPriority } from '@/constants/statuses'
 import type { OrderListItem } from './getOrders'
 
@@ -27,7 +29,7 @@ export async function searchOrders(laundryId: string, query: string): Promise<Or
       pickupDate: r.pickup_date as string | null,
       createdAt: r.created_at as string,
       customerName: customer ? `${customer.first_name} ${customer.last_name}` : '',
-      customerPhone: customer?.phone ?? '',
+      customerPhone: customer ? decryptField(customer.phone) ?? '' : '',
       branchName: (branch as { name: string } | null)?.name ?? '',
     }
   }
@@ -42,13 +44,19 @@ export async function searchOrders(laundryId: string, query: string): Promise<Or
     .order('created_at', { ascending: false })
     .limit(20)
 
-  // Search by customer name / phone
+  // Search by customer name / phone. phone is encrypted at rest — ciphertext
+  // can't substring-match, so phone search only matches a full, exact phone
+  // number via the blind index.
+  const qDigits = q.replace(/\D/g, '')
+  const customerOrFilter = qDigits.length >= 9
+    ? `first_name.ilike.*${q}*,last_name.ilike.*${q}*,phone_bidx.eq.${computeBlindIndex(normalizeCustomerPhone(q))}`
+    : `first_name.ilike.*${q}*,last_name.ilike.*${q}*`
   const { data: matchingCustomers } = await supabase
     .from('customers')
     .select('id')
     .eq('laundry_id', laundryId)
     .is('deleted_at', null)
-    .or(`first_name.ilike.*${q}*,last_name.ilike.*${q}*,phone.ilike.*${q}*`)
+    .or(customerOrFilter)
     .limit(50)
 
   const customerIds = (matchingCustomers ?? []).map(c => c.id)

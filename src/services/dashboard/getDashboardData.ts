@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField } from '@/lib/crypto'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
 import { computeSmsUsage } from '@/services/notifications/computeSmsUsage'
 import type { EmployeeRole } from '@/constants/statuses'
@@ -93,7 +94,7 @@ export async function getDashboardData(
       orderNumber: o.order_number,
       pickupCode: o.pickup_code,
       customerName: c ? `${c.first_name} ${c.last_name}` : '—',
-      phone: c?.phone ?? '',
+      phone: c ? decryptField(c.phone) ?? '' : '',
       branchId: b?.id ?? '',
       branchName: b?.name ?? '',
       readySince: o.updated_at,

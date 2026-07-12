@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField } from '@/lib/crypto'
 import { sendSystemSms } from './sendSms'
 import { ROLES } from '@/constants/statuses'
 
@@ -31,11 +32,12 @@ export async function sendQuotaWarningSms(
     .maybeSingle()
 
   if (!admin?.phone) return
+  const phone = decryptField(admin.phone) ?? admin.phone
 
   // TODO: confirm message wording after interviews
   const message = `Rinsion: You've used ${used} of ${quota} SMS messages this cycle (70% threshold). Additional messages cost GHS 0.05 each. To increase your limit, upgrade your plan.`
 
-  await sendSystemSms({ laundryId, phone: admin.phone, message, triggerEvent: 'QUOTA_WARNING_70' })
+  await sendSystemSms({ laundryId, phone, message, triggerEvent: 'QUOTA_WARNING_70' })
 
   // Record that the warning was sent so it doesn't fire again this cycle
   await supabase

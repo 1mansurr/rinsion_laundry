@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase'
+import { decryptField } from '@/lib/crypto'
 import { smsProvider } from '@/lib/sms'
 import { ROLES } from '@/constants/statuses'
 
@@ -33,6 +34,7 @@ export async function sendRenewalReminderSms(
     .maybeSingle()
 
   if (!admin?.phone) return false
+  const phone = decryptField(admin.phone) ?? admin.phone
 
   const planPrices: Record<string, number> = { starter: 90, growth: 180, trial: 90 }
   const amount = planPrices[plan] ?? 90
@@ -48,14 +50,14 @@ export async function sendRenewalReminderSms(
     message = `Rinsion: Your subscription ends in ${daysLeft} days. Renew for GHS ${amount}${upgradeNote}.`
   }
 
-  const result = await smsProvider.sendSms(admin.phone, message, 'Rinsion')
+  const result = await smsProvider.sendSms(phone, message, 'Rinsion')
   const now = new Date().toISOString()
 
   await supabase.from('sms_messages').insert({
     laundry_id: laundryId,
     order_id: null,
     customer_id: null,
-    phone: admin.phone,
+    phone,
     message,
     trigger_event: triggerEvent,
     provider: 'mnotify',

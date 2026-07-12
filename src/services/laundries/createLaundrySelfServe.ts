@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, createAdminClient } from '@/lib/supabase'
+import { encryptField } from '@/lib/crypto'
 import { DEFAULT_ITEM_TYPES, DEFAULT_SERVICES } from '@/constants/defaultCatalog'
 import { generateJoinPin } from '@/utils/generateJoinPin'
 import type { ServiceResult } from '@/types/serviceResult'
@@ -73,8 +74,8 @@ export async function createLaundrySelfServe(
       role: 'admin',
       first_name: firstName,
       last_name: lastName,
-      email: user.email,
-      phone,
+      email: user.email ? encryptField(user.email) : null,
+      phone: encryptField(phone),
     })
     .select('id')
     .single()

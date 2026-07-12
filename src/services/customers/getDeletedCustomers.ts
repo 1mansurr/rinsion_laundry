@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField } from '@/lib/crypto'
 
 export interface DeletedCustomer {
   id: string
@@ -23,7 +24,7 @@ export async function getDeletedCustomers(laundryId: string): Promise<DeletedCus
     id: r.id,
     firstName: r.first_name,
     lastName: r.last_name,
-    phone: r.phone,
+    phone: decryptField(r.phone) ?? '',
     deletedAt: r.deleted_at as string,
   }))
 }

@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField } from '@/lib/crypto'
 import type { OrderStatus, OrderPriority } from '@/constants/statuses'
 
 export interface OrderListItem {
@@ -47,7 +48,7 @@ export async function getOrders(laundryId: string, status?: OrderStatus): Promis
       pickupDate: r.pickup_date,
       createdAt: r.created_at,
       customerName: customer ? `${customer.first_name} ${customer.last_name}` : '',
-      customerPhone: customer?.phone ?? '',
+      customerPhone: customer ? decryptField(customer.phone) ?? '' : '',
       branchName: branch?.name ?? '',
     }
   })

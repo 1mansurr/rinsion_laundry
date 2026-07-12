@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField } from '@/lib/crypto'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import type { EmployeeRole } from '@/constants/statuses'
 
@@ -30,8 +31,8 @@ export async function getEmployees(): Promise<Employee[]> {
     id: r.id,
     firstName: r.first_name,
     lastName: r.last_name,
-    email: r.email,
-    phone: r.phone,
+    email: decryptField(r.email),
+    phone: decryptField(r.phone) ?? '',
     role: r.role as EmployeeRole,
     isActive: r.is_active,
   }))

@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField } from '@/lib/crypto'
 import { getVerifiedUserId } from '@/lib/auth'
 import { sendSms } from './sendSms'
 import type { ServiceResult } from '@/types/serviceResult'
@@ -29,10 +30,11 @@ export async function resendPickupCodeSms(orderId: string): Promise<ServiceResul
 
   if (!order) return { success: false, error: 'Order not found.' }
 
-  const phone = (order.customers as unknown as { phone: string } | null)?.phone
+  const rawPhone = (order.customers as unknown as { phone: string } | null)?.phone
   const laundryName = (order.laundries as unknown as { name: string } | null)?.name ?? 'Your laundry'
 
-  if (!phone) return { success: false, error: 'Customer has no phone number on file.' }
+  if (!rawPhone) return { success: false, error: 'Customer has no phone number on file.' }
+  const phone = decryptField(rawPhone) ?? rawPhone
 
   // TODO: confirm message wording after interviews
   const message = `${laundryName}: Pickup code reminder for order ${order.order_number}. Your code is: ${order.pickup_code}. Show this when collecting your items.`

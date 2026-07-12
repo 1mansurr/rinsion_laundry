@@ -1,6 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField, computeBlindIndex } from '@/lib/crypto'
+import { normalizeCustomerPhone } from '@/utils/normalizeCustomerPhone'
 
 export interface CustomerListRow {
   id: string
@@ -34,7 +36,19 @@ export async function getCustomersList(
     .order('last_visit_date', { ascending: false, nullsFirst: false })
     .range(from, to)
 
-  if (q) query = query.or(`first_name.ilike.*${q}*,last_name.ilike.*${q}*,phone.ilike.*${q}*`)
+  // phone is encrypted at rest — ciphertext can't substring-match, so name
+  // search stays ilike, and phone search only matches a full, exact phone
+  // number via the blind index (partial-digit phone search is no longer
+  // possible; see src/lib/crypto/fieldEncryption.ts).
+  if (q) {
+    const qDigits = q.replace(/\D/g, '')
+    if (qDigits.length >= 9) {
+      const phoneBidx = computeBlindIndex(normalizeCustomerPhone(q))
+      query = query.or(`first_name.ilike.*${q}*,last_name.ilike.*${q}*,phone_bidx.eq.${phoneBidx}`)
+    } else {
+      query = query.or(`first_name.ilike.*${q}*,last_name.ilike.*${q}*`)
+    }
+  }
 
   const { data, count } = await query
 
@@ -64,7 +78,7 @@ export async function getCustomersList(
       id: c.id,
       firstName: c.first_name,
       lastName: c.last_name,
-      phone: c.phone,
+      phone: decryptField(c.phone) ?? '',
       ordersCount,
       totalSpent,
       outstandingBalance,

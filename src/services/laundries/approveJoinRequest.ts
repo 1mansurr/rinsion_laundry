@@ -1,14 +1,15 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { encryptField } from '@/lib/crypto'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getSoleBranchId } from '@/services/branches/getSoleBranchId'
 import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { PLANS } from '@/constants/plans'
+import { canAddEmployee } from '@/services/subscriptions/canAddEmployee'
 import { ROLES, JOIN_REQUEST_STATUS } from '@/constants/statuses'
 import type { EmployeeRole } from '@/constants/statuses'
-import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
 export async function approveJoinRequest(
@@ -33,23 +34,17 @@ export async function approveJoinRequest(
   // Plan limit check — same guard as adding an employee directly
   const { data: sub } = await supabase
     .from('subscriptions')
-    .select('plan')
+    .select('plan, employee_limit')
     .eq('laundry_id', emp.laundry_id)
     .neq('status', 'cancelled')
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
 
-  const plan = (sub?.plan ?? 'starter') as SubscriptionPlan
-  const limit = PLANS[plan as keyof typeof PLANS]?.employeeLimit ?? PLANS.starter.employeeLimit
+  const plan = sub?.plan ?? 'starter'
+  const limit = sub?.employee_limit ?? PLANS.starter.employeeLimit
 
-  const { count } = await supabase
-    .from('employees')
-    .select('id', { count: 'exact', head: true })
-    .eq('laundry_id', emp.laundry_id)
-    .eq('is_active', true)
-
-  if ((count ?? 0) >= limit) {
+  if (!(await canAddEmployee(emp.laundry_id, limit))) {
     return { success: false, error: `Your ${plan} plan allows up to ${limit} employees. Upgrade to add more.` }
   }
 
@@ -63,8 +58,8 @@ export async function approveJoinRequest(
     role,
     first_name: request.first_name,
     last_name: request.last_name,
-    email: request.email,
-    phone: request.phone,
+    email: request.email ? encryptField(request.email) : null,
+    phone: encryptField(request.phone),
   })
   if (empErr) return { success: false, error: empErr.message }
 

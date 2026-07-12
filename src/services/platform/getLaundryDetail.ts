@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase'
+import { decryptField } from '@/lib/crypto'
 import { requirePlatformAdmin } from '@/services/platform/requirePlatformAdmin'
 
 export interface LaundryDetail {
@@ -43,7 +44,7 @@ export async function getLaundryDetail(laundryId: string): Promise<LaundryDetail
     subscription: sub
       ? { plan: sub.plan, status: sub.status, cycleStartDate: sub.cycle_start_date, cycleEndDate: sub.cycle_end_date }
       : null,
-    admins: (admins ?? []).map(a => ({ id: a.id, firstName: a.first_name, lastName: a.last_name, phone: a.phone })),
+    admins: (admins ?? []).map(a => ({ id: a.id, firstName: a.first_name, lastName: a.last_name, phone: decryptField(a.phone) ?? '' })),
     pendingInvites: (invites ?? []).map(i => ({
       id: i.id, phone: i.phone, role: i.role, createdAt: i.created_at, expiresAt: i.expires_at,
     })),

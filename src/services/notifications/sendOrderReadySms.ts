@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField } from '@/lib/crypto'
 import { sendSms } from './sendSms'
 
 /**
@@ -25,10 +26,11 @@ export async function sendOrderReadySms(orderId: string): Promise<void> {
 
   if (!order) return
 
-  const phone = (order.customers as unknown as { phone: string } | null)?.phone
+  const rawPhone = (order.customers as unknown as { phone: string } | null)?.phone
   const laundryName = (order.laundries as unknown as { name: string } | null)?.name ?? 'Your laundry'
 
-  if (!phone) return
+  if (!rawPhone) return
+  const phone = decryptField(rawPhone) ?? rawPhone
 
   // TODO: confirm message wording after interviews
   const message = `${laundryName}: Your order ${order.order_number} is ready for pickup! Show code ${order.pickup_code} when collecting. We look forward to seeing you.`
