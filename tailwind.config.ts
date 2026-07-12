@@ -115,6 +115,8 @@ const config: Config = {
         },
       },
       borderRadius: {
+        '5': '5px',
+        '6': '6px',
         '7': '7px',
         '9': '9px',
         '10': '10px',
