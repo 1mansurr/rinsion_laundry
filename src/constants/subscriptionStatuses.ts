@@ -63,6 +63,8 @@ export const ACTIVITY_ACTION_TYPES = {
   EMPLOYEE_DISABLED:                'EMPLOYEE_DISABLED',
   EMPLOYEE_INVITED:                 'EMPLOYEE_INVITED',
   EMPLOYEE_ACCEPTED:                'EMPLOYEE_ACCEPTED',
+  EMPLOYEE_REMOVED:                 'EMPLOYEE_REMOVED',
+  EMPLOYEE_RESTORED:                'EMPLOYEE_RESTORED',
   INVITE_RESENT:                    'INVITE_RESENT',
   SMS_SENT:                         'SMS_SENT',
   SMS_FAILED:                       'SMS_FAILED',

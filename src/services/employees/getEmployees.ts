@@ -23,6 +23,7 @@ export async function getEmployees(): Promise<Employee[]> {
     .from('employees')
     .select('id, first_name, last_name, email, phone, role, is_active')
     .eq('laundry_id', profile.laundryId)
+    .is('deleted_at', null)
     .order('created_at', { ascending: true })
 
   return (data ?? []).map(r => ({

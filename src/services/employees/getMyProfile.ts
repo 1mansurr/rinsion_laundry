@@ -41,6 +41,7 @@ const fetchEmployeeRow = unstable_cache(
       .select('id, auth_user_id, laundry_id, branch_id, role, first_name, last_name, email, phone, laundries(name)')
       .eq('auth_user_id', userId)
       .eq('is_active', true)
+      .is('deleted_at', null)
       .single()
     return (data as EmployeeRow | null) ?? null
   },

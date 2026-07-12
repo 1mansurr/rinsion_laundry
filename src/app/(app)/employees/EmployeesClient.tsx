@@ -5,11 +5,13 @@ import Link from 'next/link'
 import { inviteEmployee } from '@/services/employees/inviteEmployee'
 import { resendInvite } from '@/services/employees/resendInvite'
 import { toggleEmployee } from '@/services/employees/toggleEmployee'
+import { removeEmployee } from '@/services/employees/removeEmployee'
 import type { Employee } from '@/services/employees/getEmployees'
 import type { PendingInvite } from '@/services/employees/getPendingInvites'
 import { approveJoinRequest } from '@/services/laundries/approveJoinRequest'
 import { rejectJoinRequest } from '@/services/laundries/rejectJoinRequest'
 import type { PendingJoinRequest } from '@/services/laundries/getPendingJoinRequests'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 interface Props {
   employees: Employee[]
@@ -151,6 +153,25 @@ export function EmployeesClient({
       if (res.success) {
         setEmployees(prev => prev.map(e => e.id === id ? { ...e, isActive: !current } : e))
         setActiveCount(c => current ? c - 1 : c + 1)
+      }
+    })
+  }
+
+  const [removeTarget, setRemoveTarget] = useState<Employee | null>(null)
+  const [removeError, setRemoveError] = useState<string | null>(null)
+
+  function handleRemove() {
+    if (!removeTarget) return
+    setRemoveError(null)
+    const target = removeTarget
+    startTransition(async () => {
+      const res = await removeEmployee(target.id)
+      if (res.success) {
+        setEmployees(prev => prev.filter(e => e.id !== target.id))
+        if (target.isActive) setActiveCount(c => c - 1)
+        setRemoveTarget(null)
+      } else {
+        setRemoveError(res.error)
       }
     })
   }
@@ -313,17 +334,37 @@ export function EmployeesClient({
               <p className="text-xs text-gray-400 mt-0.5">{[emp.email, emp.phone].filter(Boolean).join(' · ')}</p>
             </div>
             {emp.id !== currentEmployeeId && (
-              <button
-                onClick={() => handleToggle(emp.id, emp.isActive)}
-                disabled={isPending}
-                className="text-xs text-gray-400 hover:text-gray-700 ml-4 flex-shrink-0"
-              >
-                {emp.isActive ? 'Deactivate' : 'Reactivate'}
-              </button>
+              <div className="flex items-center gap-3 ml-4 flex-shrink-0">
+                <button
+                  onClick={() => handleToggle(emp.id, emp.isActive)}
+                  disabled={isPending}
+                  className="text-xs text-gray-400 hover:text-gray-700"
+                >
+                  {emp.isActive ? 'Deactivate' : 'Reactivate'}
+                </button>
+                <button
+                  onClick={() => setRemoveTarget(emp)}
+                  disabled={isPending}
+                  className="text-xs text-gray-400 hover:text-red-600"
+                >
+                  Remove
+                </button>
+              </div>
             )}
           </div>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={!!removeTarget}
+        onClose={() => { setRemoveTarget(null); setRemoveError(null) }}
+        title="Remove employee"
+        message={`Remove ${removeTarget?.firstName} ${removeTarget?.lastName} from the team? They'll be signed out and sent to the join/create screen next time they log in. This can be undone from Settings → Recycle Bin.`}
+        confirmLabel="Remove"
+        isPending={isPending}
+        error={removeError}
+        onConfirm={handleRemove}
+      />
     </div>
   )
 }

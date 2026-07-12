@@ -5,10 +5,12 @@ import { restoreCustomer } from '@/services/customers/restoreCustomer'
 import { restoreOrder } from '@/services/orders/restoreOrder'
 import { restoreItemType } from '@/services/items/restoreItemType'
 import { restoreService } from '@/services/services/restoreService'
+import { restoreEmployee } from '@/services/employees/restoreEmployee'
 import type { DeletedCustomer } from '@/services/customers/getDeletedCustomers'
 import type { DeletedOrder } from '@/services/orders/getDeletedOrders'
 import type { DeletedItemType } from '@/services/items/getDeletedItemTypes'
 import type { DeletedService } from '@/services/services/getDeletedServices'
+import type { DeletedEmployee } from '@/services/employees/getDeletedEmployees'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { formatTimeAgo } from '@/utils/formatTimeAgo'
 
@@ -17,23 +19,28 @@ interface Props {
   orders: DeletedOrder[]
   itemTypes: DeletedItemType[]
   services: DeletedService[]
+  employees: DeletedEmployee[]
 }
 
-type Tab = 'customers' | 'orders' | 'itemTypes' | 'services'
+type Tab = 'customers' | 'orders' | 'itemTypes' | 'services' | 'employees'
 
 const TAB_LABELS: Record<Tab, string> = {
   customers: 'Customers',
   orders: 'Orders',
   itemTypes: 'Item Types',
   services: 'Services',
+  employees: 'Employees',
 }
 
-export function RecycleBinClient({ customers: initCustomers, orders: initOrders, itemTypes: initItemTypes, services: initServices }: Props) {
+export function RecycleBinClient({
+  customers: initCustomers, orders: initOrders, itemTypes: initItemTypes, services: initServices, employees: initEmployees,
+}: Props) {
   const [tab, setTab] = useState<Tab>('customers')
   const [customers, setCustomers] = useState(initCustomers)
   const [orders, setOrders] = useState(initOrders)
   const [itemTypes, setItemTypes] = useState(initItemTypes)
   const [services, setServices] = useState(initServices)
+  const [employees, setEmployees] = useState(initEmployees)
   const [isPending, startTransition] = useTransition()
   const [restoringId, setRestoringId] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -80,17 +87,29 @@ export function RecycleBinClient({ customers: initCustomers, orders: initOrders,
     })
   }
 
+  function handleRestoreEmployee(id: string) {
+    setErrors(prev => ({ ...prev, [id]: '' }))
+    setRestoringId(id)
+    startTransition(async () => {
+      const res = await restoreEmployee(id)
+      if (res.success) setEmployees(prev => prev.filter(e => e.id !== id))
+      else setErrors(prev => ({ ...prev, [id]: res.error }))
+      setRestoringId(null)
+    })
+  }
+
   const counts: Record<Tab, number> = {
     customers: customers.length,
     orders: orders.length,
     itemTypes: itemTypes.length,
     services: services.length,
+    employees: employees.length,
   }
 
   return (
     <div>
       <div className="flex border-b border-warm-200 mb-4">
-        {(['customers', 'orders', 'itemTypes', 'services'] as const).map(t => (
+        {(['customers', 'orders', 'itemTypes', 'services', 'employees'] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -201,6 +220,35 @@ export function RecycleBinClient({ customers: initCustomers, orders: initOrders,
                   </button>
                 </div>
                 {errors[s.id] && <p className="text-caption text-error-fg mt-1">{errors[s.id]}</p>}
+              </div>
+            ))
+          )
+        )}
+
+        {tab === 'employees' && (
+          employees.length === 0 ? (
+            <p className="text-ui text-warm-500 text-center py-8">Nothing here.</p>
+          ) : (
+            employees.map(e => (
+              <div key={e.id} className="px-5 py-3.5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-ui font-medium text-warm-950">
+                      {e.firstName || e.lastName ? `${e.firstName} ${e.lastName}` : '(no name set)'}
+                    </p>
+                    <p className="text-caption text-warm-500 capitalize">
+                      {e.role} · Removed {formatTimeAgo(e.deletedAt)}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleRestoreEmployee(e.id)}
+                    disabled={isPending && restoringId === e.id}
+                    className="text-caption text-brand hover:text-brand-hover underline underline-offset-2 disabled:opacity-50"
+                  >
+                    Restore
+                  </button>
+                </div>
+                {errors[e.id] && <p className="text-caption text-error-fg mt-1">{errors[e.id]}</p>}
               </div>
             ))
           )

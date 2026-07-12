@@ -5,6 +5,7 @@ import { getDeletedCustomers } from '@/services/customers/getDeletedCustomers'
 import { getDeletedOrders } from '@/services/orders/getDeletedOrders'
 import { getDeletedItemTypes } from '@/services/items/getDeletedItemTypes'
 import { getDeletedServices } from '@/services/services/getDeletedServices'
+import { getDeletedEmployees } from '@/services/employees/getDeletedEmployees'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { RecycleBinClient } from './RecycleBinClient'
 
@@ -25,11 +26,12 @@ export default async function RecycleBinPage() {
     )
   }
 
-  const [customers, orders, itemTypes, services] = await Promise.all([
+  const [customers, orders, itemTypes, services, employees] = await Promise.all([
     getDeletedCustomers(profile.laundryId),
     getDeletedOrders(profile.laundryId),
     getDeletedItemTypes(profile.laundryId),
     getDeletedServices(profile.laundryId),
+    getDeletedEmployees(profile.laundryId),
   ])
 
   return (
@@ -40,7 +42,7 @@ export default async function RecycleBinPage() {
         <h1 className="text-sm font-semibold text-gray-900">Recycle Bin</h1>
       </div>
 
-      <RecycleBinClient customers={customers} orders={orders} itemTypes={itemTypes} services={services} />
+      <RecycleBinClient customers={customers} orders={orders} itemTypes={itemTypes} services={services} employees={employees} />
     </div>
   )
 }
