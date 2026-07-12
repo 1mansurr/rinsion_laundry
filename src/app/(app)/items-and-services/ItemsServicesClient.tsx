@@ -3,9 +3,11 @@
 import { useEffect, useState, useTransition } from 'react'
 import { createItemType } from '@/services/items/createItemType'
 import { toggleItemType } from '@/services/items/toggleItemType'
+import { deleteItemType } from '@/services/items/deleteItemType'
 import type { ItemType } from '@/services/items/getItemTypes'
 import { createService } from '@/services/services/createService'
 import { toggleService } from '@/services/services/toggleService'
+import { deleteService } from '@/services/services/deleteService'
 import { setServicePricing } from '@/services/services/setServicePricing'
 import type { LaundryService } from '@/services/services/getServices'
 import { upsertPrice } from '@/services/pricing/upsertPrice'
@@ -16,6 +18,7 @@ import { formatPriceRange } from '@/utils/formatPriceRange'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { ImportPricingModal } from './ImportPricingModal'
 
 interface Props {
@@ -97,6 +100,9 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
   const [newServiceName, setNewServiceName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [importOpen, setImportOpen] = useState(false)
+  const [deleteItemTarget, setDeleteItemTarget] = useState<ItemType | null>(null)
+  const [deleteServiceTarget, setDeleteServiceTarget] = useState<LaundryService | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const [editingCell, setEditingCell] = useState<{ itemTypeId: string; serviceId: string } | null>(null)
   const [cellMin, setCellMin] = useState('')
   const [cellMax, setCellMax] = useState('')
@@ -145,6 +151,36 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
     startTransition(async () => {
       const res = await toggleService(id, !current)
       if (res.success) setServices(prev => prev.map(s => s.id === id ? { ...s, isActive: !current } : s))
+    })
+  }
+
+  function handleDeleteItem() {
+    if (!deleteItemTarget) return
+    setDeleteError(null)
+    const target = deleteItemTarget
+    startTransition(async () => {
+      const res = await deleteItemType(target.id)
+      if (res.success) {
+        setItems(prev => prev.filter(i => i.id !== target.id))
+        setDeleteItemTarget(null)
+      } else {
+        setDeleteError(res.error)
+      }
+    })
+  }
+
+  function handleDeleteService() {
+    if (!deleteServiceTarget) return
+    setDeleteError(null)
+    const target = deleteServiceTarget
+    startTransition(async () => {
+      const res = await deleteService(target.id)
+      if (res.success) {
+        setServices(prev => prev.filter(s => s.id !== target.id))
+        setDeleteServiceTarget(null)
+      } else {
+        setDeleteError(res.error)
+      }
     })
   }
 
@@ -324,13 +360,22 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                 <span className={`text-ui ${item.isActive ? 'text-warm-950' : 'text-warm-400 line-through'}`}>
                   {item.name}
                 </span>
-                <button
-                  onClick={() => handleToggleItem(item.id, item.isActive)}
-                  disabled={isPending}
-                  className="text-caption text-warm-400 hover:text-warm-700 transition-colors"
-                >
-                  {item.isActive ? 'Deactivate' : 'Activate'}
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => handleToggleItem(item.id, item.isActive)}
+                    disabled={isPending}
+                    className="text-caption text-warm-400 hover:text-warm-700 transition-colors"
+                  >
+                    {item.isActive ? 'Deactivate' : 'Activate'}
+                  </button>
+                  <button
+                    onClick={() => setDeleteItemTarget(item)}
+                    disabled={isPending}
+                    className="text-caption text-warm-400 hover:text-error-fg transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -373,6 +418,13 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                     className="text-caption text-warm-400 hover:text-warm-700 transition-colors"
                   >
                     {svc.isActive ? 'Deactivate' : 'Activate'}
+                  </button>
+                  <button
+                    onClick={() => setDeleteServiceTarget(svc)}
+                    disabled={isPending}
+                    className="text-caption text-warm-400 hover:text-error-fg transition-colors"
+                  >
+                    Delete
                   </button>
                 </div>
               </div>
@@ -768,6 +820,26 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
       <ImportPricingModal
         open={importOpen}
         onClose={() => setImportOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={!!deleteItemTarget}
+        onClose={() => { setDeleteItemTarget(null); setDeleteError(null) }}
+        title="Delete item type"
+        message={`Delete "${deleteItemTarget?.name}"? This can be undone from Settings → Recycle Bin.`}
+        isPending={isPending}
+        error={deleteError}
+        onConfirm={handleDeleteItem}
+      />
+
+      <ConfirmDialog
+        open={!!deleteServiceTarget}
+        onClose={() => { setDeleteServiceTarget(null); setDeleteError(null) }}
+        title="Delete service"
+        message={`Delete "${deleteServiceTarget?.name}"? This can be undone from Settings → Recycle Bin.`}
+        isPending={isPending}
+        error={deleteError}
+        onConfirm={handleDeleteService}
       />
     </div>
   )

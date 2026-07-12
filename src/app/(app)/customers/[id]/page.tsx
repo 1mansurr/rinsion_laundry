@@ -5,6 +5,7 @@ import { getCustomer } from '@/services/customers/getCustomer'
 import { StatusBadge } from '@/components/app/StatusBadge'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { formatDate } from '@/utils/formatDate'
+import { DeleteCustomerButton } from './DeleteCustomerButton'
 
 interface Props {
   params: { id: string }
@@ -58,6 +59,7 @@ export default async function CustomerDetailPage({ params }: Props) {
           >
             Edit
           </Link>
+          <DeleteCustomerButton customerId={data.id} customerName={`${data.first_name} ${data.last_name}`} />
         </div>
       </div>
 

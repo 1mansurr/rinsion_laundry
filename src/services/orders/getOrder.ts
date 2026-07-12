@@ -23,6 +23,7 @@ export async function getOrder(id: string) {
       sms_messages(id, trigger_event, status, phone, created_at)
     `)
     .eq('id', id)
+    .is('deleted_at', null)
     .single()
 
   return data

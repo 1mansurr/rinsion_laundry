@@ -4,6 +4,7 @@ import { useState, useTransition, Fragment } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { updateOrderStatus } from '@/services/orders/updateOrderStatus'
+import { deleteOrder } from '@/services/orders/deleteOrder'
 import { verifyAndCollect } from '@/services/orders/verifyAndCollect'
 import { recordPayment } from '@/services/payments/recordPayment'
 import { recordRefund } from '@/services/payments/recordRefund'
@@ -15,6 +16,7 @@ import { formatCurrency } from '@/utils/formatCurrency'
 import { formatTimeAgo } from '@/utils/formatTimeAgo'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Banner } from '@/components/ui/Banner'
 import { StatusBadge } from '@/components/app/StatusBadge'
 import { toast } from '@/components/ui/Toast'
@@ -120,6 +122,8 @@ export function OrderDetail({
   const [paymentOpen, setPaymentOpen] = useState(false)
   const [cancelOpen, setCancelOpen] = useState(false)
   const [refundOpen, setRefundOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const [showMoreMenu, setShowMoreMenu] = useState(false)
 
   // Collect form
@@ -259,6 +263,18 @@ export function OrderDetail({
         router.refresh()
       } else {
         toast.error(res.error)
+      }
+    })
+  }
+
+  function handleDelete() {
+    setDeleteError(null)
+    startTransition(async () => {
+      const res = await deleteOrder(orderId)
+      if (res.success) {
+        router.push('/orders')
+      } else {
+        setDeleteError(res.error)
       }
     })
   }
@@ -480,6 +496,17 @@ export function OrderDetail({
             <div className="flex flex-wrap items-center gap-2">
               <Button variant={isCancelled ? 'accent' : 'secondary'} onClick={openRefundModal} isPending={isPending}>
                 Record Refund
+              </Button>
+            </div>
+          )}
+
+          {/* Delete — only once the order is in a terminal state, matching the
+              service-layer restriction in deleteOrder.ts. Soft-delete, reversible
+              from Settings → Recycle Bin. */}
+          {!isActive && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="destructive" onClick={() => setDeleteOpen(true)} isPending={isPending}>
+                Delete Order
               </Button>
             </div>
           )}
@@ -970,6 +997,17 @@ export function OrderDetail({
           </div>
         </div>
       </Modal>
+
+      {/* Delete order confirm */}
+      <ConfirmDialog
+        open={deleteOpen}
+        onClose={() => { setDeleteOpen(false); setDeleteError(null) }}
+        title="Delete order"
+        message={`Delete ${orderNumber}? This can be undone from Settings → Recycle Bin.`}
+        isPending={isPending}
+        error={deleteError}
+        onConfirm={handleDelete}
+      />
 
       {/* Contents breakdown modal (per_kg lines only) — optional, never affects price */}
       {(() => {

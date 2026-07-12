@@ -110,6 +110,7 @@ const ACCORDION_ITEMS: { key: PanelKey; label: string; desc: string }[] = [
 const NAV_ITEMS = [
   { href: '/settings/subscription', label: 'Subscription', desc: 'Plan, billing, upgrades and payment history' },
   { href: '/settings/sms-usage',    label: 'SMS Usage',    desc: 'Cycle usage, message log and quota' },
+  { href: '/settings/recycle-bin',  label: 'Recycle Bin',  desc: 'Restore deleted customers, orders, items and services' },
 ]
 
 export default function SettingsPage() {
