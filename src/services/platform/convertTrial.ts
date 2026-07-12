@@ -34,6 +34,7 @@ export async function convertTrial(laundryId: string, plan: 'starter' | 'growth'
       cycle_start_date: today,
       cycle_end_date: cycleEnd,
       sms_quota: PLANS[plan].smsQuota,
+      employee_limit: PLANS[plan].employeeLimit,
     })
     .eq('id', sub.id)
   if (error) return { success: false, error: error.message }

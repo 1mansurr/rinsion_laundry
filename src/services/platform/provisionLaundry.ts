@@ -73,6 +73,7 @@ export async function provisionLaundry(input: ProvisionLaundryInput): Promise<Se
         p_prices: pricesPayload,
         p_platform_admin_id: platformAdminId,
         p_pricing_model: input.pricingModel,
+        p_employee_limit: PLANS.trial.employeeLimit,
       })
       .single()
 

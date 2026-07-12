@@ -41,6 +41,7 @@ export async function startTrial(): Promise<ServiceResult<null>> {
     cycle_start_date: today,
     cycle_end_date: trialEnd,
     sms_quota: PLANS.trial.smsQuota,
+    employee_limit: PLANS.trial.employeeLimit,
   })
   if (error) return { success: false, error: error.message }
 

@@ -10,6 +10,7 @@ export interface ActiveSubscription {
   cycleEndDate: string
   smsQuota: number
   daysLeft: number
+  employeeLimit: number
 }
 
 interface SubscriptionRow {
@@ -19,6 +20,7 @@ interface SubscriptionRow {
   cycle_start_date: string
   cycle_end_date: string
   sms_quota: number
+  employee_limit: number
 }
 
 // Cached for 60 s — subscription status rarely changes mid-session.
@@ -28,7 +30,7 @@ const fetchSubscriptionRow = unstable_cache(
     const supabase = createAdminClient()
     const { data } = await supabase
       .from('subscriptions')
-      .select('id, plan, status, cycle_start_date, cycle_end_date, sms_quota')
+      .select('id, plan, status, cycle_start_date, cycle_end_date, sms_quota,employee_limit')
       .eq('laundry_id', laundryId)
       .neq('status', 'cancelled')
       .order('created_at', { ascending: false })
@@ -57,5 +59,6 @@ export async function getActiveSubscription(laundryId: string): Promise<ActiveSu
     cycleEndDate: data.cycle_end_date,
     smsQuota: data.sms_quota,
     daysLeft,
+    employeeLimit: data.employee_limit,
   }
 }

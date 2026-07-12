@@ -51,6 +51,7 @@ export async function recordCycleRenewalPayment(
     cycle_start_date: cycleStart,
     cycle_end_date: cycleEnd,
     sms_quota: PLANS[input.plan].smsQuota,
+    employee_limit: PLANS[input.plan].employeeLimit,
     sms_warning_70_sent_at: null,
     updated_at: new Date().toISOString(),
   }).eq('id', input.subscriptionId)

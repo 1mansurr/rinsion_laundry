@@ -10,9 +10,9 @@ export const PLANS = {
   trial: {
     price: 0,
     dailyRate: 0,
-    employeeLimit: 9,   // trial gets Growth-tier access
+    employeeLimit: 4,
     branchLimit: 3,
-    smsQuota: 800,
+    smsQuota: 300,
     durationDays: 14,
   },
   starter: {

@@ -45,6 +45,7 @@ export async function recordUpgradePayment(
   const { error: subErr } = await supabase.from('subscriptions').update({
     plan: 'growth',
     sms_quota: PLANS.growth.smsQuota,
+    employee_limit: PLANS.growth.employeeLimit,
     updated_at: new Date().toISOString(),
   }).eq('id', input.subscriptionId)
   if (subErr) return { success: false, error: subErr.message }

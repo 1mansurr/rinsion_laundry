@@ -3,11 +3,14 @@
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { createInvite } from '@/services/employees/createInvite'
+import { getActiveSubscription } from '@/services/subscriptions/getActive'
+import { canAddEmployee } from '@/services/subscriptions/canAddEmployee'
 import { requireRole } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { getBaseUrl } from '@/utils/getBaseUrl'
 import { ROLES } from '@/constants/statuses'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
+import { PLANS } from '@/constants/plans'
 import type { EmployeeRole } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -21,6 +24,12 @@ export async function inviteEmployee(input: InviteEmployeeInput): Promise<Servic
   const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const caller = check.data
+
+  const subscription = await getActiveSubscription(caller.laundryId)
+  const limit = subscription?.employeeLimit ?? PLANS.starter.employeeLimit
+  if (!(await canAddEmployee(caller.laundryId, limit))) {
+    return { success: false, error: `Your ${subscription?.plan ?? 'current'} plan allows up to ${limit} employees. Upgrade to add more.` }
+  }
 
   const result = await createInvite(caller.laundryId, input.phone, input.role, caller.id)
   if (!result.success) return result

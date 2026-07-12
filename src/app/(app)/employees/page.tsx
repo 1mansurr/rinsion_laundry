@@ -7,7 +7,6 @@ import { getActiveSubscription } from '@/services/subscriptions/getActive'
 import { PLANS } from '@/constants/plans'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { EmployeesClient } from './EmployeesClient'
-import type { SubscriptionPlan } from '@/constants/subscriptionStatuses'
 
 export default async function EmployeesPage() {
   const profile = await getMyProfile()
@@ -29,8 +28,7 @@ export default async function EmployeesPage() {
     getPendingInvites(),
   ])
 
-  const plan = (subscription?.plan ?? 'starter') as SubscriptionPlan
-  const limit = PLANS[plan as keyof typeof PLANS]?.employeeLimit ?? PLANS.starter.employeeLimit
+  const limit = subscription?.employeeLimit ?? PLANS.starter.employeeLimit
   const activeCount = employees.filter(e => e.isActive).length
 
   return (
