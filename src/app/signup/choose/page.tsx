@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { requireSignupInProgress } from '@/services/laundries/getSignupStatus'
 import { Wordmark } from '@/components/ui/Wordmark'
+import { SignOutButton } from '@/components/ui/SignOutButton'
 
 export default async function ChoosePage() {
   await requireSignupInProgress()
@@ -13,6 +14,10 @@ export default async function ChoosePage() {
             <Wordmark size="md" />
           </div>
           <p className="text-body text-warm-600">How would you like to get started?</p>
+          <p className="text-caption text-warm-500 mt-2">
+            Wrong account?{' '}
+            <SignOutButton className="text-brand hover:text-brand-hover underline underline-offset-2" />
+          </p>
         </div>
         <div className="space-y-3">
           <Link

@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Wordmark } from '@/components/ui/Wordmark'
+import { SignOutButton } from '@/components/ui/SignOutButton'
 import { ImportPricingModal } from '../items-and-services/ImportPricingModal'
 
 const PRICING_MODEL_LABELS: Record<PricingModel, { label: string; description: string }> = {
@@ -210,8 +211,11 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
   return (
     <div className="min-h-screen bg-canvas flex flex-col">
       {/* Header */}
-      <header className="flex items-center justify-center py-6 border-b border-warm-200">
+      <header className="relative flex items-center justify-center py-6 border-b border-warm-200">
         <Wordmark size="md" />
+        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+          <SignOutButton className="text-caption text-warm-500 hover:text-warm-800 underline underline-offset-2" />
+        </div>
       </header>
 
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-10">

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createLaundrySelfServe } from '@/services/laundries/createLaundrySelfServe'
 import { Wordmark } from '@/components/ui/Wordmark'
+import { SignOutButton } from '@/components/ui/SignOutButton'
 
 export function AddLaundryForm() {
   const router = useRouter()
@@ -39,6 +40,10 @@ export function AddLaundryForm() {
             <Wordmark size="md" />
           </div>
           <p className="text-body text-warm-600">Tell us about your laundry</p>
+          <p className="text-caption text-warm-500 mt-2">
+            Wrong account?{' '}
+            <SignOutButton className="text-brand hover:text-brand-hover underline underline-offset-2" />
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">

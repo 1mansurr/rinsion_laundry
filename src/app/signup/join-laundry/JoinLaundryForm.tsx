@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect, useRef } from 'react'
 import { submitJoinRequest, getMyJoinRequestStatus, type MyJoinRequestStatus } from '@/services/laundries/joinLaundry'
 import { Wordmark } from '@/components/ui/Wordmark'
+import { SignOutButton } from '@/components/ui/SignOutButton'
 
 export function JoinLaundryForm() {
   const [pin, setPin] = useState('')
@@ -51,6 +52,10 @@ export function JoinLaundryForm() {
           <div className="flex justify-center mb-2">
             <Wordmark size="md" />
           </div>
+          <p className="text-caption text-warm-500">
+            Wrong account?{' '}
+            <SignOutButton className="text-brand hover:text-brand-hover underline underline-offset-2" />
+          </p>
           <div className="bg-white rounded-10 border border-warm-300 p-6 mt-6 space-y-3">
             {status.status === 'pending' && (
               <>
@@ -100,6 +105,10 @@ export function JoinLaundryForm() {
             <Wordmark size="md" />
           </div>
           <p className="text-body text-warm-600">Enter your laundry&apos;s join PIN</p>
+          <p className="text-caption text-warm-500 mt-2">
+            Wrong account?{' '}
+            <SignOutButton className="text-brand hover:text-brand-hover underline underline-offset-2" />
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
