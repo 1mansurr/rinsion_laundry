@@ -30,7 +30,7 @@ export default async function CustomersPage({ searchParams }: Props) {
   if (q) paginationParams.q = q
 
   return (
-    <div className="max-w-[1180px] mx-auto px-7 py-7">
+    <div className="max-w-[1180px] mx-auto px-4 py-4 md:px-7 md:py-7">
       {/* Page header */}
       <div className="flex items-end justify-between mb-1">
         <div>

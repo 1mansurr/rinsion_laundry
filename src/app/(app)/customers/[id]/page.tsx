@@ -27,7 +27,7 @@ export default async function CustomerDetailPage({ params }: Props) {
   const memberSince = formatDate(data.first_visit_date ?? data.created_at)
 
   return (
-    <div className="max-w-[1180px] mx-auto px-7 py-7">
+    <div className="max-w-[1180px] mx-auto px-4 py-4 md:px-7 md:py-7">
       {/* Back link */}
       <Link href="/customers" className="text-label text-warm-800 hover:text-warm-950 transition-colors">
         ← Customers
@@ -64,7 +64,7 @@ export default async function CustomerDetailPage({ params }: Props) {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
         <div className="bg-white border border-warm-300 rounded-10 px-5 py-[18px]">
           <p className="text-label text-warm-800 font-medium">Total orders</p>
           <p className="tnum text-[28px] font-bold text-warm-950 mt-1.5">{nonCancelledOrders.length}</p>

@@ -268,7 +268,7 @@ export function CreateOrderForm({
   }
 
   return (
-    <div className="relative pb-28">
+    <div className="relative">
       {error && (
         <div className="mb-4 bg-[#FDF1EF] border border-[#E0BBB6] rounded-7 px-4 py-3 text-ui text-error-fg">
           {error}
@@ -283,7 +283,7 @@ export function CreateOrderForm({
             <div className="flex items-center justify-between bg-white border border-warm-300 rounded-10 px-4 py-3">
               <div className="flex items-center gap-3">
                 <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-brand text-[#FAF8F5] text-[14px] font-semibold shrink-0">
-                  {selectedCustomer.firstName[0]}{selectedCustomer.lastName[0]}
+                  {selectedCustomer.firstName[0] ?? ''}{selectedCustomer.lastName[0] ?? ''}
                 </span>
                 <div>
                   <p className="text-ui font-medium text-warm-950">
@@ -338,7 +338,7 @@ export function CreateOrderForm({
                         }}
                       >
                         <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-warm-200 text-[12px] font-semibold text-warm-700 shrink-0">
-                          {c.firstName[0]}{c.lastName[0]}
+                          {c.firstName[0] ?? ''}{c.lastName[0] ?? ''}
                         </span>
                         <div>
                           <p className="text-ui font-medium text-warm-950">
@@ -515,6 +515,7 @@ export function CreateOrderForm({
                       <div className="flex items-center gap-1.5">
                         <input
                           type="number"
+                          inputMode="decimal"
                           step="0.1"
                           min="0.1"
                           value={line.quantity}
@@ -621,6 +622,7 @@ export function CreateOrderForm({
                         <div className="flex items-center gap-1.5">
                           <input
                             type="number"
+                            inputMode="decimal"
                             step="0.1"
                             min="0.1"
                             value={line.quantity}
@@ -751,36 +753,34 @@ export function CreateOrderForm({
         )}
       </section>
 
-      {/* Sticky summary footer */}
-      <div className="fixed bottom-0 left-0 right-0 z-10 px-4 pb-4 pointer-events-none">
-        <div className="max-w-[800px] mx-auto pointer-events-auto">
-          <div
-            className="bg-white border border-[#E8E4DD] rounded-10 px-[22px] py-[14px]"
-            style={{ boxShadow: '0 8px 28px rgba(15,61,46,0.10)' }}
-          >
-            <div className="flex items-center gap-4">
-              <div className="flex-1 min-w-0">
-                <span className="text-caption text-warm-600">
-                  {validLines.length} item{validLines.length !== 1 ? 's' : ''}
-                </span>
-                {pickupDate && (
-                  <span className="text-caption text-warm-600 ml-3">· Pickup {pickupDate}</span>
-                )}
-              </div>
-              <div className="flex items-center gap-4 shrink-0">
-                <span className="tnum text-[20px] font-semibold text-warm-950">
-                  {formatCurrency(total)}
-                </span>
-                <Button
-                  variant="primary"
-                  isPending={isPending}
-                  disabled={!canSubmit || isPending}
-                  onClick={handleSubmit}
-                >
-                  Create Order
-                </Button>
-              </div>
-            </div>
+      {/* Order summary — a normal section at the end of the form (not fixed
+          to the viewport), so it doesn't fight the on-screen keyboard on
+          mobile the way a position:fixed bar does. */}
+      <div
+        className="mt-6 bg-white border border-[#E8E4DD] rounded-10 px-[22px] py-[14px]"
+        style={{ boxShadow: '0 8px 28px rgba(15,61,46,0.10)' }}
+      >
+        <div className="flex items-center gap-4">
+          <div className="flex-1 min-w-0">
+            <span className="text-caption text-warm-600">
+              {validLines.length} item{validLines.length !== 1 ? 's' : ''}
+            </span>
+            {pickupDate && (
+              <span className="text-caption text-warm-600 ml-3">· Pickup {pickupDate}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-4 shrink-0">
+            <span className="tnum text-[20px] font-semibold text-warm-950">
+              {formatCurrency(total)}
+            </span>
+            <Button
+              variant="primary"
+              isPending={isPending}
+              disabled={!canSubmit || isPending}
+              onClick={handleSubmit}
+            >
+              Create Order
+            </Button>
           </div>
         </div>
       </div>

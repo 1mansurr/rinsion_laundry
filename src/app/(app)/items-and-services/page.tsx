@@ -14,7 +14,7 @@ export default async function ItemsAndServicesPage() {
 
   if (profile.role !== 'admin') {
     return (
-      <div className="max-w-[1180px] mx-auto px-7 py-7">
+      <div className="max-w-[1180px] mx-auto px-4 py-4 md:px-7 md:py-7">
         <div className="mb-[18px]">
           <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">Items &amp; Services</h1>
           <p className="text-ui text-warm-800 mt-1">The garment types and services your team picks from when creating orders.</p>
@@ -32,7 +32,7 @@ export default async function ItemsAndServicesPage() {
   ])
 
   return (
-    <div className="max-w-[1180px] mx-auto px-7 py-7">
+    <div className="max-w-[1180px] mx-auto px-4 py-4 md:px-7 md:py-7">
       <div className="mb-[18px] flex items-start justify-between gap-4">
         <div>
           <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">Items &amp; Services</h1>

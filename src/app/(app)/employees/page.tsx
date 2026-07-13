@@ -14,7 +14,7 @@ export default async function EmployeesPage() {
 
   if (profile.role !== 'admin') {
     return (
-      <div className="max-w-[1180px] mx-auto px-7 py-7">
+      <div className="max-w-[1180px] mx-auto px-4 py-4 md:px-7 md:py-7">
         <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight mb-[18px]">Team</h1>
         <RestrictedCard />
       </div>
@@ -32,7 +32,7 @@ export default async function EmployeesPage() {
   const activeCount = employees.filter(e => e.isActive).length
 
   return (
-    <div className="max-w-[1180px] mx-auto px-7 py-7">
+    <div className="max-w-[1180px] mx-auto px-4 py-4 md:px-7 md:py-7">
       <div className="flex items-end justify-between mb-[18px]">
         <div>
           <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">Team</h1>

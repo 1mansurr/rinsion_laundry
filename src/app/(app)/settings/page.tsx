@@ -141,7 +141,7 @@ export default function SettingsPage() {
 
   if (profile.role !== 'admin') {
     return (
-      <div className="max-w-[1180px] mx-auto px-7 py-7">
+      <div className="max-w-[1180px] mx-auto px-4 py-4 md:px-7 md:py-7">
         <div className="mb-[18px]">
           <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">Settings</h1>
           <p className="text-ui text-warm-800 mt-1">Manage your business, branches, messaging and plan.</p>
@@ -156,7 +156,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-[1180px] mx-auto px-7 py-7">
+    <div className="max-w-[1180px] mx-auto px-4 py-4 md:px-7 md:py-7">
       <div className="mb-[18px]">
         <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">Settings</h1>
         <p className="text-ui text-warm-800 mt-1">Manage your business, branches, messaging and plan.</p>

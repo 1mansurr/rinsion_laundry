@@ -29,7 +29,7 @@ export default async function ReportsPage() {
 
   if (profile.role !== 'admin') {
     return (
-      <div className="max-w-[1180px] mx-auto px-7 py-7">
+      <div className="max-w-[1180px] mx-auto px-4 py-4 md:px-7 md:py-7">
         <div className="mb-[18px]">
           <h1 className="text-[27px] font-semibold text-warm-950 tracking-[-0.02em] leading-tight">Reports</h1>
         </div>
@@ -60,7 +60,7 @@ export default async function ReportsPage() {
   })
 
   return (
-    <div className="max-w-[1180px] mx-auto px-7 py-7">
+    <div className="max-w-[1180px] mx-auto px-4 py-4 md:px-7 md:py-7">
       {/* Header */}
       <div className="flex items-end justify-between mb-[18px]">
         <div>

@@ -63,7 +63,7 @@ export default async function PaymentsPage({ searchParams }: Props) {
   if (method) paginationParams.method = method
 
   return (
-    <div className="max-w-[1180px] mx-auto px-7 py-7">
+    <div className="max-w-[1180px] mx-auto px-4 py-4 md:px-7 md:py-7">
       {/* Header */}
       <div className="flex items-end justify-between mb-1">
         <div>
@@ -75,7 +75,7 @@ export default async function PaymentsPage({ searchParams }: Props) {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-4 mt-[18px] mb-[18px]">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-[18px] mb-[18px]">
         <div className="bg-white border border-warm-300 rounded-10 px-5 py-[18px]">
           <p className="text-label text-warm-800 font-medium">Collected today</p>
           <p className="tnum text-[26px] font-bold text-warm-950 mt-1.5">{formatCurrency(summary.collectedToday)}</p>

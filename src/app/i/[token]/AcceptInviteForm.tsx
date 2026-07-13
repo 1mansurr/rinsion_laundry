@@ -3,6 +3,7 @@
 import { useFormState, useFormStatus } from 'react-dom'
 import { acceptInvite } from './actions'
 import { Wordmark } from '@/components/ui/Wordmark'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 
 const initialState = { error: null }
 
@@ -62,14 +63,12 @@ export function AcceptInviteForm({ token }: { token: string }) {
             <label htmlFor="password" className="block text-label font-medium text-warm-800 mb-1">
               Password
             </label>
-            <input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               autoComplete="new-password"
               required
               minLength={8}
-              className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
               placeholder="••••••••"
             />
           </div>
@@ -78,14 +77,12 @@ export function AcceptInviteForm({ token }: { token: string }) {
             <label htmlFor="confirmPassword" className="block text-label font-medium text-warm-800 mb-1">
               Confirm password
             </label>
-            <input
+            <PasswordInput
               id="confirmPassword"
               name="confirmPassword"
-              type="password"
               autoComplete="new-password"
               required
               minLength={8}
-              className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
               placeholder="••••••••"
             />
           </div>
