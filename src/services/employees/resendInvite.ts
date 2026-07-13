@@ -50,7 +50,7 @@ export async function resendInvite(inviteId: string): Promise<ServiceResult<null
     laundry_id: caller.laundryId,
     employee_id: caller.id,
     action_type: ACTIVITY_ACTION_TYPES.INVITE_RESENT,
-    description: `Invite resent to ${invite.phone}`,
+    description: 'Invite resent',
   })
 
   const laundryName = caller.laundryName

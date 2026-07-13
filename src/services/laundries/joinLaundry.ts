@@ -2,6 +2,7 @@
 
 import { createClient, createAdminClient } from '@/lib/supabase'
 import { getVerifiedUserId } from '@/lib/auth'
+import { encryptField } from '@/lib/crypto'
 import { JOIN_REQUEST_STATUS } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -46,14 +47,18 @@ export async function submitJoinRequest(pin: string): Promise<ServiceResult<null
   const lastName = (user.user_metadata?.last_name as string | undefined) ?? ''
   const phone = (user.user_metadata?.phone as string | undefined) ?? ''
 
+  // email/phone are encrypted at rest, matching customers.phone/employees.email
+  // (see src/lib/crypto/fieldEncryption.ts) — first_name/last_name stay
+  // plaintext, matching that same convention (names are never encrypted
+  // anywhere in this schema).
   const { error } = await supabase.from('join_requests').insert({
     laundry_id: laundry.id,
     laundry_name: laundry.name,
     auth_user_id: user.id,
     first_name: firstName,
     last_name: lastName,
-    email: user.email,
-    phone,
+    email: user.email ? encryptField(user.email) : null,
+    phone: encryptField(phone),
   })
   if (error) return { success: false, error: error.message }
 

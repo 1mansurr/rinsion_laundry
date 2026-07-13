@@ -3,8 +3,12 @@
  *
  * One-off backfill for application-level field encryption (see
  * src/lib/crypto/fieldEncryption.ts): encrypts existing plaintext
- * customers.phone and employees.email/phone, and populates
- * customers.phone_bidx for every row.
+ * customers.phone, employees.email/phone, join_requests.email/phone, and
+ * sms_messages.phone, and populates customers.phone_bidx for every row.
+ *
+ * join_requests/sms_messages were added later (see
+ * docs/deletion_retention_plan.md §6) — same idempotent, envelope-check
+ * pattern as the original customers/employees backfill.
  *
  * Safe to re-run: rows already in the `v1:` ciphertext envelope are skipped,
  * so a crash mid-run just needs the script re-invoked, no cleanup required.
@@ -98,6 +102,77 @@ async function backfillEmployees(): Promise<number> {
   return updated
 }
 
+async function backfillJoinRequests(): Promise<number> {
+  const supabase = createAdminClient()
+  let offset = 0
+  let updated = 0
+
+  while (true) {
+    const { data, error } = await supabase
+      .from('join_requests')
+      .select('id, email, phone')
+      .order('id', { ascending: true })
+      .range(offset, offset + BATCH_SIZE - 1)
+
+    if (error) throw new Error(`join_requests select failed: ${error.message}`)
+    if (!data || data.length === 0) break
+
+    for (const row of data) {
+      const emailNeedsEncrypt = !row.email.startsWith(ENVELOPE_PREFIX)
+      const phoneNeedsEncrypt = !row.phone.startsWith(ENVELOPE_PREFIX)
+      if (!emailNeedsEncrypt && !phoneNeedsEncrypt) continue // already migrated
+
+      const update: Record<string, string> = {}
+      if (emailNeedsEncrypt) update.email = encryptField(row.email)
+      if (phoneNeedsEncrypt) update.phone = encryptField(row.phone)
+
+      const { error: updErr } = await supabase.from('join_requests').update(update).eq('id', row.id)
+      if (updErr) throw new Error(`join_requests update failed for ${row.id}: ${updErr.message}`)
+      updated++
+    }
+
+    offset += data.length
+    console.log(`join_requests: scanned ${offset} rows so far (${updated} updated)`)
+    if (data.length < BATCH_SIZE) break
+  }
+
+  return updated
+}
+
+async function backfillSmsMessages(): Promise<number> {
+  const supabase = createAdminClient()
+  let offset = 0
+  let updated = 0
+
+  while (true) {
+    const { data, error } = await supabase
+      .from('sms_messages')
+      .select('id, phone')
+      .order('id', { ascending: true })
+      .range(offset, offset + BATCH_SIZE - 1)
+
+    if (error) throw new Error(`sms_messages select failed: ${error.message}`)
+    if (!data || data.length === 0) break
+
+    for (const row of data) {
+      if (row.phone.startsWith(ENVELOPE_PREFIX)) continue // already migrated
+
+      const { error: updErr } = await supabase
+        .from('sms_messages')
+        .update({ phone: encryptField(row.phone) })
+        .eq('id', row.id)
+      if (updErr) throw new Error(`sms_messages update failed for ${row.id}: ${updErr.message}`)
+      updated++
+    }
+
+    offset += data.length
+    console.log(`sms_messages: scanned ${offset} rows so far (${updated} updated)`)
+    if (data.length < BATCH_SIZE) break
+  }
+
+  return updated
+}
+
 async function main() {
   for (const key of ['FIELD_ENCRYPTION_KEY', 'BLIND_INDEX_KEY', 'SUPABASE_SERVICE_ROLE_KEY', 'NEXT_PUBLIC_SUPABASE_URL']) {
     if (!process.env[key]) throw new Error(`${key} is not set — load .env.local into the shell first`)
@@ -108,6 +183,10 @@ async function main() {
   console.log(`customers backfill complete: ${customersUpdated} rows updated`)
   const employeesUpdated = await backfillEmployees()
   console.log(`employees backfill complete: ${employeesUpdated} rows updated`)
+  const joinRequestsUpdated = await backfillJoinRequests()
+  console.log(`join_requests backfill complete: ${joinRequestsUpdated} rows updated`)
+  const smsMessagesUpdated = await backfillSmsMessages()
+  console.log(`sms_messages backfill complete: ${smsMessagesUpdated} rows updated`)
   console.log('Backfill complete.')
 }
 

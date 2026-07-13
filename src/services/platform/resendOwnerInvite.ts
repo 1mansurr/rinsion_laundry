@@ -38,7 +38,7 @@ export async function resendOwnerInvite(inviteId: string): Promise<ServiceResult
     laundry_id: invite.laundry_id,
     platform_admin_id: platformAdminId,
     action_type: ACTIVITY_ACTION_TYPES.INVITE_RESENT,
-    description: `Owner invite resent to ${invite.phone}`,
+    description: 'Owner invite resent',
   })
 
   const laundryName = laundry?.name ?? 'Rinsion'

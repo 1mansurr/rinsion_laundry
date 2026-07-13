@@ -1,7 +1,6 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
-import { encryptField } from '@/lib/crypto'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getSoleBranchId } from '@/services/branches/getSoleBranchId'
 import { requireRole } from '@/lib/auth'
@@ -51,16 +50,25 @@ export async function approveJoinRequest(
   const branchId = await getSoleBranchId(emp.laundry_id)
   if (!branchId) return { success: false, error: 'No branch found for this laundry.' }
 
-  const { error: empErr } = await supabase.from('employees').insert({
-    auth_user_id: request.auth_user_id,
-    laundry_id: emp.laundry_id,
-    branch_id: branchId,
-    role,
-    first_name: request.first_name,
-    last_name: request.last_name,
-    email: request.email ? encryptField(request.email) : null,
-    phone: encryptField(request.phone),
-  })
+  // join_requests.email/phone are already ciphertext (see joinLaundry.ts's
+  // submitJoinRequest) under the same FIELD_ENCRYPTION_KEY — copy the
+  // envelope straight through rather than decrypt-then-reencrypt. A valid
+  // `v1:iv:tag:ct` envelope is self-contained and decrypts correctly
+  // regardless of which row it lives in.
+  const { data: newEmployee, error: empErr } = await supabase
+    .from('employees')
+    .insert({
+      auth_user_id: request.auth_user_id,
+      laundry_id: emp.laundry_id,
+      branch_id: branchId,
+      role,
+      first_name: request.first_name,
+      last_name: request.last_name,
+      email: request.email,
+      phone: request.phone,
+    })
+    .select('id')
+    .single()
   if (empErr) return { success: false, error: empErr.message }
 
   const { error: reqErr } = await supabase
@@ -72,8 +80,9 @@ export async function approveJoinRequest(
   await supabase.from('activity_logs').insert({
     laundry_id: emp.laundry_id,
     employee_id: emp.id,
+    target_employee_id: newEmployee.id,
     action_type: 'EMPLOYEE_CREATED',
-    description: `${request.first_name} ${request.last_name} (${request.email}) joined via request`,
+    description: 'Employee joined via request',
   })
 
   revalidatePath('/employees')

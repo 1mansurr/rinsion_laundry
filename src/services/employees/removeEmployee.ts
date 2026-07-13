@@ -23,12 +23,12 @@ export async function removeEmployee(employeeId: string): Promise<ServiceResult<
   const caller = { id: check.data.id, laundry_id: check.data.laundryId }
   if (caller.id === employeeId) return { success: false, error: 'Use "Delete my account" to remove yourself.' }
 
-  const { data: target, error } = await supabase
+  const { error } = await supabase
     .from('employees')
     .update({ deleted_at: new Date().toISOString(), is_active: false })
     .eq('id', employeeId)
     .eq('laundry_id', caller.laundry_id)
-    .select('first_name, last_name')
+    .select('id')
     .single()
 
   if (error) return { success: false, error: error.message }
@@ -36,8 +36,9 @@ export async function removeEmployee(employeeId: string): Promise<ServiceResult<
   await supabase.from('activity_logs').insert({
     laundry_id: caller.laundry_id,
     employee_id: caller.id,
+    target_employee_id: employeeId,
     action_type: ACTIVITY_ACTION_TYPES.EMPLOYEE_REMOVED,
-    description: `${target.first_name} ${target.last_name} removed from the team`,
+    description: 'Employee removed from the team',
   })
 
   // Access revocation must take effect immediately, not after the

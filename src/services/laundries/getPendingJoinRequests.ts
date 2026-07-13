@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField } from '@/lib/crypto'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { ROLES, JOIN_REQUEST_STATUS } from '@/constants/statuses'
 
@@ -29,8 +30,8 @@ export async function getPendingJoinRequests(): Promise<PendingJoinRequest[]> {
     id: r.id,
     firstName: r.first_name,
     lastName: r.last_name,
-    email: r.email,
-    phone: r.phone,
+    email: decryptField(r.email) ?? r.email,
+    phone: decryptField(r.phone) ?? r.phone,
     createdAt: r.created_at,
   }))
 }

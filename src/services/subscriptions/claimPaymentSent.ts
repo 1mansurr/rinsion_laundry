@@ -62,8 +62,9 @@ export async function claimPaymentSent(formData: FormData): Promise<void> {
 
   await supabase.from('activity_logs').insert({
     laundry_id: profile.laundryId,
+    employee_id: profile.id,
     action_type: 'SUBSCRIPTION_PAYMENT_RECORDED',
-    description: `Payment claim submitted by ${profile.firstName} ${profile.lastName}. Plan: ${targetPlan}, Type: ${paymentType}, Ref: ${referenceCode}, Amount: GHS ${claimedAmount}`,
+    description: `Payment claim submitted. Plan: ${targetPlan}, Type: ${paymentType}, Ref: ${referenceCode}, Amount: GHS ${claimedAmount}`,
   })
 
   redirect('/settings/subscription?action=claimed')

@@ -1,7 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase'
-import { decryptField } from '@/lib/crypto'
+import { decryptField, encryptField } from '@/lib/crypto'
 import { smsProvider } from '@/lib/sms'
 import { ROLES } from '@/constants/statuses'
 
@@ -57,7 +57,7 @@ export async function sendRenewalReminderSms(
     laundry_id: laundryId,
     order_id: null,
     customer_id: null,
-    phone,
+    phone: encryptField(phone),
     message,
     trigger_event: triggerEvent,
     provider: 'mnotify',

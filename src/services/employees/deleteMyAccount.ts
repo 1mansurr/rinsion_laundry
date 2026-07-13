@@ -50,7 +50,7 @@ export async function deleteMyAccount(): Promise<ServiceResult<null>> {
     laundry_id: profile.laundryId,
     employee_id: profile.id,
     action_type: ACTIVITY_ACTION_TYPES.EMPLOYEE_SELF_DELETED,
-    description: `${profile.firstName} ${profile.lastName} deleted their own account`,
+    description: 'Employee deleted their own account',
   })
 
   revalidateTag('employee-profile')

@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase'
 import { smsProvider } from '@/lib/sms'
+import { encryptField } from '@/lib/crypto'
 import { computeSmsUsage } from './computeSmsUsage'
 import { countFailuresInLast24Hours } from './countFailuresInLast24Hours'
 import { SMS_WARNING_THRESHOLD, SMS_FAILURE_24H_THRESHOLD, SMS_OVERAGE_LIMIT } from '@/constants/plans'
@@ -56,7 +57,7 @@ export async function sendSms(input: SendSmsInput): Promise<{ success: boolean }
       laundry_id: input.laundryId,
       order_id: input.orderId,
       customer_id: input.customerId,
-      phone: input.phone,
+      phone: encryptField(input.phone),
       message: input.message,
       trigger_event: input.triggerEvent,
       provider: 'mnotify',
@@ -70,7 +71,7 @@ export async function sendSms(input: SendSmsInput): Promise<{ success: boolean }
       laundry_id: input.laundryId,
       order_id: input.orderId,
       action_type: ACTIVITY_ACTION_TYPES.SMS_QUOTA_EXCEEDED,
-      description: `SMS to ${input.phone} blocked — overage limit of ${SMS_OVERAGE_LIMIT} beyond quota reached`,
+      description: `SMS blocked — overage limit of ${SMS_OVERAGE_LIMIT} beyond quota reached`,
     })
 
     return { success: false }
@@ -89,7 +90,7 @@ export async function sendSms(input: SendSmsInput): Promise<{ success: boolean }
     laundry_id: input.laundryId,
     order_id: input.orderId,
     customer_id: input.customerId,
-    phone: input.phone,
+    phone: encryptField(input.phone),
     message: input.message,
     trigger_event: input.triggerEvent,
     provider: 'mnotify',
@@ -105,7 +106,7 @@ export async function sendSms(input: SendSmsInput): Promise<{ success: boolean }
     laundry_id: input.laundryId,
     order_id: input.orderId,
     action_type: result.success ? 'SMS_SENT' : 'SMS_FAILED',
-    description: `${input.triggerEvent} SMS ${result.success ? 'sent' : 'failed'} to ${input.phone}`,
+    description: `${input.triggerEvent} SMS ${result.success ? 'sent' : 'failed'}`,
   })
 
   return { success: result.success }
@@ -134,7 +135,7 @@ export async function sendSystemSms({
     laundry_id: laundryId,
     order_id: null,
     customer_id: null,
-    phone,
+    phone: encryptField(phone),
     message,
     trigger_event: triggerEvent,
     provider: 'mnotify',

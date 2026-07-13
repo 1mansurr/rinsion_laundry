@@ -86,6 +86,8 @@ export const ACTIVITY_ACTION_TYPES = {
   TRIAL_UPDATED:                    'TRIAL_UPDATED',
   LAUNDRY_SUSPENDED:                'LAUNDRY_SUSPENDED',
   LAUNDRY_REACTIVATED:              'LAUNDRY_REACTIVATED',
+  CUSTOMER_ANONYMIZED:              'CUSTOMER_ANONYMIZED',
+  EMPLOYEE_ANONYMIZED:              'EMPLOYEE_ANONYMIZED',
 } as const
 
 export type ActivityActionType = (typeof ACTIVITY_ACTION_TYPES)[keyof typeof ACTIVITY_ACTION_TYPES]

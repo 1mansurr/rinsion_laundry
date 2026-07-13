@@ -53,7 +53,7 @@ export async function deleteLaundryAccount(): Promise<ServiceResult<null>> {
     laundry_id: caller.laundryId,
     employee_id: caller.id,
     action_type: ACTIVITY_ACTION_TYPES.LAUNDRY_ACCOUNT_DELETED,
-    description: `Laundry account closed by ${caller.firstName} ${caller.lastName}`,
+    description: 'Laundry account closed',
   })
 
   revalidateTag('employee-profile')

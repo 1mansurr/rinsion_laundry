@@ -40,8 +40,8 @@ export async function inviteEmployee(input: InviteEmployeeInput): Promise<Servic
     employee_id: caller.id,
     action_type: ACTIVITY_ACTION_TYPES.EMPLOYEE_INVITED,
     description: result.data.linked
-      ? `Existing account (${input.phone}) linked as ${input.role}`
-      : `Invite sent to ${input.phone} as ${input.role}`,
+      ? `Existing account linked as ${input.role}`
+      : `Invite sent as ${input.role}`,
   })
 
   // Deferred SMS — fires after the invite/link write above has committed, never before.

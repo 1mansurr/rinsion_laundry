@@ -48,15 +48,19 @@ export async function acceptInvite(input: AcceptInviteInput): Promise<ServiceRes
   })
   if (authErr) return { success: false, error: authErr.message }
 
-  const { error: empErr } = await admin.from('employees').insert({
-    auth_user_id: authData.user.id,
-    laundry_id: invite.laundry_id,
-    branch_id: branchId,
-    role: invite.role,
-    first_name: firstName,
-    last_name: lastName,
-    phone: encryptField(invite.phone),
-  })
+  const { data: newEmployee, error: empErr } = await admin
+    .from('employees')
+    .insert({
+      auth_user_id: authData.user.id,
+      laundry_id: invite.laundry_id,
+      branch_id: branchId,
+      role: invite.role,
+      first_name: firstName,
+      last_name: lastName,
+      phone: encryptField(invite.phone),
+    })
+    .select('id')
+    .single()
   if (empErr) {
     await admin.auth.admin.deleteUser(authData.user.id)
     return { success: false, error: empErr.message }
@@ -69,8 +73,9 @@ export async function acceptInvite(input: AcceptInviteInput): Promise<ServiceRes
 
   await admin.from('activity_logs').insert({
     laundry_id: invite.laundry_id,
+    employee_id: newEmployee.id,
     action_type: ACTIVITY_ACTION_TYPES.EMPLOYEE_ACCEPTED,
-    description: `${firstName} ${lastName} accepted their invite`,
+    description: 'Employee accepted their invite',
   })
 
   // Auto-sign-in so the invitee lands straight in the dashboard — uses the
