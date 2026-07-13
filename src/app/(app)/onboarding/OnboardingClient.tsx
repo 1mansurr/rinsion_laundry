@@ -75,6 +75,9 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
   const [kgRatesMax, setKgRatesMax] = useState<Record<string, string>>({})
   const [priceEntryMode, setPriceEntryMode] = useState<'manual' | 'import'>('manual')
   const [importModalOpen, setImportModalOpen] = useState(false)
+  // Mobile: expanded item card in the per-item pricing grid — the 2D grid
+  // doesn't fit at phone widths, so mobile gets a per-item-type accordion instead.
+  const [expandedOnbItemId, setExpandedOnbItemId] = useState<string | null>(null)
 
   // Trial-start confirmation, shown once onboarding is done
   const [showTrialModal, setShowTrialModal] = useState(false)
@@ -260,16 +263,19 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
               </div>
 
               {/* SMS preview */}
-              <div className="bg-white border border-warm-300 rounded-10 p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-label font-medium text-warm-700">SMS preview</p>
-                  <span className={`tnum text-caption font-medium ${smsCharColor(smsLen)}`}>
-                    {smsLen}/160 · {smsLen <= 160 ? '1 SMS' : '2 SMS'}
-                  </span>
+              <div>
+                <p className="text-micro font-semibold text-warm-500 uppercase tracking-eyebrow mb-2.5">SMS preview</p>
+                <div className="bg-white border border-warm-300 rounded-[14px] p-3.5">
+                  <p className="bg-[#E7EEF4] text-[#1A2A33] rounded-[14px_14px_14px_4px] px-3.5 py-3 text-body leading-relaxed">
+                    {smsPreview}
+                  </p>
+                  <div className="flex items-center justify-between mt-2.5">
+                    <span className={`tnum text-caption font-medium ${smsCharColor(smsLen)}`}>
+                      {smsLen} / 160 chars · {smsLen <= 160 ? 'Fits comfortably' : 'Too long'}
+                    </span>
+                    <span className="text-caption text-warm-400">{smsLen <= 160 ? '1 SMS segment' : '2 SMS segments'}</span>
+                  </div>
                 </div>
-                <p className="text-body text-warm-800 bg-[#F4F0EA] rounded-7 px-4 py-3 leading-relaxed">
-                  {smsPreview}
-                </p>
                 <p className="text-caption text-warm-400 mt-2">
                   Sent to customers when their order is ready for collection.
                 </p>
@@ -291,21 +297,30 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                 <p className="text-body text-warm-600">Select the services you offer. You can add more later.</p>
               </div>
 
-              <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+              <div className="space-y-2.5">
                 {services.map(svc => {
                   const checked = selectedServices.includes(svc.id)
                   return (
                     <label
                       key={svc.id}
-                      className="flex items-center gap-3 px-5 py-3.5 border-b border-warm-100 last:border-0 cursor-pointer hover:bg-warm-50 transition-colors"
+                      className={`flex items-center gap-3 rounded-10 px-4 py-[15px] cursor-pointer transition-colors border ${
+                        checked ? 'border-[#9CC1B2] bg-brand-pale' : 'border-warm-300 bg-white hover:bg-warm-50'
+                      }`}
                     >
                       <input
                         type="checkbox"
                         checked={checked}
                         onChange={() => toggleServiceSelection(svc.id)}
-                        className="w-4 h-4 rounded border-warm-300 accent-brand"
+                        className="sr-only"
                       />
-                      <span className="text-ui text-warm-950">{svc.name}</span>
+                      <span className={`w-6 h-6 rounded-7 flex items-center justify-center shrink-0 ${checked ? 'bg-brand' : 'border border-warm-400 bg-white'}`}>
+                        {checked && (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="#FAF8F5" aria-hidden>
+                            <path d="M9 16.17 5.53 12.7a1 1 0 0 0-1.42 1.42l4.18 4.17a1 1 0 0 0 1.42 0L20.3 7.88a1 1 0 1 0-1.42-1.42L9 16.17Z" />
+                          </svg>
+                        )}
+                      </span>
+                      <span className="text-ui font-medium text-warm-950">{svc.name}</span>
                     </label>
                   )
                 })}
@@ -345,12 +360,19 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                     key={m}
                     type="button"
                     onClick={() => setPricingModel(m)}
-                    className={`w-full text-left px-4 py-3 rounded-10 border transition-colors ${
+                    className={`w-full flex items-center gap-3 text-left px-4 py-3.5 rounded-10 border transition-colors ${
                       pricingModel === m ? 'border-brand bg-brand-pale' : 'border-warm-300 hover:bg-warm-50'
                     }`}
                   >
-                    <p className="text-ui font-medium text-warm-950">{PRICING_MODEL_LABELS[m].label}</p>
-                    <p className="text-caption text-warm-600 mt-0.5">{PRICING_MODEL_LABELS[m].description}</p>
+                    <span className={`w-[19px] h-[19px] rounded-full border-2 flex items-center justify-center shrink-0 ${
+                      pricingModel === m ? 'border-brand' : 'border-warm-400'
+                    }`}>
+                      {pricingModel === m && <span className="w-[9px] h-[9px] rounded-full bg-brand" />}
+                    </span>
+                    <span>
+                      <p className="text-ui font-medium text-warm-950">{PRICING_MODEL_LABELS[m].label}</p>
+                      <p className="text-caption text-warm-600 mt-0.5">{PRICING_MODEL_LABELS[m].description}</p>
+                    </span>
                   </button>
                 ))}
               </div>
@@ -440,51 +462,112 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                   ))}
                 </div>
               ) : createdItemIds.length > 0 ? (
-                <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
-                  {/* Header */}
-                  <div
-                    className="grid bg-[#F4F0EA] px-5 py-2.5 border-b border-warm-200"
-                    style={{ gridTemplateColumns: `1fr ${createdServiceIds.map(() => '170px').join(' ')}` }}
-                  >
-                    <span className="text-caption font-medium text-warm-500">Item</span>
-                    {createdServiceIds.map(svc => (
-                      <span key={svc.id} className="text-caption font-medium text-warm-500 text-right">{svc.name}</span>
-                    ))}
-                  </div>
-                  {createdItemIds.map(item => (
+                <>
+                  {/* Desktop: full item × service grid */}
+                  <div className="hidden md:block bg-white border border-warm-300 rounded-10 overflow-hidden">
                     <div
-                      key={item.id}
-                      className="grid px-5 py-3 border-b border-warm-100 last:border-0 items-center"
+                      className="grid bg-[#F4F0EA] px-5 py-2.5 border-b border-warm-200"
                       style={{ gridTemplateColumns: `1fr ${createdServiceIds.map(() => '170px').join(' ')}` }}
                     >
-                      <span className="text-ui text-warm-950">{item.name}</span>
+                      <span className="text-caption font-medium text-warm-500">Item</span>
                       {createdServiceIds.map(svc => (
-                        <div key={svc.id} className="flex items-center gap-1 justify-end">
-                          <span className="text-caption text-warm-500">GHS</span>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={pricingGridMin[item.id]?.[svc.id] ?? ''}
-                            onChange={e => setPriceCellMin(item.id, svc.id, e.target.value)}
-                            placeholder="Min"
-                            className="w-14 border border-warm-300 rounded-7 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
-                          />
-                          <span className="text-warm-400">–</span>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={pricingGridMax[item.id]?.[svc.id] ?? ''}
-                            onChange={e => setPriceCellMax(item.id, svc.id, e.target.value)}
-                            placeholder="Max"
-                            className="w-14 border border-warm-300 rounded-7 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
-                          />
-                        </div>
+                        <span key={svc.id} className="text-caption font-medium text-warm-500 text-right">{svc.name}</span>
                       ))}
                     </div>
-                  ))}
-                </div>
+                    {createdItemIds.map(item => (
+                      <div
+                        key={item.id}
+                        className="grid px-5 py-3 border-b border-warm-100 last:border-0 items-center"
+                        style={{ gridTemplateColumns: `1fr ${createdServiceIds.map(() => '170px').join(' ')}` }}
+                      >
+                        <span className="text-ui text-warm-950">{item.name}</span>
+                        {createdServiceIds.map(svc => (
+                          <div key={svc.id} className="flex items-center gap-1 justify-end">
+                            <span className="text-caption text-warm-500">GHS</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={pricingGridMin[item.id]?.[svc.id] ?? ''}
+                              onChange={e => setPriceCellMin(item.id, svc.id, e.target.value)}
+                              placeholder="Min"
+                              className="w-14 border border-warm-300 rounded-7 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                            />
+                            <span className="text-warm-400">–</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={pricingGridMax[item.id]?.[svc.id] ?? ''}
+                              onChange={e => setPriceCellMax(item.id, svc.id, e.target.value)}
+                              placeholder="Max"
+                              className="w-14 border border-warm-300 rounded-7 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Mobile: per-item-type accordion — the 2D grid doesn't fit at phone widths */}
+                  <div className="md:hidden space-y-2">
+                    {createdItemIds.map(item => {
+                      const isOpen = expandedOnbItemId === item.id
+                      const pricedCount = createdServiceIds.filter(svc => {
+                        const min = pricingGridMin[item.id]?.[svc.id]
+                        return !!min && parseFloat(min) > 0
+                      }).length
+                      return (
+                        <div key={item.id} className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedOnbItemId(isOpen ? null : item.id)}
+                            className="w-full flex items-center justify-between px-4 py-3"
+                          >
+                            <div className="text-left">
+                              <span className="text-ui font-medium text-warm-950 block">{item.name}</span>
+                              <span className="text-caption text-warm-500">{pricedCount} of {createdServiceIds.length} priced</span>
+                            </div>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={`text-warm-400 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
+                              <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                          {isOpen && (
+                            <div className="border-t border-warm-100 divide-y divide-warm-100">
+                              {createdServiceIds.map(svc => (
+                                <div key={svc.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                                  <span className="text-ui text-warm-700">{svc.name}</span>
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <span className="text-caption text-warm-500">GHS</span>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      step="0.01"
+                                      value={pricingGridMin[item.id]?.[svc.id] ?? ''}
+                                      onChange={e => setPriceCellMin(item.id, svc.id, e.target.value)}
+                                      placeholder="Min"
+                                      className="w-14 border border-warm-300 rounded-7 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                                    />
+                                    <span className="text-warm-400">–</span>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      step="0.01"
+                                      value={pricingGridMax[item.id]?.[svc.id] ?? ''}
+                                      onChange={e => setPriceCellMax(item.id, svc.id, e.target.value)}
+                                      placeholder="Max"
+                                      className="w-14 border border-warm-300 rounded-7 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </>
               ) : (
                 <div className="bg-white border border-warm-300 rounded-10 p-5 text-center">
                   <p className="text-body text-warm-500">

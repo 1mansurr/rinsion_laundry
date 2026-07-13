@@ -19,12 +19,12 @@ const STATUS_LABELS: Record<string, string> = {
   cancelled: 'Cancelled',
 }
 const STATUS_COLORS: Record<string, string> = {
-  trialing: 'text-blue-700 bg-blue-50',
-  active: 'text-green-700 bg-green-50',
-  soft_block: 'text-amber-700 bg-amber-50',
-  hard_block: 'text-orange-700 bg-orange-50',
-  locked: 'text-red-700 bg-red-50',
-  cancelled: 'text-gray-500 bg-gray-100',
+  trialing: 'text-info-fg bg-info-bg',
+  active: 'text-success-fg bg-success-bg',
+  soft_block: 'text-warning-fg bg-warning-bg',
+  hard_block: 'text-warning-fg bg-warning-bg',
+  locked: 'text-error-fg bg-error-bg',
+  cancelled: 'text-warm-600 bg-warm-150',
 }
 
 interface Props {
@@ -37,11 +37,11 @@ export default async function SubscriptionPage({ searchParams }: Props) {
 
   if (profile.role !== 'admin') {
     return (
-      <div className="p-6 max-w-2xl mx-auto">
-        <div className="flex items-center gap-2 mb-6">
-          <Link href="/settings" className="text-sm text-gray-400 hover:text-gray-700">Settings</Link>
-          <span className="text-gray-300">/</span>
-          <h1 className="text-sm font-semibold text-gray-900">Subscription</h1>
+      <div className="max-w-2xl mx-auto px-4 py-4 md:p-6">
+        <div className="flex items-center gap-1.5 mb-6 text-caption">
+          <Link href="/settings" className="text-warm-600 font-semibold hover:text-warm-900">Settings</Link>
+          <span className="text-warm-400">/</span>
+          <span className="text-warm-950 font-bold">Subscription</span>
         </div>
         <RestrictedCard />
       </div>
@@ -59,66 +59,65 @@ export default async function SubscriptionPage({ searchParams }: Props) {
   const cycleDays = subscription?.plan === 'trial' ? 14 : 30
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto px-4 py-4 md:p-6">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 mb-6">
-        <Link href="/settings" className="text-sm text-gray-400 hover:text-gray-700">Settings</Link>
-        <span className="text-gray-300">/</span>
-        <h1 className="text-sm font-semibold text-gray-900">Subscription</h1>
+      <div className="flex items-center gap-1.5 mb-5 md:mb-6 text-caption">
+        <Link href="/settings" className="text-warm-600 font-semibold hover:text-warm-900">Settings</Link>
+        <span className="text-warm-400">/</span>
+        <span className="text-warm-950 font-bold">Subscription</span>
       </div>
 
       {/* ── Plan status card ── */}
       {subscription && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-base font-bold text-gray-900">
-                  {PLAN_LABELS[subscription.plan]}
-                </span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[subscription.status] ?? 'text-gray-500 bg-gray-100'}`}>
-                  {STATUS_LABELS[subscription.status] ?? subscription.status}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500">
-                Cycle: {subscription.cycleStartDate} → {subscription.cycleEndDate}
-              </p>
-              <p className="text-xs text-gray-500 mt-0.5">
-                {subscription.daysLeft > 0
-                  ? `${subscription.daysLeft} day${subscription.daysLeft !== 1 ? 's' : ''} remaining`
-                  : 'Cycle ended'}
-              </p>
-            </div>
-            <div className="text-right text-xs text-gray-400">
-              <p>{subscription.smsQuota} SMS / cycle</p>
-            </div>
+        <div className="bg-white rounded-10 border border-warm-300 p-5 mb-3.5">
+          <div className="flex items-center justify-between mb-3.5">
+            <span className="text-[18px] font-bold text-warm-950">{PLAN_LABELS[subscription.plan]}</span>
+            <span className={`text-micro font-bold px-2.5 py-1 rounded-full tracking-[0.04em] uppercase ${STATUS_COLORS[subscription.status] ?? 'text-warm-600 bg-warm-150'}`}>
+              {STATUS_LABELS[subscription.status] ?? subscription.status}
+            </span>
           </div>
-          <div className="mt-3 bg-gray-100 rounded-full h-1.5">
+          <p className="tnum text-caption text-warm-600 mb-3">
+            Cycle: {subscription.cycleStartDate} → {subscription.cycleEndDate}
+          </p>
+          <div className="h-1.5 bg-warm-200 rounded-full overflow-hidden mb-1.5">
             <div
-              className={`h-1.5 rounded-full ${subscription.daysLeft <= 3 ? 'bg-amber-400' : 'bg-gray-900'}`}
+              className={`h-full rounded-full ${subscription.daysLeft <= 3 ? 'bg-warning' : 'bg-brand'}`}
               style={{ width: `${Math.min(100, (subscription.daysLeft / cycleDays) * 100)}%` }}
             />
+          </div>
+          <p className="tnum text-caption text-warm-500">
+            {subscription.daysLeft > 0
+              ? `${subscription.daysLeft} day${subscription.daysLeft !== 1 ? 's' : ''} remaining`
+              : 'Cycle ended'}
+          </p>
+          <div className="h-px bg-warm-100 my-4" />
+          <div className="flex items-center justify-between text-ui-sm">
+            <span className="text-warm-600">SMS quota</span>
+            <span className="tnum font-semibold text-warm-950">{subscription.smsQuota} / cycle</span>
           </div>
         </div>
       )}
 
       {/* ── No subscription ── */}
       {!subscription && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-5 mb-4 text-sm text-yellow-800 space-y-3">
-          <p>No active subscription yet. Start your 14-day free trial to unlock orders, payments, and SMS.</p>
+        <div className="bg-white border border-warm-300 rounded-10 p-6 mb-4 text-center">
+          <p className="text-ui font-semibold text-warm-950 mb-1.5">No subscription yet</p>
+          <p className="text-caption text-warm-600 mb-4">Start a free trial to unlock orders, customers, and SMS notifications.</p>
           <StartTrialButton />
         </div>
       )}
 
       {/* ── Claimed confirmation ── */}
       {action === 'claimed' && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-5 mb-4">
-          <p className="text-sm font-semibold text-green-800 mb-1">Payment claim submitted</p>
-          <p className="text-xs text-green-700">
-            Rinsion will verify and activate your subscription within 24 hours.
-            You will receive an SMS once your account is activated.
+        <div className="bg-white border border-warm-300 rounded-10 p-6 mb-4 text-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#2E7D5B" className="mx-auto mb-3.5" aria-hidden>
+            <path d="M9 16.17 5.53 12.7a1 1 0 0 0-1.42 1.42l4.18 4.17a1 1 0 0 0 1.42 0L20.3 7.88a1 1 0 1 0-1.42-1.42L9 16.17Z" />
+          </svg>
+          <p className="text-ui font-semibold text-warm-950 mb-1.5">Payment claim submitted</p>
+          <p className="text-caption text-warm-600">
+            Rinsion will verify and activate your subscription within 24 hours. You&apos;ll receive an SMS once your account is activated.
           </p>
-          <Link href="/dashboard" className="inline-block mt-3 text-xs text-green-700 underline">
+          <Link href="/dashboard" className="inline-block mt-3 text-caption font-semibold text-brand hover:text-brand-hover">
             Back to dashboard →
           </Link>
         </div>
@@ -126,23 +125,33 @@ export default async function SubscriptionPage({ searchParams }: Props) {
 
       {/* ── Existing pending claim (unresolved) ── */}
       {existingClaim && action !== 'claimed' && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-4">
-          <p className="text-sm font-semibold text-amber-800 mb-1">Payment pending verification</p>
-          <p className="text-xs text-amber-700">
-            Your payment claim (ref: <span className="font-mono">{existingClaim.reference_code}</span>, GHS {Number(existingClaim.claimed_amount).toFixed(0)}) is being verified by Rinsion.
+        <div className="bg-white border border-warm-300 rounded-10 p-5 mb-4">
+          <p className="text-ui font-semibold text-warm-950 mb-1.5">Payment pending review</p>
+          <p className="text-caption text-warm-600 leading-relaxed">
+            We&apos;re confirming your Mobile Money transfer — this usually takes under an hour.
           </p>
-          <p className="text-xs text-amber-600 mt-1">Submitted {formatDate(existingClaim.claimed_at)}</p>
+          <div className="bg-[#FAF8F5] rounded-9 px-4 py-3 mt-3 space-y-2">
+            <div className="flex justify-between text-ui-sm">
+              <span className="text-warm-600">Reference</span>
+              <span className="tnum font-semibold text-warm-950">{existingClaim.reference_code}</span>
+            </div>
+            <div className="flex justify-between text-ui-sm">
+              <span className="text-warm-600">Amount</span>
+              <span className="tnum font-semibold text-warm-950">GHS {Number(existingClaim.claimed_amount).toFixed(0)}</span>
+            </div>
+          </div>
+          <p className="text-caption text-warm-400 mt-2">Submitted {formatDate(existingClaim.claimed_at)}</p>
         </div>
       )}
 
       {/* ── Payment instructions ── */}
       {subscription && paymentType && targetPlan && !existingClaim && action !== 'claimed' && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
-          <div className="flex items-center gap-2 mb-4">
-            <Link href="/settings/subscription" className="text-xs text-gray-400 hover:text-gray-700">← Back</Link>
-          </div>
+        <div className="bg-white border border-warm-300 rounded-10 p-5 mb-4">
+          <Link href="/settings/subscription" className="inline-block mb-3 text-caption font-semibold text-warm-600 hover:text-warm-900">
+            ← Back
+          </Link>
 
-          <p className="text-sm font-semibold text-gray-900 mb-3">
+          <p className="text-ui font-semibold text-warm-950 mb-3">
             {paymentType === 'upgrade_prorate'
               ? `Upgrade to Growth — GHS ${paymentAmount}`
               : paymentType === 'trial_conversion'
@@ -150,28 +159,28 @@ export default async function SubscriptionPage({ searchParams }: Props) {
               : `Renew ${PLAN_LABELS[targetPlan]} — GHS ${paymentAmount}`}
           </p>
 
-          <div className="bg-gray-50 rounded-lg p-4 mb-4 space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-500">Send to</span>
-              <span className="font-mono font-semibold text-gray-900">{momoNumber}</span>
+          <div className="bg-[#FAF8F5] rounded-9 px-4 py-3.5 mb-4 space-y-2">
+            <div className="flex justify-between text-ui-sm">
+              <span className="text-warm-600">MoMo number</span>
+              <span className="tnum font-bold text-warm-950">{momoNumber}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Amount</span>
-              <span className="font-semibold text-gray-900">GHS {paymentAmount}</span>
+            <div className="flex justify-between text-ui-sm">
+              <span className="text-warm-600">Amount</span>
+              <span className="tnum font-bold text-warm-950">GHS {paymentAmount}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Reference</span>
-              <span className="font-mono text-gray-900">{referenceCode}</span>
+            <div className="flex justify-between text-ui-sm">
+              <span className="text-warm-600">Reference</span>
+              <span className="tnum font-bold text-warm-950">{referenceCode}</span>
             </div>
             {paymentType !== 'upgrade_prorate' && (
-              <div className="flex justify-between">
-                <span className="text-gray-500">New cycle</span>
-                <span className="text-gray-900">{newCycleStart} → {newCycleEnd}</span>
+              <div className="flex justify-between text-ui-sm">
+                <span className="text-warm-600">New cycle</span>
+                <span className="tnum text-warm-950">{newCycleStart} → {newCycleEnd}</span>
               </div>
             )}
           </div>
 
-          <p className="text-xs text-gray-500 mb-3">
+          <p className="text-caption text-warm-500 mb-3.5">
             Include the reference in your MoMo payment note. After sending, tap the button below.
           </p>
 
@@ -181,7 +190,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
             <input type="hidden" name="target_plan" value={targetPlan} />
             <button
               type="submit"
-              className="w-full bg-gray-900 text-white text-sm py-2.5 rounded-lg hover:bg-gray-800 transition-colors"
+              className="w-full min-h-[48px] bg-brand text-[#FAF8F5] text-ui font-semibold py-3.5 rounded-10 hover:bg-brand-hover transition-colors"
             >
               I have sent GHS {paymentAmount} →
             </button>
@@ -191,107 +200,87 @@ export default async function SubscriptionPage({ searchParams }: Props) {
 
       {/* ── Action buttons (default state) ── */}
       {subscription && !paymentType && action !== 'claimed' && !existingClaim && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
-          <p className="text-sm font-semibold text-gray-900 mb-3">Renew or upgrade</p>
-          <div className="space-y-2">
-            {/* Renew button — shown for active/soft_block/hard_block on paid plans */}
-            {subscription.plan !== 'trial' && (
+        <div className="flex flex-col gap-2.5 mb-4">
+          {/* Renew button — shown for active/soft_block/hard_block on paid plans */}
+          {subscription.plan !== 'trial' && (
+            <Link
+              href="/settings/subscription?action=renew"
+              className="w-full min-h-[48px] flex items-center justify-center text-center border border-warm-400 text-warm-950 bg-white text-ui font-semibold py-3.5 rounded-10 hover:bg-warm-100 transition-colors"
+            >
+              Renew {PLAN_LABELS[subscription.plan]} — GHS {PLANS[subscription.plan as 'starter' | 'growth']?.price}
+            </Link>
+          )}
+          {/* Upgrade button — only for active Starter */}
+          {subscription.plan === 'starter' && subscription.status === 'active' && (
+            <Link
+              href="/settings/subscription?action=upgrade"
+              className="w-full min-h-[48px] flex items-center justify-center text-center bg-brand text-[#FAF8F5] text-ui font-semibold py-3.5 rounded-10 hover:bg-brand-hover transition-colors"
+            >
+              Upgrade to Growth — GHS {computeProrateAmount(subscription.daysLeft)} prorate
+            </Link>
+          )}
+          {/* Trial conversion options */}
+          {subscription.plan === 'trial' && (
+            <>
               <Link
-                href="/settings/subscription?action=renew"
-                className="block w-full text-center border border-gray-300 text-gray-700 text-sm py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                href="/settings/subscription?action=convert&plan=starter"
+                className="w-full min-h-[48px] flex items-center justify-center text-center border border-warm-400 text-warm-950 bg-white text-ui font-semibold py-3.5 rounded-10 hover:bg-warm-100 transition-colors"
               >
-                Renew {PLAN_LABELS[subscription.plan]} — GHS {PLANS[subscription.plan as 'starter' | 'growth']?.price}
+                Start Starter — GHS 90 / month
               </Link>
-            )}
-            {/* Upgrade button — only for active Starter */}
-            {subscription.plan === 'starter' && subscription.status === 'active' && (
               <Link
-                href="/settings/subscription?action=upgrade"
-                className="block w-full text-center bg-gray-900 text-white text-sm py-2 rounded-lg hover:bg-gray-800 transition-colors"
+                href="/settings/subscription?action=convert&plan=growth"
+                className="w-full min-h-[48px] flex items-center justify-center text-center bg-brand text-[#FAF8F5] text-ui font-semibold py-3.5 rounded-10 hover:bg-brand-hover transition-colors"
               >
-                Upgrade to Growth — GHS {computeProrateAmount(subscription.daysLeft)} prorate
+                Start Growth — GHS 180 / month
               </Link>
-            )}
-            {/* Trial conversion options */}
-            {subscription.plan === 'trial' && (
-              <>
-                <Link
-                  href="/settings/subscription?action=convert&plan=starter"
-                  className="block w-full text-center border border-gray-300 text-gray-700 text-sm py-2 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Start Starter — GHS 90 / month
-                </Link>
-                <Link
-                  href="/settings/subscription?action=convert&plan=growth"
-                  className="block w-full text-center bg-gray-900 text-white text-sm py-2 rounded-lg hover:bg-gray-800 transition-colors"
-                >
-                  Start Growth — GHS 180 / month
-                </Link>
-              </>
-            )}
-          </div>
+            </>
+          )}
         </div>
       )}
 
       {/* ── Locked state ── */}
       {subscription?.status === 'locked' && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-5 mb-4 text-sm text-red-800">
-          Your account is locked. Contact Rinsion directly to restore access.
+        <div className="bg-error-bg border border-error-border rounded-10 p-5 mb-4 text-ui text-error-fg">
+          Your subscription is locked. Contact Rinsion directly to restore access.
         </div>
       )}
 
-      {/* ── Plan comparison ── */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
-        <div className="px-5 py-3.5 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-900">Plan comparison</h2>
+      {/* ── Plan comparison — flex rows, not a table, so it holds up at phone widths ── */}
+      <div className="bg-white border border-warm-300 rounded-10 overflow-hidden mb-4">
+        <div className="flex px-5 py-3 border-b border-warm-200 text-micro font-semibold text-warm-500 uppercase tracking-eyebrow">
+          <span className="flex-1">Feature</span>
+          <span className="w-20 text-right">Starter</span>
+          <span className="w-20 text-right">Growth</span>
         </div>
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-gray-100">
-              <th className="text-left px-5 py-2.5 text-gray-500 font-medium"></th>
-              <th className="px-4 py-2.5 text-center font-semibold text-gray-900">Starter</th>
-              <th className="px-4 py-2.5 text-center font-semibold text-gray-900">Growth</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            <tr>
-              <td className="px-5 py-2.5 text-gray-500">Price</td>
-              <td className="px-4 py-2.5 text-center text-gray-900">GHS 90 / mo</td>
-              <td className="px-4 py-2.5 text-center text-gray-900">GHS 180 / mo</td>
-            </tr>
-            <tr>
-              <td className="px-5 py-2.5 text-gray-500">Employees</td>
-              <td className="px-4 py-2.5 text-center text-gray-900">Up to 4</td>
-              <td className="px-4 py-2.5 text-center text-gray-900">Up to 9</td>
-            </tr>
-            <tr>
-              <td className="px-5 py-2.5 text-gray-500">Branches</td>
-              <td className="px-4 py-2.5 text-center text-gray-900">1</td>
-              <td className="px-4 py-2.5 text-center text-gray-900">Up to 3</td>
-            </tr>
-            <tr>
-              <td className="px-5 py-2.5 text-gray-500">SMS / cycle</td>
-              <td className="px-4 py-2.5 text-center text-gray-900">300</td>
-              <td className="px-4 py-2.5 text-center text-gray-900">800</td>
-            </tr>
-          </tbody>
-        </table>
+        {[
+          ['Price', 'GHS 90/mo', 'GHS 180/mo'],
+          ['Employees', 'Up to 4', 'Up to 9'],
+          ['Branches', '1', 'Up to 3'],
+          ['SMS / cycle', '300', '800'],
+        ].map(([feature, starter, growth]) => (
+          <div key={feature} className="flex items-center px-5 py-3 border-b border-warm-100 last:border-0 text-ui-sm">
+            <span className="flex-1 font-semibold text-warm-950">{feature}</span>
+            <span className="tnum w-20 text-right text-warm-700">{starter}</span>
+            <span className="tnum w-20 text-right text-warm-700">{growth}</span>
+          </div>
+        ))}
       </div>
 
       {/* ── Recent payments ── */}
       {recentPayments.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-gray-100">
-            <h2 className="text-sm font-semibold text-gray-900">Recent payments</h2>
+        <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-warm-200">
+            <h2 className="text-ui font-semibold text-warm-950">Recent payments</h2>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-warm-100">
             {recentPayments.map(p => (
               <div key={p.id} className="flex items-center justify-between px-5 py-3">
                 <div>
-                  <p className="text-sm text-gray-900">GHS {Number(p.amount).toFixed(0)}</p>
-                  <p className="text-xs text-gray-400 capitalize">{p.payment_type.replace('_', ' ')} · {p.plan_at_payment}</p>
+                  <p className="tnum text-ui-sm font-semibold text-warm-950">GHS {Number(p.amount).toFixed(0)}</p>
+                  <p className="text-caption text-warm-500 capitalize mt-0.5">{p.payment_type.replace('_', ' ')} · {p.plan_at_payment}</p>
                 </div>
-                <p className="text-xs text-gray-400">{p.paid_at.split('T')[0]}</p>
+                <p className="tnum text-caption text-warm-400">{p.paid_at.split('T')[0]}</p>
               </div>
             ))}
           </div>

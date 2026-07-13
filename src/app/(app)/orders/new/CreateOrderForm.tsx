@@ -308,6 +308,19 @@ export function CreateOrderForm({
                 onChange={e => { setCustomerSearch(e.target.value); setShowDropdown(true); setShowInlineCreate(false) }}
                 onFocus={() => { if (!showInlineCreate) setShowDropdown(true) }}
               />
+              {/* Mobile: always-visible affordance, matching the search dropdown's own "+ Add new customer" link */}
+              {!showDropdown && !showInlineCreate && (
+                <button
+                  type="button"
+                  onClick={openInlineCreate}
+                  className="md:hidden mt-2.5 w-full flex items-center justify-center gap-2 border border-dashed border-warm-400 rounded-10 py-3.5 text-ui font-semibold text-brand"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#0F3D2E" aria-hidden>
+                    <path d="M11 5a1 1 0 1 1 2 0v6h6a1 1 0 1 1 0 2h-6v6a1 1 0 1 1-2 0v-6H5a1 1 0 1 1 0-2h6V5Z" />
+                  </svg>
+                  Add new customer
+                </button>
+              )}
               {showDropdown && !showInlineCreate && (
                 <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-warm-300 rounded-10 shadow-modal overflow-hidden">
                   {filteredCustomers.length === 0 ? (
@@ -617,17 +630,17 @@ export function CreateOrderForm({
                           <span className="text-caption text-warm-500">kg</span>
                         </div>
                       ) : (
-                        <div className="inline-flex items-center border border-warm-300 rounded-7 overflow-hidden">
+                        <div className="inline-flex items-center border border-warm-300 rounded-10 overflow-hidden">
                           <button
                             type="button"
                             onClick={() => updateLine(i, { quantity: Math.max(1, line.quantity - 1) })}
-                            className="w-8 h-8 flex items-center justify-center text-warm-600 hover:bg-warm-100"
+                            className="w-11 h-11 flex items-center justify-center text-brand text-lg leading-none"
                           >−</button>
-                          <span className="tnum w-8 text-center text-ui font-medium text-warm-950">{line.quantity}</span>
+                          <span className="tnum w-9 text-center text-ui font-bold text-warm-950">{line.quantity}</span>
                           <button
                             type="button"
                             onClick={() => updateLine(i, { quantity: line.quantity + 1 })}
-                            className="w-8 h-8 flex items-center justify-center text-warm-600 hover:bg-warm-100"
+                            className="w-11 h-11 flex items-center justify-center text-brand text-lg leading-none"
                           >+</button>
                         </div>
                       )}

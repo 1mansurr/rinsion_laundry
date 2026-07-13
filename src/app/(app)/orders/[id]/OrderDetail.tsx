@@ -16,6 +16,7 @@ import { formatCurrency } from '@/utils/formatCurrency'
 import { formatTimeAgo } from '@/utils/formatTimeAgo'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { Sheet } from '@/components/ui/Sheet'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Banner } from '@/components/ui/Banner'
 import { StatusBadge } from '@/components/app/StatusBadge'
@@ -342,10 +343,50 @@ export function OrderDetail({
 
   return (
     <div className="max-w-[1180px] mx-auto px-6 py-6 lg:px-7 lg:py-7">
-      {/* Back link */}
+      {/* Mobile-only pickup-code hero header — replaces the back link + white header card below 720px */}
+      <div className="md:hidden -mx-6 -mt-6 mb-4 bg-brand text-[#EAF2EE] px-5 pt-4 pb-5">
+        <div className="flex items-center justify-between">
+          <Link href="/orders" aria-label="Back to orders" className="w-11 h-11 rounded-10 bg-white/10 flex items-center justify-center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#EAF2EE" aria-hidden>
+              <path d="M15.4 5.6 8.99 12l6.41 6.4a1 1 0 0 1-1.42 1.42l-7.1-7.1a1 1 0 0 1 0-1.42l7.1-7.1a1 1 0 1 1 1.42 1.4Z" />
+            </svg>
+          </Link>
+          {isCancelled ? (
+            <span className="inline-flex items-center gap-1.5 bg-white/10 text-[#C9D8D1] text-[12px] font-bold px-[11px] py-[5px] rounded-full tracking-[0.03em]">
+              CANCELLED
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 bg-clay/20 text-[#F4C4B2] text-[12px] font-bold px-[11px] py-[5px] rounded-full tracking-[0.03em]">
+              <span className="w-[7px] h-[7px] rounded-full bg-[#E78A6B]" />
+              {STEP_LABELS[status]?.toUpperCase() ?? status.toUpperCase()}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-[18px] mt-[18px]">
+          <div className="relative w-[76px] h-[76px] shrink-0 flex items-center justify-center">
+            <svg viewBox="0 0 100 100" width="76" height="76" className="absolute inset-0">
+              <circle cx="50" cy="50" r="46" fill="none" stroke="#EAF2EE" strokeWidth="1.5" opacity="0.25" />
+              <circle
+                cx="50" cy="50" r="36" fill="none" stroke="#9CC1B2" strokeWidth="5" strokeLinecap="round"
+                pathLength={100} strokeDasharray="86 14" transform="rotate(-56 50 50)"
+              />
+            </svg>
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="#EAF2EE" aria-hidden>
+              <path d="M9 16.17 5.53 12.7a1 1 0 0 0-1.42 1.42l4.18 4.17a1 1 0 0 0 1.42 0L20.3 7.88a1 1 0 1 0-1.42-1.42L9 16.17Z" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-[10.5px] tracking-[0.16em] text-[#9DBDB0] font-bold">PICKUP CODE</p>
+            <p className="tnum text-[36px] font-bold tracking-[0.1em] leading-[1.04]">{pickupCode}</p>
+            <p className="tnum text-[13px] text-[#BCD3CA] mt-1">{orderNumber} · {customerName}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Back link — desktop only; the mobile hero header above has its own back arrow */}
       <Link
         href="/orders"
-        className="inline-flex items-center gap-1.5 text-caption text-warm-500 hover:text-warm-900 mb-5 transition-colors"
+        className="hidden md:inline-flex items-center gap-1.5 text-caption text-warm-500 hover:text-warm-900 mb-5 transition-colors"
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path d="M9 3L5 7l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -368,8 +409,8 @@ export function OrderDetail({
         {/* Left column */}
         <div className="space-y-4 min-w-0">
 
-          {/* Order header card */}
-          <div className="bg-white border border-warm-300 rounded-10 p-6">
+          {/* Order header card — desktop only; the mobile hero header above replaces it */}
+          <div className="hidden md:block bg-white border border-warm-300 rounded-10 p-6">
             <div className="flex items-start justify-between gap-6">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center flex-wrap gap-2 mb-1">
@@ -387,39 +428,31 @@ export function OrderDetail({
                 </p>
               </div>
 
-              {/* Pickup code — desktop: large ring, mobile: plain */}
-              <div className="shrink-0">
-                {/* Desktop ring */}
-                <div className="hidden md:flex flex-col items-center gap-1.5">
-                  <div className="relative inline-flex items-center justify-center" style={{ width: 128, height: 128 }}>
-                    <svg width="128" height="128" viewBox="0 0 128 128" fill="none">
-                      <circle
-                        cx="64" cy="64" r="46"
-                        stroke="#E8E4DD"
-                        strokeWidth="2.5"
-                        strokeDasharray="92 8"
-                        fill="none"
-                        transform="rotate(-77 64 64)"
-                      />
-                    </svg>
-                    <span
-                      className="tnum absolute font-bold text-brand"
-                      style={{ fontSize: 30, letterSpacing: '0.14em' }}
-                    >
-                      {pickupCode}
-                    </span>
-                  </div>
-                  <span className="text-caption text-warm-500">Pickup code</span>
+              {/* Pickup code — desktop ring (mobile has its own hero header above) */}
+              <div className="shrink-0 flex flex-col items-center gap-1.5">
+                <div className="relative inline-flex items-center justify-center" style={{ width: 128, height: 128 }}>
+                  <svg width="128" height="128" viewBox="0 0 128 128" fill="none">
+                    <circle
+                      cx="64" cy="64" r="46"
+                      stroke="#E8E4DD"
+                      strokeWidth="2.5"
+                      strokeDasharray="92 8"
+                      fill="none"
+                      transform="rotate(-77 64 64)"
+                    />
+                  </svg>
+                  <span
+                    className="tnum absolute font-bold text-brand"
+                    style={{ fontSize: 30, letterSpacing: '0.14em' }}
+                  >
+                    {pickupCode}
+                  </span>
                 </div>
-                {/* Mobile: compact */}
-                <div className="md:hidden text-right">
-                  <p className="text-caption text-warm-500 mb-0.5">Pickup code</p>
-                  <span className="tnum text-[22px] font-bold tracking-[0.12em] text-brand">{pickupCode}</span>
-                </div>
+                <span className="text-caption text-warm-500">Pickup code</span>
               </div>
             </div>
 
-            {/* Progress stepper */}
+            {/* Progress stepper — desktop only, mobile gets its own vertical timeline below */}
             <div className="mt-6">
               {isCancelled ? (
                 <CancelledStepper previousStatus={previousStatusOnCancel} />
@@ -429,9 +462,17 @@ export function OrderDetail({
             </div>
           </div>
 
+          {/* Mobile vertical timeline — replaces the desktop horizontal stepper below 720px */}
+          {!isCancelled && (
+            <div className="md:hidden bg-white border border-warm-300 rounded-10 px-[18px] py-4">
+              <p className="text-micro font-semibold text-warm-500 uppercase tracking-eyebrow mb-3.5">Progress</p>
+              <MobileTimeline currentIdx={currentStepIdx} activities={activities} createdAt={createdAt} />
+            </div>
+          )}
+
           {/* Action bar */}
           {!isCancelled && !isCollected && (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 sticky top-0 z-[15] bg-canvas md:static md:bg-transparent py-2.5 md:py-0 border-b border-warm-200 md:border-0 [&>button]:flex-1 md:[&>button]:flex-initial">
               {status === 'ready' ? (
                 balance > 0 ? (
                   <Button variant="accent" onClick={openPaymentModal} isPending={isPending}>
@@ -805,14 +846,14 @@ export function OrderDetail({
         </div>
       </div>
 
-      {/* Mark Collected modal */}
-      <Modal
+      {/* Mark Collected sheet */}
+      <Sheet
         open={collectOpen}
         onClose={() => { setCollectOpen(false); setCollectCode(''); setCollectError('') }}
         title="Confirm Collection"
-        description={`${orderNumber} · ${customerName}`}
       >
         <div className="space-y-4">
+          <p className="text-caption text-warm-600 -mt-1">{orderNumber} · {customerName}</p>
           <div>
             <p className="text-label font-medium text-warm-700 mb-2">Enter the 6-character pickup code</p>
             <input
@@ -852,17 +893,17 @@ export function OrderDetail({
             </Button>
           </div>
         </div>
-      </Modal>
+      </Sheet>
 
-      {/* Record Payment modal — 2-step for ready orders */}
-      <Modal
+      {/* Record Payment sheet — 2-step for ready orders */}
+      <Sheet
         open={paymentOpen}
         onClose={() => { setPaymentOpen(false); setPayError(''); setPayCodeError('') }}
         title={payStep === 'code' ? 'Verify Customer' : 'Record Payment'}
-        description={payStep === 'code' ? `${orderNumber} · ${customerName}` : `${orderNumber} · Balance ${formatCurrency(balance)}`}
       >
         {payStep === 'code' ? (
           <div className="space-y-4">
+            <p className="text-caption text-warm-600 -mt-1">{orderNumber} · {customerName}</p>
             <p className="text-label font-medium text-warm-700">Enter the customer&apos;s 6-character pickup code</p>
             <input
               type="text"
@@ -890,6 +931,7 @@ export function OrderDetail({
           </div>
         ) : (
           <div className="space-y-4">
+            <p className="text-caption text-warm-600 -mt-1">{orderNumber} · Balance {formatCurrency(balance)}</p>
             <div className="bg-[#F8F5F0] rounded-7 px-4 py-3 space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-label text-warm-500">Total</span>
@@ -929,19 +971,27 @@ export function OrderDetail({
             </div>
           </div>
         )}
-      </Modal>
+      </Sheet>
 
       {/* Cancel order modal */}
-      <Modal
-        open={cancelOpen}
-        onClose={() => setCancelOpen(false)}
-        title="Cancel Order"
-        description={`Are you sure you want to cancel ${orderNumber}? This cannot be undone.`}
-      >
-        <div className="flex gap-3 justify-end">
-          <Button variant="secondary" onClick={() => setCancelOpen(false)}>Keep Order</Button>
-          <Button variant="destructive" filled isPending={isPending} onClick={handleCancel}>
+      <Modal open={cancelOpen} onClose={() => setCancelOpen(false)}>
+        <div className="flex flex-col items-center text-center pt-1">
+          <span className="w-[52px] h-[52px] rounded-full bg-error-bg flex items-center justify-center mb-4">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="#B0413A" aria-hidden>
+              <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 5a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0V8a1 1 0 0 1 1-1Zm0 9a1.25 1.25 0 1 1 0 2.5A1.25 1.25 0 0 1 12 16Z" />
+            </svg>
+          </span>
+          <h3 className="text-h2 font-semibold text-warm-950">Cancel this order?</h3>
+          <p className="text-body text-warm-600 mt-1.5">
+            {orderNumber} will be marked cancelled. This cannot be undone.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2.5 mt-5">
+          <Button variant="destructive" filled isPending={isPending} onClick={handleCancel} className="w-full">
             Cancel Order
+          </Button>
+          <Button variant="secondary" onClick={() => setCancelOpen(false)} className="w-full">
+            Keep Order
           </Button>
         </div>
       </Modal>
@@ -1114,6 +1164,64 @@ function ProgressStepper({ currentIdx }: { currentIdx: number }) {
           </div>
         </Fragment>
       ))}
+    </div>
+  )
+}
+
+// Vertical mobile timeline — the horizontal ProgressStepper's step labels are
+// hidden below `sm:`, which doesn't work as a standalone mobile progress view.
+// Per-step timestamps come from the activity log's "Status changed from X to Y"
+// entries (same data the desktop History card already reads), falling back to
+// the order's own createdAt for the initial "received" step.
+function MobileTimeline({
+  currentIdx, activities, createdAt,
+}: {
+  currentIdx: number
+  activities: OrderDetailActivity[]
+  createdAt: string
+}) {
+  function timestampFor(step: OrderStatus): string | null {
+    if (step === 'received') return createdAt
+    const match = activities.find(a => new RegExp(`to ${step}$`).test(a.description))
+    return match?.createdAt ?? null
+  }
+
+  return (
+    <div>
+      {STEPS.map((step, i) => {
+        const isDone = i < currentIdx
+        const isCurrent = i === currentIdx
+        const isLast = i === STEPS.length - 1
+        const ts = timestampFor(step)
+        return (
+          <div key={step} className="flex gap-3">
+            <div className="flex flex-col items-center shrink-0">
+              <span className={`w-[26px] h-[26px] rounded-full border-2 flex items-center justify-center shrink-0 ${
+                isDone ? 'bg-brand-tint border-[#9CC1B2] text-brand' :
+                isCurrent ? 'bg-brand border-brand text-[#FAF8F5] shadow-[0_0_0_4px_rgba(15,61,46,0.12)]' :
+                'bg-white border-warm-300 text-warm-500'
+              }`}>
+                {isDone ? (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                    <path d="M9 16.17 5.53 12.7a1 1 0 0 0-1.42 1.42l4.18 4.17a1 1 0 0 0 1.42 0L20.3 7.88a1 1 0 1 0-1.42-1.42L9 16.17Z" />
+                  </svg>
+                ) : (
+                  <span className="w-[7px] h-[7px] rounded-full bg-current" />
+                )}
+              </span>
+              {!isLast && <span className={`w-0.5 flex-1 min-h-[22px] ${isDone ? 'bg-brand' : 'bg-warm-200'}`} />}
+            </div>
+            <div className={isLast ? 'pb-0' : 'pb-4'}>
+              <p className={`text-[14.5px] font-semibold ${i <= currentIdx ? 'text-warm-950' : 'text-warm-400'}`}>
+                {STEP_LABELS[step]}
+              </p>
+              <p className="tnum text-caption text-warm-500 mt-0.5">
+                {ts ? new Date(ts).toLocaleDateString('en-GH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Pending'}
+              </p>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

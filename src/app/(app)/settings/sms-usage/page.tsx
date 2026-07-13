@@ -20,11 +20,11 @@ export default async function SmsUsagePage() {
 
   if (profile.role !== 'admin') {
     return (
-      <div className="p-6 max-w-3xl mx-auto">
-        <div className="flex items-center gap-2 mb-6">
-          <Link href="/settings" className="text-sm text-gray-400 hover:text-gray-700">Settings</Link>
-          <span className="text-gray-300">/</span>
-          <h1 className="text-sm font-semibold text-gray-900">SMS Usage</h1>
+      <div className="max-w-3xl mx-auto px-4 py-4 md:p-6">
+        <div className="flex items-center gap-1.5 mb-6 text-caption">
+          <Link href="/settings" className="text-warm-600 font-semibold hover:text-warm-900">Settings</Link>
+          <span className="text-warm-400">/</span>
+          <span className="text-warm-950 font-bold">SMS Usage</span>
         </div>
         <RestrictedCard />
       </div>
@@ -34,66 +34,55 @@ export default async function SmsUsagePage() {
   const { subscription, smsUsed, messages, quota, usagePct } = await getSmsUsageData(profile.laundryId)
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <div className="flex items-center gap-2 mb-6">
-        <Link href="/settings" className="text-sm text-gray-400 hover:text-gray-700">Settings</Link>
-        <span className="text-gray-300">/</span>
-        <h1 className="text-sm font-semibold text-gray-900">SMS Usage</h1>
+    <div className="max-w-3xl mx-auto px-4 py-4 md:p-6">
+      <div className="flex items-center gap-1.5 mb-5 md:mb-6 text-caption">
+        <Link href="/settings" className="text-warm-600 font-semibold hover:text-warm-900">Settings</Link>
+        <span className="text-warm-400">/</span>
+        <span className="text-warm-950 font-bold">SMS Usage</span>
       </div>
 
       {subscription && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-sm font-semibold text-gray-900">{smsUsed} of {quota} SMS used</p>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Cycle: {subscription.cycleStartDate} → {subscription.cycleEndDate}
-              </p>
-            </div>
-            <span className={`text-lg font-bold ${usagePct >= 70 ? 'text-amber-500' : 'text-gray-900'}`}>
-              {usagePct}%
-            </span>
-          </div>
-          <div className="bg-gray-100 rounded-full h-2">
+        <div className="bg-white border border-warm-300 rounded-10 p-5 mb-4">
+          <p className="tnum text-ui font-bold text-warm-950 mb-1">{smsUsed} of {quota} SMS used</p>
+          <p className="text-caption text-warm-600 mb-3.5">
+            Cycle: {subscription.cycleStartDate} → {subscription.cycleEndDate}
+          </p>
+          <div className="h-1.5 bg-warm-200 rounded-full overflow-hidden mb-1.5">
             <div
-              className={`h-2 rounded-full ${usagePct >= 70 ? 'bg-amber-400' : 'bg-gray-900'}`}
-              style={{ width: `${usagePct}%` }}
+              className={`h-full rounded-full ${usagePct >= 70 ? 'bg-warning' : 'bg-brand'}`}
+              style={{ width: `${Math.min(100, usagePct)}%` }}
             />
           </div>
+          <p className="tnum text-caption text-warm-500">{usagePct}% used</p>
           {smsUsed > quota && (
-            <p className="text-xs text-amber-600 mt-2">
-              {smsUsed - quota} overage messages at GHS 0.05 each = GHS {((smsUsed - quota) * 0.05).toFixed(2)} added to next invoice.
+            <p className="tnum text-caption font-semibold text-error-fg mt-2.5">
+              Projected overage: GHS {((smsUsed - quota) * 0.05).toFixed(2)} ({smsUsed - quota} messages at GHS 0.05 each)
             </p>
           )}
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200">
-        <div className="px-5 py-3.5 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-900">Message Log</h2>
+      <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-warm-200">
+          <h2 className="text-ui font-semibold text-warm-950">Message Log</h2>
         </div>
         {messages.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-8">No SMS messages sent yet.</p>
+          <p className="text-body text-warm-500 text-center py-8">No SMS messages sent yet.</p>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-warm-100">
             {messages.map((sms: SmsMessageLogRow) => (
-              <div key={sms.id} className="flex items-start justify-between px-5 py-3">
-                <div className="flex items-center gap-2.5">
-                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1 ${sms.status === 'sent' ? 'bg-green-400' : 'bg-red-400'}`} />
-                  <div>
-                    <p className="text-sm text-gray-900">{TRIGGER_LABELS[sms.trigger_event] ?? sms.trigger_event}</p>
-                    <p className="text-xs text-gray-400">{sms.phone}</p>
-                    {sms.status === 'failed' && sms.error_message && (
-                      <p className="text-xs text-red-500 mt-0.5">{sms.error_message}</p>
-                    )}
-                  </div>
-                </div>
-                <div className="text-right flex-shrink-0 ml-4">
-                  <p className="text-xs text-gray-400">{sms.created_at.replace('T', ' ').substring(0, 16)}</p>
-                  {!sms.counts_toward_cap && (
-                    <p className="text-xs text-gray-300 mt-0.5">free</p>
+              <div key={sms.id} className="flex items-start gap-2.5 px-5 py-3">
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-[5px] ${sms.status === 'sent' ? 'bg-success' : 'bg-error'}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-ui-sm font-semibold text-warm-950">{TRIGGER_LABELS[sms.trigger_event] ?? sms.trigger_event}</p>
+                  <p className="tnum text-caption text-warm-500 mt-0.5">{sms.phone} · {sms.created_at.replace('T', ' ').substring(0, 16)}</p>
+                  {sms.status === 'failed' && sms.error_message && (
+                    <p className="text-caption text-error-fg mt-0.5">{sms.error_message}</p>
                   )}
                 </div>
+                {!sms.counts_toward_cap && (
+                  <span className="shrink-0 text-[10.5px] font-bold text-warm-600 bg-warm-150 px-2 py-1 rounded-full">FREE</span>
+                )}
               </div>
             ))}
           </div>

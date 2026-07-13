@@ -140,11 +140,16 @@ const config: Config = {
           from: { transform: 'translateY(100%)' },
           to: { transform: 'translateY(0)' },
         },
+        'drawer-in': {
+          from: { transform: 'translateX(-100%)' },
+          to: { transform: 'translateX(0)' },
+        },
       },
       animation: {
         'spin-ring': 'rin-spin 0.9s linear infinite',
         'spin-ring-accel': 'rin-spin-accel 0.6s ease-out forwards',
         'sheet-up': 'sheet-up 0.25s ease-out',
+        'drawer-in': 'drawer-in 0.28s cubic-bezier(.22,1,.36,1)',
       },
     },
   },

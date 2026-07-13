@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { isTabBarHiddenRoute } from '@/lib/mobileChromeRoutes'
 import type { EmployeeRole } from '@/constants/statuses'
 
 interface TabConfig {
@@ -53,6 +54,8 @@ function TabSvg({ label, active }: { label: string; active: boolean }) {
 export function BottomTabBar({ role }: { role: EmployeeRole }) {
   const pathname = usePathname()
   const tabs = role === 'admin' ? ADMIN_TABS : EMPLOYEE_TABS
+
+  if (isTabBarHiddenRoute(pathname)) return null
 
   return (
     <nav className="min-[720px]:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-warm-300 flex items-stretch pb-[env(safe-area-inset-bottom)]">

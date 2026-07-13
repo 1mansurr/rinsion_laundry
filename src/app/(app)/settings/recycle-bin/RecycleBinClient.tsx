@@ -108,16 +108,19 @@ export function RecycleBinClient({
 
   return (
     <div>
-      <div className="flex border-b border-warm-200 mb-4">
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
         {(['customers', 'orders', 'itemTypes', 'services', 'employees'] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2.5 text-ui font-medium border-b-2 -mb-px transition-colors ${
-              tab === t ? 'border-brand text-warm-950' : 'border-transparent text-warm-500 hover:text-warm-800'
+            className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-ui-sm font-semibold border transition-colors ${
+              tab === t ? 'bg-brand text-[#FAF8F5] border-brand' : 'bg-white text-warm-800 border-warm-300 hover:bg-warm-100'
             }`}
           >
-            {TAB_LABELS[t]} {counts[t] > 0 && <span className="text-warm-400">({counts[t]})</span>}
+            {TAB_LABELS[t]}
+            <span className={`tnum text-[11px] font-bold px-1.5 py-0.5 rounded-full ${tab === t ? 'bg-white/20 text-[#FAF8F5]' : 'bg-warm-150 text-warm-600'}`}>
+              {counts[t]}
+            </span>
           </button>
         ))}
       </div>

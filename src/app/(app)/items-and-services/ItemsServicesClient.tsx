@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Sheet } from '@/components/ui/Sheet'
 
 interface Props {
   itemTypes: ItemType[]
@@ -112,6 +113,9 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
   const [selectedServiceId, setSelectedServiceId] = useState<string>('')
   // Mobile: expanded item card in pricing view
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null)
+  // Mobile: price-edit bottom sheet — desktop keeps editing inline via editingCell,
+  // this just gates whether that same editingCell target also opens the sheet.
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false)
   // Exceptions editor (mixed mode, per_kg services only)
   const [addingExceptionFor, setAddingExceptionFor] = useState<string | null>(null)
   const [newExceptionItemTypeId, setNewExceptionItemTypeId] = useState('')
@@ -270,6 +274,28 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
         prev.map(p => p.itemTypeId === itemTypeId && p.serviceId === serviceId ? { ...p, isActive: false } : p)
       )
     })
+  }
+
+  function openMobilePriceEdit(itemTypeId: string, serviceId: string, cell?: PriceCell) {
+    startEditingCell(itemTypeId, serviceId, cell)
+    setMobileSheetOpen(true)
+  }
+
+  function closeMobilePriceEdit() {
+    setMobileSheetOpen(false)
+    setEditingCell(null)
+  }
+
+  function saveMobilePrice() {
+    if (!editingCell) return
+    savePrice(editingCell.itemTypeId, editingCell.serviceId)
+    setMobileSheetOpen(false)
+  }
+
+  function clearMobilePrice() {
+    if (!editingCell) return
+    handleDisablePrice(editingCell.itemTypeId, editingCell.serviceId)
+    setMobileSheetOpen(false)
   }
 
   function openAddException(serviceId: string) {
@@ -717,11 +743,11 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                         })}
                       </div>
 
-                      {/* Mobile: expandable item cards */}
+                      {/* Mobile: expandable item cards — tapping a service row opens the price-edit sheet below */}
                       <div className="md:hidden space-y-2">
                         {activeItems.map(item => {
                           const isOpen = expandedItemId === item.id
-                          const previewCell = getPrice(item.id, currentServiceId)
+                          const pricedCount = perItemServices.filter(svc => getPrice(item.id, svc.id)?.isActive).length
 
                           return (
                             <div key={item.id} className="bg-white border border-warm-300 rounded-10 overflow-hidden">
@@ -730,65 +756,35 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                                 className="w-full flex items-center justify-between px-4 py-3"
                                 onClick={() => setExpandedItemId(isOpen ? null : item.id)}
                               >
-                                <span className="text-ui font-medium text-warm-950">{item.name}</span>
-                                <div className="flex items-center gap-2">
-                                  {previewCell?.isActive && (
-                                    <span className="tnum text-ui text-warm-500">{formatPriceRange(previewCell.minPrice, previewCell.maxPrice)}</span>
-                                  )}
-                                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={`text-warm-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}>
-                                    <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                  </svg>
+                                <div className="text-left">
+                                  <span className="text-ui font-medium text-warm-950 block">{item.name}</span>
+                                  <span className="text-caption text-warm-500">{pricedCount} of {perItemServices.length} priced</span>
                                 </div>
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={`text-warm-400 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
+                                  <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
                               </button>
 
                               {isOpen && (
                                 <div className="border-t border-warm-100 divide-y divide-warm-100">
                                   {perItemServices.map(svc => {
                                     const cell = getPrice(item.id, svc.id)
-                                    const isEditingThis = editingCell?.itemTypeId === item.id && editingCell?.serviceId === svc.id
-
                                     return (
-                                      <div key={svc.id} className="px-4 py-2.5">
-                                        <div className="flex items-center justify-between">
-                                          <span className="text-ui text-warm-700">{svc.name}</span>
-                                          {isEditingThis ? (
-                                            <RangeInputs
-                                              autoFocus
-                                              min={cellMin}
-                                              max={cellMax}
-                                              onMinChange={setCellMin}
-                                              onMaxChange={setCellMax}
-                                              onKeyDown={e => {
-                                                if (e.key === 'Enter') savePrice(item.id, svc.id)
-                                                if (e.key === 'Escape') setEditingCell(null)
-                                              }}
-                                              onBlur={() => savePrice(item.id, svc.id)}
-                                            />
-                                          ) : cell?.isActive ? (
-                                            <button
-                                              onClick={() => startEditingCell(item.id, svc.id, cell)}
-                                              className="tnum text-ui font-medium text-brand underline underline-offset-2"
-                                            >
-                                              {formatPriceRange(cell.minPrice, cell.maxPrice)}
-                                            </button>
-                                          ) : (
-                                            <button
-                                              onClick={() => startEditingCell(item.id, svc.id)}
-                                              className="text-caption text-warm-400 hover:text-brand"
-                                            >
-                                              + Set price
-                                            </button>
-                                          )}
-                                        </div>
-                                        {isEditingThis && (
-                                          <input
-                                            value={cellNotes}
-                                            onChange={e => setCellNotes(e.target.value)}
-                                            placeholder="Notes for staff (optional)"
-                                            className="mt-1.5 w-full border border-warm-300 rounded-7 px-2 py-1 text-caption text-warm-800 focus:outline-none focus:border-brand"
-                                          />
+                                      <button
+                                        key={svc.id}
+                                        type="button"
+                                        onClick={() => openMobilePriceEdit(item.id, svc.id, cell)}
+                                        className="w-full flex items-center justify-between px-4 py-3"
+                                      >
+                                        <span className="text-ui text-warm-700">{svc.name}</span>
+                                        {cell?.isActive ? (
+                                          <span className="tnum text-ui font-semibold text-warm-950">
+                                            {formatPriceRange(cell.minPrice, cell.maxPrice)}
+                                          </span>
+                                        ) : (
+                                          <span className="text-caption font-medium text-warm-400">Not offered</span>
                                         )}
-                                      </div>
+                                      </button>
                                     )
                                   })}
                                 </div>
@@ -797,6 +793,49 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                           )
                         })}
                       </div>
+
+                      {/* Mobile price-edit sheet — shared across the per-item-type accordion above */}
+                      <Sheet
+                        open={mobileSheetOpen}
+                        onClose={closeMobilePriceEdit}
+                        title={
+                          editingCell
+                            ? `${items.find(i => i.id === editingCell.itemTypeId)?.name ?? ''} · ${services.find(s => s.id === editingCell.serviceId)?.name ?? ''}`
+                            : 'Set price'
+                        }
+                      >
+                        <div className="space-y-4">
+                          <p className="text-caption text-warm-600 -mt-1">
+                            Set the price range per piece, or clear it to mark this service as not offered.
+                          </p>
+                          <div>
+                            <label className="text-label font-medium text-warm-700 mb-1.5 block">Price per piece (GHS)</label>
+                            <RangeInputs
+                              autoFocus
+                              min={cellMin}
+                              max={cellMax}
+                              onMinChange={setCellMin}
+                              onMaxChange={setCellMax}
+                              onKeyDown={e => { if (e.key === 'Enter') saveMobilePrice() }}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-label font-medium text-warm-700 mb-1.5 block">Notes for staff (optional)</label>
+                            <input
+                              value={cellNotes}
+                              onChange={e => setCellNotes(e.target.value)}
+                              placeholder="e.g. Silk only, ask before washing"
+                              className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-800 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                            />
+                          </div>
+                          <div className="flex gap-2.5">
+                            <Button variant="secondary" onClick={clearMobilePrice} disabled={isPending}>Clear</Button>
+                            <Button variant="primary" onClick={saveMobilePrice} isPending={isPending} className="flex-1">
+                              Save price
+                            </Button>
+                          </div>
+                        </div>
+                      </Sheet>
 
                       <p className="text-caption text-warm-400 mt-3">
                         Leave items blank if you don&apos;t offer that combination. Only priced items appear in order creation.

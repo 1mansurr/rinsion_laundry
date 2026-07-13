@@ -8,7 +8,7 @@ import { recordPayment } from '@/services/payments/recordPayment'
 import { PAYMENT_METHODS, type PaymentMethod } from '@/constants/statuses'
 import { Button } from '@/components/ui/Button'
 import { Banner } from '@/components/ui/Banner'
-import { Modal } from '@/components/ui/Modal'
+import { Sheet } from '@/components/ui/Sheet'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { OMark } from '@/components/ui/OMark'
 import { StatCard } from '@/components/app/StatCard'
@@ -186,7 +186,7 @@ export function DashboardClient({
           <h1 className="text-[26px] font-semibold text-warm-950 leading-tight">{profile.laundryName}</h1>
           <p className="text-body text-warm-600 mt-0.5">{todayDate}</p>
         </div>
-        <Link href="/orders/new">
+        <Link href="/orders/new" className="hidden min-[720px]:block">
           <Button variant="primary" size="sm">+ New Order</Button>
         </Link>
       </div>
@@ -244,8 +244,11 @@ export function DashboardClient({
                           {order.phone}{order.branchName ? ` · ${order.branchName}` : ''}
                         </p>
                       </div>
-                      <span className="tnum text-[18px] font-bold tracking-[0.08em] text-brand leading-none shrink-0">
-                        {order.pickupCode}
+                      <span className="text-right shrink-0">
+                        <span className="block text-micro font-semibold text-warm-500 tracking-eyebrow uppercase">Code</span>
+                        <span className="tnum text-[18px] font-bold tracking-[0.08em] text-brand leading-tight">
+                          {order.pickupCode}
+                        </span>
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -298,7 +301,7 @@ export function DashboardClient({
       {adminStats && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Stats column */}
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3 min-[720px]:block min-[720px]:space-y-3">
             <StatCard label="Orders today" value={adminStats.ordersToday} />
             <StatCard
               label="Outstanding payments"
@@ -307,6 +310,7 @@ export function DashboardClient({
             <StatCard
               label="Active customers this week"
               value={adminStats.activeCustomersThisWeek}
+              className="col-span-2 min-[720px]:col-span-1"
             />
           </div>
 
@@ -343,18 +347,14 @@ export function DashboardClient({
         </div>
       )}
 
-      {/* Mark Collected modal */}
-      <Modal
-        open={collectingOrder !== null}
-        onClose={closeCollect}
-        title="Confirm Collection"
-        description={
-          collectingOrder
-            ? `${collectingOrder.orderNumber} · ${collectingOrder.customerName}`
-            : undefined
-        }
-      >
+      {/* Mark Collected sheet */}
+      <Sheet open={collectingOrder !== null} onClose={closeCollect} title="Confirm Collection">
         <div className="space-y-4">
+          {collectingOrder && (
+            <p className="text-caption text-warm-600 -mt-1">
+              {collectingOrder.orderNumber} · {collectingOrder.customerName}
+            </p>
+          )}
           <div>
             <p className="text-label font-medium text-warm-700 mb-2">
               Enter the 6-character pickup code
@@ -402,17 +402,15 @@ export function DashboardClient({
             </Button>
           </div>
         </div>
-      </Modal>
+      </Sheet>
 
-      {/* Record Payment modal */}
-      <Modal
-        open={payingOrder !== null}
-        onClose={closePay}
-        title="Record Payment"
-        description={payingOrder ? `${payingOrder.orderNumber} · ${payingOrder.customerName}` : undefined}
-      >
+      {/* Record Payment sheet */}
+      <Sheet open={payingOrder !== null} onClose={closePay} title="Record Payment">
         {payingOrder && (
           <div className="space-y-4">
+            <p className="text-caption text-warm-600 -mt-1">
+              {payingOrder.orderNumber} · {payingOrder.customerName}
+            </p>
             {/* Amount — read-only */}
             <div className="bg-[#F8F5F0] rounded-7 px-4 py-3 flex items-center justify-between">
               <span className="text-label text-warm-600">Amount due</span>
@@ -443,7 +441,7 @@ export function DashboardClient({
             </div>
           </div>
         )}
-      </Modal>
+      </Sheet>
     </div>
   )
 }

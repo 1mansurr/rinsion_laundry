@@ -2,6 +2,8 @@ import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/Sidebar'
 import { BottomTabBar } from '@/components/BottomTabBar'
+import { MobileChrome } from '@/components/MobileChrome'
+import { MainScrollArea } from '@/components/MainScrollArea'
 import { Banner } from '@/components/ui/Banner'
 import { CommandPalette } from '@/components/ui/CommandPalette'
 import { UnauthorizedNotice } from '@/components/app/UnauthorizedNotice'
@@ -33,11 +35,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     return null
   })()
 
+  const subscriptionLocked = subscription?.status === 'locked' || subscription?.status === 'hard_block'
+
   return (
     <ProfileProvider profile={profile}>
       <div className="flex h-dvh bg-canvas">
         <Sidebar profile={profile} />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <MobileChrome profile={profile} subscriptionLocked={subscriptionLocked} />
           <Suspense fallback={null}>
             <UnauthorizedNotice />
           </Suspense>
@@ -46,9 +51,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <Banner variant={bannerConfig.variant}>{bannerConfig.text}</Banner>
             </div>
           )}
-          <main className="flex-1 overflow-auto pb-[calc(60px+env(safe-area-inset-bottom))] min-[720px]:pb-0">
-            {children}
-          </main>
+          <MainScrollArea>{children}</MainScrollArea>
         </div>
         <BottomTabBar role={profile.role} />
         <CommandPalette />
