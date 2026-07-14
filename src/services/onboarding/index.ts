@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
+import { requireRole } from '@/lib/auth'
+import { ROLES } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
 export interface OnboardingPageData {
@@ -40,12 +42,24 @@ export async function updateLaundrySetup(
   branchId: string,
   branchName: string,
 ): Promise<ServiceResult<null>> {
+  // Onboarding only runs for an admin whose employee row (and laundry/branch)
+  // already exist — page.tsx gates rendering on getMyProfile() + role==='admin'
+  // before the client component that calls this action ever mounts. But this
+  // is a Server Action, reachable directly as a POST regardless of what the
+  // page rendered, and laundryId/branchId are client-supplied — without this
+  // check any authenticated employee could rename an arbitrary laundry/branch
+  // by guessing/enumerating ids.
+  const profile = await getMyProfile()
+  const check = requireRole(profile, ROLES.ADMIN)
+  if (!check.success) return check
+  if (laundryId !== check.data.laundryId) return { success: false, error: 'Not authorized for this laundry.' }
+
   const supabase = createClient()
 
   const [laundryRes, branchRes] = await Promise.all([
     supabase.from('laundries').update({ name: laundryName.trim() }).eq('id', laundryId),
     branchId && branchName.trim()
-      ? supabase.from('branches').update({ name: branchName.trim() }).eq('id', branchId)
+      ? supabase.from('branches').update({ name: branchName.trim() }).eq('id', branchId).eq('laundry_id', laundryId)
       : Promise.resolve({ error: null }),
   ])
 

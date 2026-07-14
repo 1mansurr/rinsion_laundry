@@ -37,14 +37,43 @@ export async function sendSms(input: SendSmsInput): Promise<{ success: boolean }
     .limit(1)
     .maybeSingle()
 
-  const quota = sub?.sms_quota ?? 800
-  const cycleStart = sub?.cycle_start_date ?? new Date().toISOString().split('T')[0]
-  const cycleEnd = sub?.cycle_end_date ?? new Date().toISOString().split('T')[0]
+  // Fail closed: no resolvable subscription/quota means we cannot verify the
+  // laundry is entitled to send, so treat it as 0 and block rather than the
+  // old `?? 800` default, which silently granted 800 free sends on a bad lookup.
+  if (!sub || sub.sms_quota == null) {
+    const now = new Date().toISOString()
+    await supabase.from('sms_messages').insert({
+      laundry_id: input.laundryId,
+      order_id: input.orderId,
+      customer_id: input.customerId,
+      phone: encryptField(input.phone),
+      message: input.message,
+      trigger_event: input.triggerEvent,
+      provider: 'mnotify',
+      status: 'failed',
+      counts_toward_cap: false,
+      failed_at: now,
+      error_message: 'No resolvable SMS quota — blocked (fail closed)',
+    })
+
+    await supabase.from('activity_logs').insert({
+      laundry_id: input.laundryId,
+      order_id: input.orderId,
+      action_type: ACTIVITY_ACTION_TYPES.SMS_QUOTA_EXCEEDED,
+      description: 'SMS blocked — subscription/quota lookup returned null (anomaly)',
+    })
+
+    return { success: false }
+  }
+
+  const quota = sub.sms_quota
+  const cycleStart = sub.cycle_start_date ?? new Date().toISOString().split('T')[0]
+  const cycleEnd = sub.cycle_end_date ?? new Date().toISOString().split('T')[0]
 
   const used = await computeSmsUsage(input.laundryId, cycleStart, cycleEnd)
 
   // Fire 70% quota warning once per cycle (side effect — non-blocking)
-  if (sub && !sub.sms_warning_70_sent_at && used / quota >= SMS_WARNING_THRESHOLD) {
+  if (!sub.sms_warning_70_sent_at && used / quota >= SMS_WARNING_THRESHOLD) {
     const { sendQuotaWarningSms } = await import('./sendQuotaWarningSms')
     sendQuotaWarningSms(input.laundryId, sub.id, used, quota).catch(() => null)
   }

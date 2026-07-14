@@ -2,10 +2,13 @@
 
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
+import { getActiveSubscription } from '@/services/subscriptions/getActive'
+import { canAddEmployee } from '@/services/subscriptions/canAddEmployee'
 import { requireRole, requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { ROLES } from '@/constants/statuses'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
+import { PLANS } from '@/constants/plans'
 import type { ServiceResult } from '@/types/serviceResult'
 
 export async function restoreEmployee(employeeId: string): Promise<ServiceResult<null>> {
@@ -17,6 +20,14 @@ export async function restoreEmployee(employeeId: string): Promise<ServiceResult
 
   const subCheck = await requireActiveSubscription(caller.laundry_id)
   if (!subCheck.success) return subCheck
+
+  // Restoring flips is_active back to true, exactly like inviteEmployee/
+  // approveJoinRequest adding a new headcount — same plan-limit guard applies.
+  const subscription = await getActiveSubscription(caller.laundry_id)
+  const limit = subscription?.employeeLimit ?? PLANS.starter.employeeLimit
+  if (!(await canAddEmployee(caller.laundry_id, limit))) {
+    return { success: false, error: `Your ${subscription?.plan ?? 'current'} plan allows up to ${limit} employees. Upgrade to add more.` }
+  }
 
   const { error } = await supabase
     .from('employees')

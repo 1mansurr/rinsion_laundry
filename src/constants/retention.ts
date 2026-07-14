@@ -45,13 +45,13 @@ export const RETENTION_DAYS = {
    *  Never gates the on-request erasure trigger — see
    *  docs/deletion_retention_plan.md §4's two-trigger design. */
   anonymizationGracePeriod: null as number | null,
-  /** erasure_requests — deliberately NOT wired into the generic purge sweep.
-   *  A completed row is compliance evidence (proof a request was received
-   *  and fulfilled on specific dates), the opposite of disposable log noise
-   *  — if it's purged at all, it should be on a much longer timer than
-   *  everything else here. Left unset and excluded from
-   *  runRetentionSweep.ts's purge step entirely, pending an explicit
-   *  decision (docs/deletion_retention_plan.md §9 item 0a). */
+  /** erasure_requests — deliberately has NO entry here and is never wired
+   *  into the purge sweep. Decided (docs/deletion_retention_plan.md §9 item
+   *  0a): retained indefinitely. A row (pending, completed, or rejected) is
+   *  the durable compliance record of an Act 843 request and its outcome —
+   *  the opposite of disposable log noise, and there's no compensating
+   *  benefit to deleting it later since the RPC has already scrubbed the
+   *  subject's own PII by the time a row reaches 'completed'. */
 } as const
 
 /** Auth-identity-deletion retry backoff/attempt limits (docs/deletion_retention_plan.md §7).

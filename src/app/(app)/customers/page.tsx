@@ -69,7 +69,7 @@ export default async function CustomersPage({ searchParams }: Props) {
           </p>
           <p className="text-ui-sm text-warm-800 max-w-[340px] leading-relaxed">
             {q
-              ? 'No records match your search. Try a different name or phone number.'
+              ? 'No records match your search. Try a different name, or enter the complete phone number.'
               : 'Add your first customer to start creating orders.'}
           </p>
           {!q && (

@@ -5,6 +5,9 @@ import { encryptField } from '@/lib/crypto'
 import { getSoleBranchId } from '@/services/branches/getSoleBranchId'
 import { signIn } from '@/services/auth/signIn'
 import { hashInviteToken } from '@/utils/inviteToken'
+import { getActiveSubscription } from '@/services/subscriptions/getActive'
+import { canAddEmployee } from '@/services/subscriptions/canAddEmployee'
+import { PLANS } from '@/constants/plans'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -40,6 +43,16 @@ export async function acceptInvite(input: AcceptInviteInput): Promise<ServiceRes
 
   const branchId = await getSoleBranchId(invite.laundry_id, admin)
   if (!branchId) return { success: false, error: 'No branch found for this laundry.' }
+
+  // Re-check the plan's employee limit here, not just at invite creation —
+  // invites are valid for up to 7 days, and other employees may have joined
+  // (or the plan may have downgraded) in the meantime, so the slot that was
+  // available when this invite was sent may no longer be.
+  const subscription = await getActiveSubscription(invite.laundry_id)
+  const limit = subscription?.employeeLimit ?? PLANS.starter.employeeLimit
+  if (!(await canAddEmployee(invite.laundry_id, limit, admin))) {
+    return { success: false, error: `The ${subscription?.plan ?? 'current'} plan's employee limit has been reached. Contact your admin.` }
+  }
 
   const { data: authData, error: authErr } = await admin.auth.admin.createUser({
     phone: invite.phone,

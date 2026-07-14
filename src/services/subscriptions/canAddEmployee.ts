@@ -1,7 +1,9 @@
-import { createClient } from '@/lib/supabase'
+import { createClient, type DbClient } from '@/lib/supabase'
 
-export async function canAddEmployee(laundryId: string, employeeLimit: number): Promise<boolean> {
-  const supabase = createClient()
+// Accepts an optional client because acceptInvite runs with no session at
+// all (see getSoleBranchId) and must pass its admin client.
+export async function canAddEmployee(laundryId: string, employeeLimit: number, client?: DbClient): Promise<boolean> {
+  const supabase = client ?? createClient()
   const { count } = await supabase
     .from('employees')
     .select('*', { count: 'exact', head: true })

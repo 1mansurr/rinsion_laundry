@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { requireRole } from '@/lib/auth'
+import { requireRole, requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { ROLES } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
@@ -14,6 +14,9 @@ export async function createService(name: string): Promise<ServiceResult<Laundry
   const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const emp = { laundry_id: check.data.laundryId }
+
+  const subCheck = await requireActiveSubscription(emp.laundry_id)
+  if (!subCheck.success) return subCheck
 
   // New services in a fully weight-based laundry default to per_kg too;
   // 'mixed' and 'per_item' laundries default new services to per_item.

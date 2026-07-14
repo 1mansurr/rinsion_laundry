@@ -34,7 +34,7 @@ export function CustomersFilterBar({ defaultQ }: Props) {
       <input
         value={q}
         onChange={e => setQ(e.target.value)}
-        placeholder="Search by name or phone"
+        placeholder="Search by name or full phone number"
         className="flex-1 border-none outline-none text-ui text-warm-950 placeholder:text-warm-600 bg-transparent"
       />
       {q && (

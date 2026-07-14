@@ -40,8 +40,9 @@ export async function getRevenueReport(laundryId: string): Promise<RevenueReport
   // All payments for this laundry (join through orders)
   const { data: payments } = await supabase
     .from('payments')
-    .select('amount, created_at, orders!inner(laundry_id)')
+    .select('amount, created_at, orders!inner(laundry_id, deleted_at)')
     .eq('orders.laundry_id', laundryId)
+    .is('orders.deleted_at', null)
 
   const allPayments = payments ?? []
   const ms = monthStart()

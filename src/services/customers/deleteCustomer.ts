@@ -2,12 +2,16 @@
 
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
+import { requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
 
 export async function deleteCustomer(customerId: string): Promise<ServiceResult<null>> {
   const profile = await getMyProfile()
   if (!profile) return { success: false, error: 'Not authenticated.' }
+
+  const subCheck = await requireActiveSubscription(profile.laundryId)
+  if (!subCheck.success) return subCheck
 
   const supabase = createClient()
   const { error } = await supabase

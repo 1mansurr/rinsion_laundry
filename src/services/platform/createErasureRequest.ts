@@ -27,6 +27,23 @@ export async function createErasureRequest(
   if (!platformAdminId) return { success: false, error: 'Unauthorized.' }
 
   const admin = createAdminClient()
+
+  // Confirm the subject exists, is actually the claimed subjectType, and
+  // belongs to the claimed laundry before the row can ever enter the queue —
+  // the same (subject_id, laundry_id, subject_type) check
+  // fulfillErasureRequest.ts repeats at fulfillment time, just moved earlier
+  // so an invalid row can never be created in the first place.
+  const subjectTable = input.subjectType === 'customer' ? 'customers' : 'employees'
+  const { data: subject, error: subjectErr } = await admin
+    .from(subjectTable)
+    .select('id, laundry_id')
+    .eq('id', input.subjectId)
+    .maybeSingle()
+  if (subjectErr) return { success: false, error: subjectErr.message }
+  if (!subject || subject.laundry_id !== input.laundryId) {
+    return { success: false, error: 'Subject not found for that laundry and subject type.' }
+  }
+
   const { data, error } = await admin
     .from('erasure_requests')
     .insert({

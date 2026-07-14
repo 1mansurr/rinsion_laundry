@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/lib/supabase'
 import { requirePlatformAdmin } from '@/services/platform/requirePlatformAdmin'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
+import { revalidateTag } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
 
 /**
@@ -29,6 +30,7 @@ export async function reactivateLaundry(laundryId: string): Promise<ServiceResul
 
   const { error } = await admin.from('subscriptions').update({ status: 'active' }).eq('id', sub.id)
   if (error) return { success: false, error: error.message }
+  revalidateTag('subscription')
 
   await admin.from('activity_logs').insert({
     laundry_id: laundryId,

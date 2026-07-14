@@ -43,6 +43,7 @@ export async function getOrdersList(
       .from('customers')
       .select('id')
       .eq('laundry_id', laundryId)
+      .is('deleted_at', null)
       .or(orFilter)
       .limit(50)
     matchedCustomerIds = (custs ?? []).map(c => c.id)

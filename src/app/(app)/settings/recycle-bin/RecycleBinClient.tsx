@@ -68,6 +68,7 @@ export function RecycleBinClient({
   }
 
   function handleRestoreItemType(id: string) {
+    setErrors(prev => ({ ...prev, [id]: '' }))
     setRestoringId(id)
     startTransition(async () => {
       const res = await restoreItemType(id)
@@ -78,6 +79,7 @@ export function RecycleBinClient({
   }
 
   function handleRestoreService(id: string) {
+    setErrors(prev => ({ ...prev, [id]: '' }))
     setRestoringId(id)
     startTransition(async () => {
       const res = await restoreService(id)

@@ -21,30 +21,23 @@ export async function deleteMyAccount(): Promise<ServiceResult<null>> {
   const profile = await getMyProfile()
   if (!profile) return { success: false, error: 'Not authenticated.' }
 
-  if (profile.role === ROLES.ADMIN) {
-    const { count } = await supabase
-      .from('employees')
-      .select('id', { count: 'exact', head: true })
-      .eq('laundry_id', profile.laundryId)
-      .eq('role', ROLES.ADMIN)
-      .eq('is_active', true)
-      .is('deleted_at', null)
-      .neq('id', profile.id)
-
-    if (!count) {
-      return {
-        success: false,
-        error: "You're the only admin. Promote another employee to admin first, or delete the entire laundry account instead.",
-      }
-    }
-  }
-
-  const { error } = await supabase
-    .from('employees')
-    .update({ deleted_at: new Date().toISOString(), is_active: false })
-    .eq('id', profile.id)
+  // Single atomic RPC (delete_my_account_tx, 20240029000000) — the previous
+  // SELECT-count-then-UPDATE here had a TOCTOU race where two concurrent
+  // self-deletions by a laundry's last two admins could both pass the "an
+  // admin remains" check before either committed, zeroing out admins.
+  const { data, error } = await supabase.rpc('delete_my_account_tx', {
+    p_employee_id: profile.id,
+    p_laundry_id: profile.laundryId,
+    p_is_admin: profile.role === ROLES.ADMIN,
+  })
 
   if (error) return { success: false, error: error.message }
+  if (data?.[0]?.blocked) {
+    return {
+      success: false,
+      error: "You're the only admin. Promote another employee to admin first, or delete the entire laundry account instead.",
+    }
+  }
 
   await supabase.from('activity_logs').insert({
     laundry_id: profile.laundryId,

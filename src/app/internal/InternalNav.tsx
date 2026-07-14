@@ -8,6 +8,7 @@ const NAV = [
   { href: '/internal/provision',        label: 'Provision Laundry' },
   { href: '/internal/subscriptions',    label: 'Subscriptions' },
   { href: '/internal/manual-payments',  label: 'Manual Payments' },
+  { href: '/internal/erasure-requests', label: 'Erasure Requests' },
   { href: '/internal/sms-health',       label: 'SMS Health' },
   { href: '/internal/alerts',           label: 'Alerts' },
   { href: '/internal/platform-admins',  label: 'Platform Admins' },

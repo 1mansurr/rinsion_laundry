@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase'
 import { decryptField, encryptField, computeBlindIndex } from '@/lib/crypto'
 import { normalizeCustomerPhone } from '@/utils/normalizeCustomerPhone'
 import { getMyProfile } from '@/services/employees/getMyProfile'
+import { requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
 import type { Customer } from './getCustomers'
@@ -17,6 +18,9 @@ export async function createCustomer(input: {
   const profile = await getMyProfile()
   if (!profile) return { success: false, error: 'Not authenticated.' }
   const emp = { laundry_id: profile.laundryId }
+
+  const subCheck = await requireActiveSubscription(emp.laundry_id)
+  if (!subCheck.success) return subCheck
 
   const normalizedPhone = normalizeCustomerPhone(input.phone)
   const phoneBidx = computeBlindIndex(normalizedPhone)

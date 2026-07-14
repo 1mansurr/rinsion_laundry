@@ -24,6 +24,7 @@ export async function updateOrderStatus(
     .from('orders')
     .select('status, total')
     .eq('id', orderId)
+    .eq('laundry_id', emp.laundry_id)
     .single()
 
   if (!order) return { success: false, error: 'Order not found.' }
@@ -49,6 +50,7 @@ export async function updateOrderStatus(
     .from('orders')
     .update({ status: newStatus })
     .eq('id', orderId)
+    .eq('laundry_id', emp.laundry_id)
 
   await supabase.from('order_status_history').insert({
     order_id: orderId,

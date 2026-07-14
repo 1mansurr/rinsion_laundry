@@ -27,6 +27,7 @@ export async function verifyAndCollect(
     .from('orders')
     .select('status, pickup_code, total, payments(amount), order_refunds(amount)')
     .eq('id', orderId)
+    .eq('laundry_id', emp.laundry_id)
     .single()
 
   if (!order) return { success: false, error: 'Order not found.' }
@@ -44,7 +45,7 @@ export async function verifyAndCollect(
     return { success: false, error: `Balance of GHS ${balance} outstanding. Record payment first.` }
   }
 
-  await supabase.from('orders').update({ status: 'collected' }).eq('id', orderId)
+  await supabase.from('orders').update({ status: 'collected' }).eq('id', orderId).eq('laundry_id', emp.laundry_id)
   await supabase.from('order_status_history').insert({
     order_id: orderId,
     employee_id: emp.id,

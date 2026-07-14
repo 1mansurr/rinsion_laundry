@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField } from '@/lib/crypto'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
 import { computeSmsUsage } from '@/services/notifications/computeSmsUsage'
 
@@ -44,7 +45,7 @@ export async function getSmsUsageData(laundryId: string): Promise<SmsUsageData> 
   return {
     subscription,
     smsUsed,
-    messages: messages ?? [],
+    messages: (messages ?? []).map(m => ({ ...m, phone: decryptField(m.phone) ?? m.phone })),
     quota,
     usagePct,
   }
