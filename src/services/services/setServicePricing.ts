@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { requireRole } from '@/lib/auth'
+import { requireRole, requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { ROLES } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
@@ -19,6 +19,9 @@ export async function setServicePricing(
   const profile = await getMyProfile()
   const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
+
+  const subCheck = await requireActiveSubscription(check.data.laundryId)
+  if (!subCheck.success) return subCheck
 
   if (pricingMode === 'per_kg' && minKgRate !== null && maxKgRate !== null) {
     if (isNaN(minKgRate) || isNaN(maxKgRate) || minKgRate < 0 || maxKgRate < minKgRate) {

@@ -5,7 +5,7 @@ import { getMyProfile } from '@/services/employees/getMyProfile'
 import { createInvite } from '@/services/employees/createInvite'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
 import { canAddEmployee } from '@/services/subscriptions/canAddEmployee'
-import { requireRole } from '@/lib/auth'
+import { requireRole, requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { getBaseUrl } from '@/utils/getBaseUrl'
 import { ROLES } from '@/constants/statuses'
@@ -24,6 +24,9 @@ export async function inviteEmployee(input: InviteEmployeeInput): Promise<Servic
   const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const caller = check.data
+
+  const subCheck = await requireActiveSubscription(caller.laundryId)
+  if (!subCheck.success) return subCheck
 
   const subscription = await getActiveSubscription(caller.laundryId)
   const limit = subscription?.employeeLimit ?? PLANS.starter.employeeLimit

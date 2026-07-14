@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
+import { requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { ORDER_STATUS_TRANSITIONS } from '@/constants/statuses'
 import type { OrderStatus } from '@/constants/statuses'
@@ -15,6 +16,9 @@ export async function updateOrderStatus(
   const profile = await getMyProfile()
   if (!profile) return { success: false, error: 'Not authenticated.' }
   const emp = { id: profile.id, laundry_id: profile.laundryId }
+
+  const subCheck = await requireActiveSubscription(emp.laundry_id)
+  if (!subCheck.success) return subCheck
 
   const { data: order } = await supabase
     .from('orders')

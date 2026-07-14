@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { requireRole } from '@/lib/auth'
+import { requireRole, requireActiveSubscription } from '@/lib/auth'
 import { generateInviteToken } from '@/utils/inviteToken'
 import { getBaseUrl } from '@/utils/getBaseUrl'
 import { revalidatePath } from 'next/cache'
@@ -18,6 +18,9 @@ export async function resendInvite(inviteId: string): Promise<ServiceResult<null
   const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const caller = check.data
+
+  const subCheck = await requireActiveSubscription(caller.laundryId)
+  if (!subCheck.success) return subCheck
 
   const supabase = createClient()
   const { data: invite } = await supabase

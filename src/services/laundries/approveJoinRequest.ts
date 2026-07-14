@@ -3,7 +3,8 @@
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getSoleBranchId } from '@/services/branches/getSoleBranchId'
-import { requireRole } from '@/lib/auth'
+import { requireRole, requireActiveSubscription } from '@/lib/auth'
+import { getActiveSubscription } from '@/services/subscriptions/getActive'
 import { revalidatePath } from 'next/cache'
 import { PLANS } from '@/constants/plans'
 import { canAddEmployee } from '@/services/subscriptions/canAddEmployee'
@@ -30,18 +31,13 @@ export async function approveJoinRequest(
   if (!request) return { success: false, error: 'Request not found.' }
   if (request.status !== JOIN_REQUEST_STATUS.PENDING) return { success: false, error: 'This request has already been resolved.' }
 
-  // Plan limit check — same guard as adding an employee directly
-  const { data: sub } = await supabase
-    .from('subscriptions')
-    .select('plan, employee_limit')
-    .eq('laundry_id', emp.laundry_id)
-    .neq('status', 'cancelled')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  const subCheck = await requireActiveSubscription(emp.laundry_id)
+  if (!subCheck.success) return subCheck
 
+  // Plan limit check — same guard as adding an employee directly
+  const sub = await getActiveSubscription(emp.laundry_id)
   const plan = sub?.plan ?? 'starter'
-  const limit = sub?.employee_limit ?? PLANS.starter.employeeLimit
+  const limit = sub?.employeeLimit ?? PLANS.starter.employeeLimit
 
   if (!(await canAddEmployee(emp.laundry_id, limit))) {
     return { success: false, error: `Your ${plan} plan allows up to ${limit} employees. Upgrade to add more.` }

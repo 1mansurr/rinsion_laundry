@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
-import { getVerifiedUserId } from '@/lib/auth'
+import { getVerifiedUserId, requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -19,6 +19,9 @@ export async function verifyAndCollect(
     .eq('auth_user_id', userId)
     .single()
   if (!emp) return { success: false, error: 'Employee not found.' }
+
+  const subCheck = await requireActiveSubscription(emp.laundry_id)
+  if (!subCheck.success) return subCheck
 
   const { data: order } = await supabase
     .from('orders')

@@ -1,0 +1,12 @@
+-- Follow-up to 20240021000000_tighten_table_grants.sql.
+--
+-- Post-apply verification (live pg_class.relacl query) found that
+-- order_item_pieces was left out of that migration's anon/authenticated
+-- DELETE revoke entirely — because authenticated legitimately needs DELETE
+-- there (setOrderItemPieces.ts delete-then-reinsert pattern), the table was
+-- excluded from the shared REVOKE DELETE list rather than being handled
+-- per-role. That left anon still holding DELETE on order_item_pieces,
+-- contradicting the anon-sanity finding that anon has no legitimate write
+-- access to any tenant table. authenticated's DELETE on this table is
+-- intentional and untouched here.
+REVOKE DELETE ON TABLE order_item_pieces FROM anon;

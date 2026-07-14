@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { requireRole } from '@/lib/auth'
+import { requireRole, requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { ROLES } from '@/constants/statuses'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
@@ -14,6 +14,9 @@ export async function restoreEmployee(employeeId: string): Promise<ServiceResult
   const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const caller = { id: check.data.id, laundry_id: check.data.laundryId }
+
+  const subCheck = await requireActiveSubscription(caller.laundry_id)
+  if (!subCheck.success) return subCheck
 
   const { error } = await supabase
     .from('employees')

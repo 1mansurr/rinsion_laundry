@@ -3,11 +3,10 @@
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getSoleBranchId } from '@/services/branches/getSoleBranchId'
+import { requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { generatePickupCode } from '@/utils/generatePickupCode'
-import { WRITE_BLOCKED_STATUSES } from '@/constants/subscriptionStatuses'
 import type { OrderPriority, PricingMode } from '@/constants/statuses'
-import type { SubscriptionStatus } from '@/constants/subscriptionStatuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
 export interface CreateOrderInput {
@@ -33,18 +32,8 @@ export async function createOrder(input: CreateOrderInput): Promise<ServiceResul
   if (!profile) return { success: false, error: 'Not authenticated.' }
   const emp = { id: profile.id, laundry_id: profile.laundryId }
 
-  // Subscription write-block check
-  const { data: sub } = await supabase
-    .from('subscriptions')
-    .select('status')
-    .eq('laundry_id', emp.laundry_id)
-    .neq('status', 'cancelled')
-    .maybeSingle()
-
-  if (!sub) return { success: false, error: 'No active subscription. Contact Rinsion support.' }
-  if (WRITE_BLOCKED_STATUSES.includes(sub.status as SubscriptionStatus)) {
-    return { success: false, error: 'Account is blocked. Please renew your subscription.' }
-  }
+  const subCheck = await requireActiveSubscription(emp.laundry_id)
+  if (!subCheck.success) return subCheck
 
   // Validate every submitted price against the live pricing tables before
   // trusting it into subtotal/total. createOrder previously trusted the

@@ -1,6 +1,8 @@
 import { headers } from 'next/headers'
 import type { createClient } from './supabase'
 import type { MyProfile } from '@/services/employees/getMyProfile'
+import { getActiveSubscription } from '@/services/subscriptions/getActive'
+import { WRITE_BLOCKED_STATUSES } from '@/constants/subscriptionStatuses'
 import type { EmployeeRole } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -29,4 +31,20 @@ export function requireRole(profile: MyProfile | null, role: EmployeeRole): Serv
   if (!profile) return { success: false, error: 'Not authenticated.' }
   if (profile.role !== role) return { success: false, error: 'Admin only.' }
   return { success: true, data: profile }
+}
+
+/**
+ * The single subscription-status gate for write paths. Call after auth/role
+ * checks, with the caller's laundryId, before any mutation that grows or
+ * runs the laundry's operation (orders, payments, pricing edits, staff
+ * additions). Every write path must call this directly — a locked laundry
+ * blocked from one path but not another is exactly the gap this closes.
+ */
+export async function requireActiveSubscription(laundryId: string): Promise<ServiceResult<null>> {
+  const subscription = await getActiveSubscription(laundryId)
+  if (!subscription) return { success: false, error: 'No active subscription. Contact Rinsion support.' }
+  if (WRITE_BLOCKED_STATUSES.includes(subscription.status)) {
+    return { success: false, error: 'Account is blocked. Please renew your subscription.' }
+  }
+  return { success: true, data: null }
 }

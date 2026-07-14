@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
+import { requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import type { PaymentMethod } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
@@ -15,6 +16,9 @@ export async function recordPayment(input: {
   const profile = await getMyProfile()
   if (!profile) return { success: false, error: 'Not authenticated.' }
   const emp = { id: profile.id, laundry_id: profile.laundryId }
+
+  const subCheck = await requireActiveSubscription(emp.laundry_id)
+  if (!subCheck.success) return subCheck
 
   if (input.amount <= 0) return { success: false, error: 'Amount must be greater than 0.' }
 

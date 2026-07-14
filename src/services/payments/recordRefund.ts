@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { requireRole } from '@/lib/auth'
+import { requireRole, requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
 import { ROLES } from '@/constants/statuses'
@@ -20,6 +20,9 @@ export async function recordRefund(input: {
   const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
   const emp = { id: check.data.id, laundry_id: check.data.laundryId }
+
+  const subCheck = await requireActiveSubscription(emp.laundry_id)
+  if (!subCheck.success) return subCheck
 
   if (input.amount <= 0) return { success: false, error: 'Amount must be greater than 0.' }
 

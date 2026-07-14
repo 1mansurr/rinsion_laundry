@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase'
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { requireRole } from '@/lib/auth'
+import { requireRole, requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { ROLES } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
@@ -18,6 +18,9 @@ export async function upsertPrice(
   const profile = await getMyProfile()
   const check = requireRole(profile, ROLES.ADMIN)
   if (!check.success) return check
+
+  const subCheck = await requireActiveSubscription(check.data.laundryId)
+  if (!subCheck.success) return subCheck
 
   if (isNaN(minPrice) || isNaN(maxPrice) || minPrice < 0 || maxPrice < minPrice) {
     return { success: false, error: 'Max price must be greater than or equal to min price.' }
