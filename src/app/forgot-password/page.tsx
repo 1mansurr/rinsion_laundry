@@ -2,10 +2,9 @@
 
 import { useState, useTransition } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { requestPasswordReset } from './actions'
-import { requestPhoneReset, verifyPhoneReset } from '@/services/auth/phoneReset'
+import { requestPhoneReset } from '@/services/auth/phoneReset'
 import { Wordmark } from '@/components/ui/Wordmark'
 
 const initialState = { error: null, sent: false }
@@ -88,14 +87,12 @@ export default function ForgotPasswordPage() {
 }
 
 function PhoneResetFlow() {
-  const router = useRouter()
-  const [step, setStep] = useState<'phone' | 'code'>('phone')
   const [phone, setPhone] = useState('')
-  const [code, setCode] = useState('')
+  const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  function handleRequestCode(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     startTransition(async () => {
@@ -104,91 +101,41 @@ function PhoneResetFlow() {
         setError(result.error)
         return
       }
-      setStep('code')
+      setSent(true)
     })
   }
 
-  function handleVerifyCode(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    startTransition(async () => {
-      const result = await verifyPhoneReset(phone, code)
-      if (!result.success) {
-        setError(result.error)
-        return
-      }
-      router.push('/reset-password')
-    })
-  }
-
-  if (step === 'phone') {
+  if (sent) {
     return (
-      <form onSubmit={handleRequestCode} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
-        {error && <ErrorBanner message={error} />}
-
-        <div>
-          <label htmlFor="phone" className="block text-label font-medium text-warm-800 mb-1">
-            Phone
-          </label>
-          <input
-            id="phone"
-            name="phone"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            required
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-            placeholder="024 123 4567"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={isPending}
-          className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-7 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {isPending ? 'Sending…' : 'Send code'}
-        </button>
+      <div className="bg-white rounded-10 border border-warm-300 p-6 space-y-3 text-center">
+        <p className="text-ui font-semibold text-warm-950">Check your phone</p>
+        <p className="text-body text-warm-600">
+          If an account exists for that number, we&apos;ve sent a link to reset your password.
+        </p>
         <BackToSignIn />
-      </form>
+      </div>
     )
   }
 
   return (
-    <form onSubmit={handleVerifyCode} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
       {error && <ErrorBanner message={error} />}
 
-      <p className="text-body text-warm-600">
-        We sent a code to {phone}.{' '}
-        <button
-          type="button"
-          onClick={() => {
-            setStep('phone')
-            setError(null)
-          }}
-          className="text-brand hover:text-brand-hover underline underline-offset-2"
-        >
-          Use a different number
-        </button>
-      </p>
-
       <div>
-        <label htmlFor="code" className="block text-label font-medium text-warm-800 mb-1">
-          Code
+        <label htmlFor="phone" className="block text-label font-medium text-warm-800 mb-1">
+          Phone
         </label>
         <input
-          id="code"
-          name="code"
-          type="text"
-          inputMode="numeric"
-          autoComplete="one-time-code"
+          id="phone"
+          name="phone"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
           required
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
           className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-          placeholder="123456"
+          placeholder="024 123 4567"
         />
       </div>
 
@@ -197,7 +144,7 @@ function PhoneResetFlow() {
         disabled={isPending}
         className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-7 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {isPending ? 'Verifying…' : 'Verify code'}
+        {isPending ? 'Sending…' : 'Send reset link'}
       </button>
       <BackToSignIn />
     </form>
