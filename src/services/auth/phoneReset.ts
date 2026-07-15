@@ -64,6 +64,65 @@ export async function requestPhoneReset(rawPhone: string): Promise<ServiceResult
   return { success: true, data: null }
 }
 
+type ValidTokenResult =
+  | { ok: true; authUserId: string; resetToken: { id: string; token_hash: string; attempts: number } }
+  | { ok: false; error: string }
+
+/**
+ * Shared by checkPhoneResetCode and verifyPhoneResetCode so both steps of the
+ * UI flow (verify-then-reveal-password-fields, then actually submit) apply
+ * the exact same lookup/expiry/attempts-cap/hash-match rules. On a hash
+ * mismatch this also records the failed attempt — callers just report the error.
+ */
+async function checkCodeAgainstStoredToken(
+  admin: ReturnType<typeof createAdminClient>,
+  rawPhone: string,
+  rawCode: string
+): Promise<ValidTokenResult> {
+  const phone = toAuthPhone(rawPhone)
+  const code = rawCode.trim()
+  if (!phone || !/^\d{6}$/.test(code)) return { ok: false, error: 'Invalid code or phone number.' }
+
+  const { data: authUserId } = await admin.rpc('get_auth_user_by_phone', { p_phone: phone })
+  if (!authUserId) return { ok: false, error: 'Invalid code or phone number.' }
+
+  const { data: resetToken } = await admin
+    .from('password_reset_tokens')
+    .select('id, token_hash, expires_at, used_at, attempts')
+    .eq('auth_user_id', authUserId)
+    .is('used_at', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (!resetToken) return { ok: false, error: 'This code has expired. Request a new one.' }
+  if (new Date(resetToken.expires_at) < new Date()) return { ok: false, error: 'This code has expired. Request a new one.' }
+  if (resetToken.attempts >= MAX_CODE_ATTEMPTS) return { ok: false, error: 'Too many incorrect attempts. Request a new code.' }
+
+  if (hashInviteToken(code) !== resetToken.token_hash) {
+    await admin
+      .from('password_reset_tokens')
+      .update({ attempts: resetToken.attempts + 1 })
+      .eq('id', resetToken.id)
+    return { ok: false, error: 'Incorrect code.' }
+  }
+
+  return { ok: true, authUserId, resetToken }
+}
+
+/**
+ * Public/unauthenticated. Checks a code without touching the account —
+ * the first of two steps in the UI (verify code, then reveal the new-password
+ * fields) so a wrong code is reported immediately instead of only after the
+ * user has also typed a new password.
+ */
+export async function checkPhoneResetCode(input: { phone: string; code: string }): Promise<ServiceResult<null>> {
+  const admin = createAdminClient()
+  const result = await checkCodeAgainstStoredToken(admin, input.phone, input.code)
+  if (!result.ok) return { success: false, error: result.error }
+  return { success: true, data: null }
+}
+
 export interface VerifyPhoneResetCodeInput {
   phone: string
   code: string
@@ -75,41 +134,20 @@ export interface VerifyPhoneResetCodeInput {
  * code is the authorization. Runs entirely on the service-role client since
  * there is no session yet, same shape as acceptInvite.
  *
+ * Re-validates the code independently of checkPhoneResetCode above (the UI
+ * calls that first, but this doesn't trust that client-reported result —
+ * it's the actual authorization check for the password change).
+ *
  * Attempts are capped well below the 1-hour expiry (MAX_CODE_ATTEMPTS) since
  * a 6-digit code is brute-forceable without a low attempt limit.
  */
 export async function verifyPhoneResetCode(input: VerifyPhoneResetCodeInput): Promise<ServiceResult<{ signedIn: boolean }>> {
   if (input.password.length < 8) return { success: false, error: 'Password must be at least 8 characters.' }
 
-  const phone = toAuthPhone(input.phone)
-  const code = input.code.trim()
-  if (!phone || !/^\d{6}$/.test(code)) return { success: false, error: 'Invalid code or phone number.' }
-
   const admin = createAdminClient()
-
-  const { data: authUserId } = await admin.rpc('get_auth_user_by_phone', { p_phone: phone })
-  if (!authUserId) return { success: false, error: 'Invalid code or phone number.' }
-
-  const { data: resetToken } = await admin
-    .from('password_reset_tokens')
-    .select('id, token_hash, expires_at, used_at, attempts')
-    .eq('auth_user_id', authUserId)
-    .is('used_at', null)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-
-  if (!resetToken) return { success: false, error: 'This code has expired. Request a new one.' }
-  if (new Date(resetToken.expires_at) < new Date()) return { success: false, error: 'This code has expired. Request a new one.' }
-  if (resetToken.attempts >= MAX_CODE_ATTEMPTS) return { success: false, error: 'Too many incorrect attempts. Request a new code.' }
-
-  if (hashInviteToken(code) !== resetToken.token_hash) {
-    await admin
-      .from('password_reset_tokens')
-      .update({ attempts: resetToken.attempts + 1 })
-      .eq('id', resetToken.id)
-    return { success: false, error: 'Incorrect code.' }
-  }
+  const result = await checkCodeAgainstStoredToken(admin, input.phone, input.code)
+  if (!result.ok) return { success: false, error: result.error }
+  const { authUserId, resetToken } = result
 
   const { data: authData, error: authErr } = await admin.auth.admin.updateUserById(authUserId, {
     password: input.password,
