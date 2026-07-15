@@ -3,16 +3,20 @@
  *
  * Order and payment status constants.
  *
- * Note: 'draft' exists in the database enum but is NOT included here.
- * Draft is reserved for future Product B customer submissions. Product A
- * orders always start at 'received'.
+ * Note: 'draft' and 'confirmed' exist in the database enum but are NOT
+ * included here. Draft is reserved for future Product B customer
+ * submissions. 'confirmed' was retired (see
+ * supabase/migrations/20240032000000_retire_confirmed_order_status.sql) —
+ * it never gated any behavior (no SMS, no payment check, nothing) and
+ * createOrder.ts already locks items/pricing before an order row exists, so
+ * the event 'confirmed' was meant to capture had already happened by
+ * definition. Product A orders always start at 'received'.
  *
  * Spec reference: Rinsion_Business_Overview.md → Order Lifecycle
  */
 
 export const ORDER_STATUSES = [
   'received',
-  'confirmed',
   'processing',
   'ready',
   'collected',
@@ -23,8 +27,7 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number]
 
 /** Valid forward transitions (Cancelled is always available as an alternative) */
 export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  received:   ['confirmed', 'cancelled'],
-  confirmed:  ['processing', 'cancelled'],
+  received:   ['processing', 'cancelled'],
   processing: ['ready', 'cancelled'],
   ready:      ['collected', 'cancelled'],
   collected:  [],

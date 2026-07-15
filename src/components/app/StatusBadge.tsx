@@ -1,11 +1,11 @@
 // Order status pill using the status.* color tokens from tailwind.config.ts.
-// All status strings match the DB enum: received | confirmed | processing | ready | collected | cancelled
+// All status strings match the DB enum, minus 'draft' and the retired
+// 'confirmed' (see constants/statuses.ts): received | processing | ready | collected | cancelled
 
-type OrderStatus = 'received' | 'confirmed' | 'processing' | 'ready' | 'collected' | 'cancelled'
+type OrderStatus = 'received' | 'processing' | 'ready' | 'collected' | 'cancelled'
 
 const LABEL: Record<OrderStatus, string> = {
   received: 'Received',
-  confirmed: 'Confirmed',
   processing: 'Processing',
   ready: 'Ready',
   collected: 'Collected',
@@ -14,7 +14,6 @@ const LABEL: Record<OrderStatus, string> = {
 
 const TOKEN: Record<OrderStatus, { bg: string; fg: string; dot: string }> = {
   received:   { bg: 'bg-status-received-bg',   fg: 'text-status-received-fg',   dot: 'bg-status-received-dot' },
-  confirmed:  { bg: 'bg-status-confirmed-bg',  fg: 'text-status-confirmed-fg',  dot: 'bg-status-confirmed-dot' },
   processing: { bg: 'bg-status-processing-bg', fg: 'text-status-processing-fg', dot: 'bg-status-processing-dot' },
   ready:      { bg: 'bg-status-ready-bg',      fg: 'text-status-ready-fg',      dot: 'bg-status-ready-dot' },
   collected:  { bg: 'bg-status-collected-bg',  fg: 'text-status-collected-fg',  dot: 'bg-status-collected-dot' },

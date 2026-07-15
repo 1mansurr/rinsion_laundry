@@ -97,13 +97,13 @@ interface Props {
   activities: OrderDetailActivity[]
 }
 
-const STEPS: OrderStatus[] = ['received', 'confirmed', 'processing', 'ready', 'collected']
+const STEPS: OrderStatus[] = ['received', 'processing', 'ready', 'collected']
 const STEP_LABELS: Record<string, string> = {
-  received: 'Received', confirmed: 'Confirmed', processing: 'Processing',
+  received: 'Received', processing: 'Processing',
   ready: 'Ready', collected: 'Collected',
 }
 const STATUS_NEXT: Partial<Record<OrderStatus, OrderStatus>> = {
-  received: 'confirmed', confirmed: 'processing', processing: 'ready',
+  received: 'processing', processing: 'ready',
 }
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {

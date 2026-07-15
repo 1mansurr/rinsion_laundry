@@ -6,7 +6,6 @@ import { useState, useTransition } from 'react'
 const STATUS_OPTIONS = [
   { value: '', label: 'All statuses' },
   { value: 'received', label: 'Received' },
-  { value: 'confirmed', label: 'Confirmed' },
   { value: 'processing', label: 'Processing' },
   { value: 'ready', label: 'Ready' },
   { value: 'collected', label: 'Collected' },

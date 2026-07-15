@@ -7,7 +7,6 @@ import type { EmployeeActivityItem } from '@/services/reports'
 
 const STATUS_LABELS: Record<string, string> = {
   received:   'Received',
-  confirmed:  'Confirmed',
   processing: 'Processing',
   ready:      'Ready',
   collected:  'Collected',
@@ -16,7 +15,6 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   received:   '#8C857B',
-  confirmed:  '#2F6F9E',
   processing: '#B8801F',
   ready:      '#0F3D2E',
   collected:  '#5E7A6B',
@@ -53,7 +51,7 @@ export default async function ReportsPage() {
     { label: 'Outstanding',       value: formatCurrency(revenue.outstandingBalance), warn: revenue.outstandingBalance > 0 },
   ]
 
-  const statusBarData = (['received', 'confirmed', 'processing', 'ready', 'collected', 'cancelled'] as const).map(s => {
+  const statusBarData = (['received', 'processing', 'ready', 'collected', 'cancelled'] as const).map(s => {
     const count = orders.byStatus[s] ?? 0
     const pct = Math.round((count / totalOrders) * 100)
     return { label: STATUS_LABELS[s], count, pct, color: STATUS_COLORS[s] }

@@ -306,11 +306,12 @@ Orders move through the following statuses:
 
 1. Draft (reserved for future Product B customer submissions)
 2. Received
-3. Confirmed
-4. Processing
-5. Ready
-6. Collected
-7. Cancelled
+3. Processing
+4. Ready
+5. Collected
+6. Cancelled
+
+**Retired: Confirmed.** Earlier revisions had a separate "Confirmed" status ("items and pricing have been verified and any disputes resolved") between Received and Processing. It was removed: `createOrder.ts` already locks items and pricing before an order row exists at all, so by the time an order reaches Received, the event Confirmed was meant to capture has already happened — it never gated any distinct behavior (no SMS, no payment check, nothing) and was purely an extra manual click. See `supabase/migrations/20240032000000_retire_confirmed_order_status.sql`.
 
 ### **Draft**
 
@@ -326,15 +327,6 @@ The system records:
 * Timestamp
 
 This establishes accountability from the moment items enter the laundry's custody.
-
-### **Confirmed**
-
-Items and pricing have been verified and any disputes resolved.
-
-The system records:
-
-* Employee ID
-* Timestamp
 
 ### **Processing**
 
