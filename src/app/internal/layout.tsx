@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { requirePlatformAdmin } from '@/services/platform/requirePlatformAdmin'
 import { InternalNav } from './InternalNav'
+import { InternalMobileNav } from './InternalMobileNav'
 import { Wordmark } from '@/components/ui/Wordmark'
 
 export default async function InternalLayout({ children }: { children: React.ReactNode }) {
@@ -16,7 +17,7 @@ export default async function InternalLayout({ children }: { children: React.Rea
 
   return (
     <div className="min-h-screen bg-canvas flex">
-      <aside className="w-52 bg-white border-r border-warm-200 flex-shrink-0 flex flex-col">
+      <aside className="hidden min-[720px]:flex w-52 bg-white border-r border-warm-200 flex-shrink-0 flex-col">
         <div className="px-4 py-5 border-b border-warm-100">
           <div className="flex items-center gap-2">
             <Wordmark size="sm" />
@@ -33,9 +34,12 @@ export default async function InternalLayout({ children }: { children: React.Rea
           </Link>
         </div>
       </aside>
-      <main className="flex-1 overflow-auto">
-        {children}
-      </main>
+      <div className="flex-1 flex flex-col min-w-0">
+        <InternalMobileNav adminLabel={adminLabel} />
+        <main className="flex-1 overflow-auto">
+          {children}
+        </main>
+      </div>
     </div>
   )
 }
