@@ -2,10 +2,12 @@
 
 import { useState, useTransition } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { requestPasswordReset } from './actions'
-import { requestPhoneReset } from '@/services/auth/phoneReset'
+import { requestPhoneReset, verifyPhoneResetCode } from '@/services/auth/phoneReset'
 import { Wordmark } from '@/components/ui/Wordmark'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 
 const initialState = { error: null, sent: false }
 
@@ -87,12 +89,16 @@ export default function ForgotPasswordPage() {
 }
 
 function PhoneResetFlow() {
+  const router = useRouter()
   const [phone, setPhone] = useState('')
-  const [sent, setSent] = useState(false)
+  const [step, setStep] = useState<'phone' | 'code'>('phone')
+  const [code, setCode] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleRequestCode(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     startTransition(async () => {
@@ -101,24 +107,107 @@ function PhoneResetFlow() {
         setError(result.error)
         return
       }
-      setSent(true)
+      setStep('code')
     })
   }
 
-  if (sent) {
+  function handleVerifyCode(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.')
+      return
+    }
+    startTransition(async () => {
+      const result = await verifyPhoneResetCode({ phone, code, password })
+      if (!result.success) {
+        setError(result.error)
+        return
+      }
+      router.push(result.data.signedIn ? '/dashboard' : '/login')
+    })
+  }
+
+  if (step === 'code') {
     return (
-      <div className="bg-white rounded-10 border border-warm-300 p-6 space-y-3 text-center">
-        <p className="text-ui font-semibold text-warm-950">Check your phone</p>
+      <form onSubmit={handleVerifyCode} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
         <p className="text-body text-warm-600">
-          If an account exists for that number, we&apos;ve sent a link to reset your password.
+          If an account exists for that number, we&apos;ve texted a 6-digit code to {phone}.
         </p>
-        <BackToSignIn />
-      </div>
+        {error && <ErrorBanner message={error} />}
+
+        <div>
+          <label htmlFor="code" className="block text-label font-medium text-warm-800 mb-1">
+            Reset code
+          </label>
+          <input
+            id="code"
+            name="code"
+            type="text"
+            inputMode="numeric"
+            pattern="\d{6}"
+            maxLength={6}
+            autoComplete="one-time-code"
+            required
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 tracking-[0.3em] text-center focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+            placeholder="123456"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="password" className="block text-label font-medium text-warm-800 mb-1">
+            New password
+          </label>
+          <PasswordInput
+            id="password"
+            name="password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="confirmPassword" className="block text-label font-medium text-warm-800 mb-1">
+            Confirm new password
+          </label>
+          <PasswordInput
+            id="confirmPassword"
+            name="confirmPassword"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="••••••••"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={isPending}
+          className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-7 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {isPending ? 'Saving…' : 'Save new password'}
+        </button>
+        <button
+          type="button"
+          onClick={() => { setStep('phone'); setError(null) }}
+          className="w-full text-center text-caption text-warm-500 hover:text-warm-800 transition-colors"
+        >
+          Use a different number
+        </button>
+      </form>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
+    <form onSubmit={handleRequestCode} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
       {error && <ErrorBanner message={error} />}
 
       <div>
@@ -144,7 +233,7 @@ function PhoneResetFlow() {
         disabled={isPending}
         className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-7 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {isPending ? 'Sending…' : 'Send reset link'}
+        {isPending ? 'Sending…' : 'Send reset code'}
       </button>
       <BackToSignIn />
     </form>

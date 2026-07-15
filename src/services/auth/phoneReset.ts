@@ -2,11 +2,13 @@
 
 import { createAdminClient } from '@/lib/supabase'
 import { toAuthPhone } from '@/utils/toAuthPhone'
-import { getBaseUrl } from '@/utils/getBaseUrl'
-import { generateInviteToken, hashInviteToken } from '@/utils/inviteToken'
+import { generateResetCode, hashInviteToken } from '@/utils/inviteToken'
 import { signIn } from '@/services/auth/signIn'
+import { sendSystemSms } from '@/services/notifications/sendSms'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
 import type { ServiceResult } from '@/types/serviceResult'
+
+const MAX_CODE_ATTEMPTS = 5
 
 /**
  * Public/unauthenticated. Mirrors createInvite's hashed-token pattern rather
@@ -14,13 +16,16 @@ import type { ServiceResult } from '@/types/serviceResult'
  * configured in the Supabase dashboard alongside mNotify (docs/auth_spec.md §1).
  * Always returns success regardless of whether the phone matched an account —
  * same enumeration-protection principle as forgot-password/actions.ts's email flow.
+ *
+ * Delivers a 6-digit code (not a link) — the caller (PhoneResetFlow) awaits
+ * this, so the SMS send below is awaited too rather than fired-and-forgotten:
+ * a dangling promise here previously risked getting cut off mid-send once the
+ * server action's response went out.
  */
 export async function requestPhoneReset(rawPhone: string): Promise<ServiceResult<null>> {
   const phone = toAuthPhone(rawPhone)
   if (!phone) return { success: false, error: 'Enter a valid phone number.' }
 
-  // Captured synchronously — headers() isn't safe inside the deferred .then() below.
-  const baseUrl = getBaseUrl()
   const admin = createAdminClient()
 
   const { data: authUserId } = await admin.rpc('get_auth_user_by_phone', { p_phone: phone })
@@ -35,59 +40,78 @@ export async function requestPhoneReset(rawPhone: string): Promise<ServiceResult
       .limit(1)
       .maybeSingle()
 
-    const { token, tokenHash } = generateInviteToken()
+    const { code, codeHash } = generateResetCode()
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString()
 
     const { error } = await admin.from('password_reset_tokens').insert({
       auth_user_id: authUserId,
-      token_hash: tokenHash,
+      token_hash: codeHash,
       expires_at: expiresAt,
     })
 
     // Only sendable if the phone still resolves to a live (non-removed) employee —
     // an orphaned auth user with no employee row has no laundry to bill the SMS to.
     if (!error && employee?.laundry_id) {
-      import('@/services/notifications/sendSms')
-        .then(m => m.sendSystemSms({
-          laundryId: employee.laundry_id,
-          phone,
-          message: `Reset your Rinsion password: ${baseUrl}/reset/${token}`,
-          triggerEvent: 'PASSWORD_RESET',
-        }))
-        .catch(() => null)
+      await sendSystemSms({
+        laundryId: employee.laundry_id,
+        phone,
+        message: `Your Rinsion password reset code is ${code}. It expires in 1 hour.`,
+        triggerEvent: 'PASSWORD_RESET',
+      }).catch(() => null)
     }
   }
 
   return { success: true, data: null }
 }
 
-export interface ConfirmPhoneResetInput {
-  token: string
+export interface VerifyPhoneResetCodeInput {
+  phone: string
+  code: string
   password: string
 }
 
 /**
- * Public/unauthenticated — possession of the token is the authorization.
- * Runs entirely on the service-role client since there is no session yet,
- * same shape as acceptInvite.
+ * Public/unauthenticated — possession of the phone's most recent unexpired
+ * code is the authorization. Runs entirely on the service-role client since
+ * there is no session yet, same shape as acceptInvite.
+ *
+ * Attempts are capped well below the 1-hour expiry (MAX_CODE_ATTEMPTS) since
+ * a 6-digit code is brute-forceable without a low attempt limit.
  */
-export async function confirmPhoneReset(input: ConfirmPhoneResetInput): Promise<ServiceResult<{ signedIn: boolean }>> {
+export async function verifyPhoneResetCode(input: VerifyPhoneResetCodeInput): Promise<ServiceResult<{ signedIn: boolean }>> {
   if (input.password.length < 8) return { success: false, error: 'Password must be at least 8 characters.' }
 
+  const phone = toAuthPhone(input.phone)
+  const code = input.code.trim()
+  if (!phone || !/^\d{6}$/.test(code)) return { success: false, error: 'Invalid code or phone number.' }
+
   const admin = createAdminClient()
-  const tokenHash = hashInviteToken(input.token)
+
+  const { data: authUserId } = await admin.rpc('get_auth_user_by_phone', { p_phone: phone })
+  if (!authUserId) return { success: false, error: 'Invalid code or phone number.' }
 
   const { data: resetToken } = await admin
     .from('password_reset_tokens')
-    .select('id, auth_user_id, expires_at, used_at')
-    .eq('token_hash', tokenHash)
+    .select('id, token_hash, expires_at, used_at, attempts')
+    .eq('auth_user_id', authUserId)
+    .is('used_at', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle()
 
-  if (!resetToken) return { success: false, error: 'Invalid or expired reset link.' }
-  if (resetToken.used_at) return { success: false, error: 'This reset link has already been used.' }
-  if (new Date(resetToken.expires_at) < new Date()) return { success: false, error: 'This reset link has expired.' }
+  if (!resetToken) return { success: false, error: 'This code has expired. Request a new one.' }
+  if (new Date(resetToken.expires_at) < new Date()) return { success: false, error: 'This code has expired. Request a new one.' }
+  if (resetToken.attempts >= MAX_CODE_ATTEMPTS) return { success: false, error: 'Too many incorrect attempts. Request a new code.' }
 
-  const { data: authData, error: authErr } = await admin.auth.admin.updateUserById(resetToken.auth_user_id, {
+  if (hashInviteToken(code) !== resetToken.token_hash) {
+    await admin
+      .from('password_reset_tokens')
+      .update({ attempts: resetToken.attempts + 1 })
+      .eq('id', resetToken.id)
+    return { success: false, error: 'Incorrect code.' }
+  }
+
+  const { data: authData, error: authErr } = await admin.auth.admin.updateUserById(authUserId, {
     password: input.password,
   })
   if (authErr) return { success: false, error: authErr.message }
@@ -100,7 +124,7 @@ export async function confirmPhoneReset(input: ConfirmPhoneResetInput): Promise<
   const { data: employee } = await admin
     .from('employees')
     .select('id, laundry_id')
-    .eq('auth_user_id', resetToken.auth_user_id)
+    .eq('auth_user_id', authUserId)
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(1)
