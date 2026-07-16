@@ -47,7 +47,7 @@ export async function getOrders(laundryId: string, status?: OrderStatus): Promis
       total: Number(r.total),
       pickupDate: r.pickup_date,
       createdAt: r.created_at,
-      customerName: customer ? `${customer.first_name} ${customer.last_name}` : '',
+      customerName: customer ? `${decryptField(customer.first_name) ?? ''} ${decryptField(customer.last_name) ?? ''}`.trim() : '',
       customerPhone: customer ? decryptField(customer.phone) ?? '' : '',
       branchName: branch?.name ?? '',
     }

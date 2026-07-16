@@ -1,8 +1,9 @@
 /**
  * lib/crypto/fieldEncryption.ts
  *
- * Application-level field encryption for personal-data columns (customers.phone,
- * employees.email/phone) — a layer on top of Supabase's own at-rest encryption,
+ * Application-level field encryption for personal-data columns
+ * (customers.first_name/last_name/phone, employees.email/phone) — a layer on
+ * top of Supabase's own at-rest encryption,
  * so a leaked SUPABASE_SERVICE_ROLE_KEY or raw DB/SQL access doesn't hand out
  * plaintext PII.
  *

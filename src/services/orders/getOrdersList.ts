@@ -30,23 +30,30 @@ export async function getOrdersList(
   const from = (page - 1) * perPage
   const to = from + perPage - 1
 
-  // For search, first find matching customer IDs by name/phone. phone is
-  // encrypted at rest — ciphertext can't substring-match, so phone search
-  // only matches a full, exact phone number via the blind index.
+  // For search, first find matching customer IDs by name/phone. Names are
+  // encrypted at rest — ciphertext can't substring-match, so this fetches
+  // the laundry's customers and decrypts+filters in the app (Option B; see
+  // getCustomersList.ts). Phone search still matches a full, exact phone
+  // number via the blind index.
   let matchedCustomerIds: string[] | null = null
   if (q) {
     const qDigits = q.replace(/\D/g, '')
-    const orFilter = qDigits.length >= 9
-      ? `first_name.ilike.*${q}*,last_name.ilike.*${q}*,phone_bidx.eq.${computeBlindIndex(normalizeCustomerPhone(q))}`
-      : `first_name.ilike.*${q}*,last_name.ilike.*${q}*`
+    const phoneBidx = qDigits.length >= 9 ? computeBlindIndex(normalizeCustomerPhone(q)) : null
+    const needle = q.trim().toLowerCase()
     const { data: custs } = await supabase
       .from('customers')
-      .select('id')
+      .select('id, first_name, last_name, phone_bidx')
       .eq('laundry_id', laundryId)
       .is('deleted_at', null)
-      .or(orFilter)
-      .limit(50)
-    matchedCustomerIds = (custs ?? []).map(c => c.id)
+    matchedCustomerIds = (custs ?? [])
+      .filter(c => {
+        if (phoneBidx !== null && c.phone_bidx === phoneBidx) return true
+        const fn = decryptField(c.first_name) ?? ''
+        const ln = decryptField(c.last_name) ?? ''
+        return `${fn} ${ln}`.toLowerCase().includes(needle)
+      })
+      .slice(0, 50)
+      .map(c => c.id)
   }
 
   let query = supabase
@@ -84,8 +91,8 @@ export async function getOrdersList(
     const branch = o.branches as unknown as { name: string } | null
     const items = (o.order_items as unknown as { quantity: number; pricing_mode: 'per_item' | 'per_kg' }[]) ?? []
     const pmts = (o.payments as unknown as { amount: number }[]) ?? []
-    const fn = cust?.first_name ?? ''
-    const ln = cust?.last_name ?? ''
+    const fn = cust ? decryptField(cust.first_name) ?? '' : ''
+    const ln = cust ? decryptField(cust.last_name) ?? '' : ''
     return {
       id: o.id,
       orderNumber: o.order_number,

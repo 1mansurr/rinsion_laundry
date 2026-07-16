@@ -22,8 +22,8 @@ export async function getDeletedCustomers(laundryId: string): Promise<DeletedCus
 
   return (data ?? []).map(r => ({
     id: r.id,
-    firstName: r.first_name,
-    lastName: r.last_name,
+    firstName: decryptField(r.first_name) ?? '',
+    lastName: decryptField(r.last_name) ?? '',
     phone: decryptField(r.phone) ?? '',
     deletedAt: r.deleted_at as string,
   }))

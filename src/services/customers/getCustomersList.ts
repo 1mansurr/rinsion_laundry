@@ -24,39 +24,16 @@ export async function getCustomersList(
   const from = (page - 1) * perPage
   const to = from + perPage - 1
 
-  let query = supabase
-    .from('customers')
-    .select(
-      `id, first_name, last_name, phone, last_visit_date,
-       orders(id, total, status, created_at, payments(amount))`,
-      { count: 'exact' }
-    )
-    .eq('laundry_id', laundryId)
-    .is('deleted_at', null)
-    .order('last_visit_date', { ascending: false, nullsFirst: false })
-    .range(from, to)
+  const selectCols = `id, first_name, last_name, phone, phone_bidx, last_visit_date,
+       orders(id, total, status, created_at, payments(amount))`
 
-  // phone is encrypted at rest — ciphertext can't substring-match, so name
-  // search stays ilike, and phone search only matches a full, exact phone
-  // number via the blind index (partial-digit phone search is no longer
-  // possible; see src/lib/crypto/fieldEncryption.ts).
-  if (q) {
-    const qDigits = q.replace(/\D/g, '')
-    if (qDigits.length >= 9) {
-      const phoneBidx = computeBlindIndex(normalizeCustomerPhone(q))
-      query = query.or(`first_name.ilike.*${q}*,last_name.ilike.*${q}*,phone_bidx.eq.${phoneBidx}`)
-    } else {
-      query = query.or(`first_name.ilike.*${q}*,last_name.ilike.*${q}*`)
-    }
+  type Row = {
+    id: string; first_name: string; last_name: string; phone: string; phone_bidx: string
+    orders: { id: string; total: number; status: string; created_at: string; payments: { amount: number }[] }[] | null
   }
 
-  const { data, count } = await query
-
-  const rows = (data ?? []).map(c => {
-    const orders = (c.orders as unknown as {
-      id: string; total: number; status: string; created_at: string
-      payments: { amount: number }[]
-    }[]) ?? []
+  const shape = (c: Row): CustomerListRow => {
+    const orders = c.orders ?? []
 
     let totalSpent = 0
     let outstandingBalance = 0
@@ -76,15 +53,55 @@ export async function getCustomersList(
 
     return {
       id: c.id,
-      firstName: c.first_name,
-      lastName: c.last_name,
+      firstName: decryptField(c.first_name) ?? '',
+      lastName: decryptField(c.last_name) ?? '',
       phone: decryptField(c.phone) ?? '',
       ordersCount,
       totalSpent,
       outstandingBalance,
       lastOrderDate,
     }
-  })
+  }
 
-  return { rows, total: count ?? 0 }
+  if (!q) {
+    const { data, count } = await supabase
+      .from('customers')
+      .select(selectCols, { count: 'exact' })
+      .eq('laundry_id', laundryId)
+      .is('deleted_at', null)
+      .order('last_visit_date', { ascending: false, nullsFirst: false })
+      .range(from, to)
+
+    return { rows: ((data ?? []) as unknown as Row[]).map(shape), total: count ?? 0 }
+  }
+
+  // Names are encrypted at rest — ciphertext can't substring-match, so
+  // search fetches every laundry-scoped customer, decrypts names in the app,
+  // and filters with a plain substring check (Option B: cheap at the scale
+  // a single laundry's customer list runs at; revisit with a dedicated
+  // search index only if that stops being true). Phone search still uses
+  // the blind index for an exact match, computed server-side.
+  const qDigits = q.replace(/\D/g, '')
+  const phoneBidx = qDigits.length >= 9 ? computeBlindIndex(normalizeCustomerPhone(q)) : null
+  const needle = q.trim().toLowerCase()
+
+  const { data: allRows } = await supabase
+    .from('customers')
+    .select(selectCols)
+    .eq('laundry_id', laundryId)
+    .is('deleted_at', null)
+    .order('last_visit_date', { ascending: false, nullsFirst: false })
+
+  const rows = (allRows ?? []) as unknown as Row[]
+  const filtered = rows
+    .filter(r => {
+      const matchesPhone = phoneBidx !== null && r.phone_bidx === phoneBidx
+      if (matchesPhone) return true
+      const fn = decryptField(r.first_name) ?? ''
+      const ln = decryptField(r.last_name) ?? ''
+      return `${fn} ${ln}`.toLowerCase().includes(needle)
+    })
+    .map(shape)
+
+  return { rows: filtered.slice(from, to + 1), total: filtered.length }
 }

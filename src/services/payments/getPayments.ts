@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase'
+import { decryptField } from '@/lib/crypto'
 
 export interface PaymentListRow {
   id: string
@@ -95,7 +96,7 @@ export async function getPayments(
       date: p.created_at,
       orderNumber: order?.order_number ?? '',
       orderId: order?.id ?? '',
-      customerName: cust ? `${cust.first_name} ${cust.last_name}` : '',
+      customerName: cust ? `${decryptField(cust.first_name) ?? ''} ${decryptField(cust.last_name) ?? ''}`.trim() : '',
       method: (p.payment_method as string) ?? '',
       amount: Number(p.amount),
       recordedBy: emp ? `${emp.first_name} ${emp.last_name}` : '',

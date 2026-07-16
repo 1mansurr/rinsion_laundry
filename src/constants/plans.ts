@@ -11,7 +11,7 @@ export const PLANS = {
     price: 0,
     dailyRate: 0,
     employeeLimit: 4,
-    branchLimit: 3,
+    branchLimit: 1,
     smsQuota: 300,
     durationDays: 14,
   },

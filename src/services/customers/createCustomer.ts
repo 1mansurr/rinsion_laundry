@@ -40,8 +40,8 @@ export async function createCustomer(input: {
       data: {
         id: existing.id,
         customerCode: existing.customer_code,
-        firstName: existing.first_name,
-        lastName: existing.last_name,
+        firstName: decryptField(existing.first_name) ?? '',
+        lastName: decryptField(existing.last_name) ?? '',
         phone: decryptField(existing.phone) ?? '',
         lastVisitDate: existing.last_visit_date,
         createdAt: existing.created_at,
@@ -56,8 +56,8 @@ export async function createCustomer(input: {
     .insert({
       laundry_id: emp.laundry_id,
       customer_code: customerCode,
-      first_name: input.firstName.trim(),
-      last_name: input.lastName.trim(),
+      first_name: encryptField(input.firstName.trim()),
+      last_name: encryptField(input.lastName.trim()),
       phone: encryptField(normalizedPhone),
       phone_bidx: phoneBidx,
     })
@@ -72,8 +72,8 @@ export async function createCustomer(input: {
     data: {
       id: data.id,
       customerCode: data.customer_code,
-      firstName: data.first_name,
-      lastName: data.last_name,
+      firstName: decryptField(data.first_name) ?? '',
+      lastName: decryptField(data.last_name) ?? '',
       phone: decryptField(data.phone) ?? '',
       lastVisitDate: data.last_visit_date,
       createdAt: data.created_at,

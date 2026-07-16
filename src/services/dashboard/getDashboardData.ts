@@ -93,7 +93,7 @@ export async function getDashboardData(
       id: o.id,
       orderNumber: o.order_number,
       pickupCode: o.pickup_code,
-      customerName: c ? `${c.first_name} ${c.last_name}` : '—',
+      customerName: c ? `${decryptField(c.first_name) ?? ''} ${decryptField(c.last_name) ?? ''}`.trim() : '—',
       phone: c ? decryptField(c.phone) ?? '' : '',
       branchId: b?.id ?? '',
       branchName: b?.name ?? '',
@@ -116,7 +116,7 @@ export async function getDashboardData(
       actionType: a.action_type as string,
       createdAt: a.created_at as string,
       employeeName: emp ? `${emp.first_name} ${emp.last_name}` : (a.internal_admin_email as string | null) ?? '',
-      customerName: cust ? `${cust.first_name} ${cust.last_name}`.trim() : '',
+      customerName: cust ? `${decryptField(cust.first_name) ?? ''} ${decryptField(cust.last_name) ?? ''}`.trim() : '',
     }
   })
 

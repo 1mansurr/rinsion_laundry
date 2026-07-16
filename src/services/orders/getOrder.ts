@@ -29,6 +29,10 @@ export async function getOrder(id: string) {
 
   if (!data) return data
   const customer = data.customers as unknown as { id: string; first_name: string; last_name: string; phone: string } | null
-  if (customer) customer.phone = decryptField(customer.phone) ?? ''
+  if (customer) {
+    customer.first_name = decryptField(customer.first_name) ?? ''
+    customer.last_name = decryptField(customer.last_name) ?? ''
+    customer.phone = decryptField(customer.phone) ?? ''
+  }
   return data
 }

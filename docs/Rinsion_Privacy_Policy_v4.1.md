@@ -1,9 +1,9 @@
 # Rinsion Privacy Policy
 
-**Status: DRAFT (v3), pending review by a qualified Ghanaian lawyer. Do not publish until the `[CONFIRM: …]` items below are resolved and the draft has been reviewed.**
+**Status: DRAFT (v4.1), verified against the live codebase and pending review by a qualified Ghanaian lawyer. Do not publish until the `[CONFIRM: …]` / `[FILL: …]` items below are resolved and the draft has been reviewed.**
 
-**Effective date:** [FILL: date this is published/becomes binding]
-**Last updated:** 2026-07-14
+**Effective date:** [FILL: date this is published/becomes binding — a business decision, to be set when Rinsion is ready to launch commercially]
+**Last updated:** 2026-07-16
 
 ---
 
@@ -65,9 +65,11 @@ We process laundry-customer data solely to deliver the features the laundry uses
 
 SMS messages are delivered through **mNotify**, a Ghana-based SMS provider. mNotify receives the recipient's phone number and the text of each message in order to deliver it.
 
-Messages sent to a laundry's customers contain the **laundry's name, an order number, and a pickup code**. They do **not** contain the customer's name. Messages sent to laundry administrators relate to their own account, for example subscription reminders.
+Messages sent to a laundry's customers contain the **laundry's name, an order number, and a pickup code**. They do **not** contain the customer's name. Messages sent to laundry staff relate to their own account, for example subscription renewal reminders, SMS usage warnings, staff invitation links, and password-reset codes.
 
-> [CONFIRM: message wording is still being finalised. Keep this section describing *categories* of information, not exact copy, so it does not go stale.]
+Delivery is not guaranteed. If a message fails to send (for example due to a network issue or an invalid number), we log the failure internally for review; failed messages are not automatically retried.
+
+> [CONFIRM: message wording is still being finalised (confirmed in the codebase as of this review — every SMS template carries an internal "confirm wording after laundry owner interviews" note). Keep this section describing *categories* of information, not exact copy, so it does not go stale.]
 
 ## 6. Third parties who process data for us
 
@@ -84,17 +86,17 @@ We do not use any analytics, tracking, or advertising services.
 
 ## 7. Where data is stored, and international transfers
 
-Our database and authentication are hosted by Supabase on servers located in the **European Union (Ireland)**. This means personal data, including account-holder and laundry-customer data, **is stored outside Ghana**. Our application is hosted by Vercel, which may process traffic through data centres in various locations.
+Our database and authentication are hosted by Supabase on servers located in the **European Union (Ireland, eu-west-1)**. This means personal data, including account-holder and laundry-customer data, **is stored outside Ghana**. Our application is hosted by Vercel, which may process traffic through data centres in various locations.
 
-Some personal data is transferred to or stored outside Ghana through our authorised service providers, including Supabase servers in the European Union and infrastructure used by Vercel. We take reasonable steps to ensure such international transfers comply with the Data Protection Act, 2012 (Act 843). Where required by applicable law, we disclose the countries to which personal data may be transferred as part of our obligations under the Act.
-
-
+Some personal data is transferred to or stored outside Ghana through our authorised service providers, including Supabase and infrastructure used by Vercel. We take reasonable steps to ensure such international transfers comply with the Data Protection Act, 2012 (Act 843). Where required by applicable law, we disclose the countries to which personal data may be transferred as part of our obligations under the Act.
 
 ## 8. Security and data breaches
 
 We take reasonable steps to protect data, including:
 - Passwords are stored only as secure hashes, never in plain text
-- Personal data such as names and phone numbers is encrypted where it is stored
+- Phone numbers and email addresses are encrypted by our application before they are stored — everywhere they appear in our systems (account holders, prospective staff, End Customers, and message logs) — in addition to our database provider's own storage-level protections
+- End Customer names are also encrypted by our application before they are stored. Search-by-name (for example, finding a customer or an order by typing part of a name) still works: matching happens after the relevant records are decrypted for your own laundry, not against the encrypted text itself.
+- Staff and prospective-staff names are stored as ordinary text today, protected by our database provider's storage-level protections and by the access controls described below, but not yet separately encrypted by our application. We plan to extend application-level encryption to these names in a future update.
 - Data is encrypted while travelling between your device and our servers (HTTPS)
 - Access to a laundry's data is restricted to that laundry, enforced at the database level
 - Deletion of financial and personal records is restricted to controlled internal processes, not open to ordinary account access
@@ -111,11 +113,11 @@ Ghana's Data Protection Act, 2012 (Act 843), expects personal data not to be kep
 - When personal data is erased, we remove identifying details (name, phone number, email) from the person's records and from associated message and activity logs.
 - Where a record must be kept for financial, tax, or accountability reasons (for example, that an order was placed or a payment was recorded, and which staff member handled it), we keep the record with the personal details removed, so the transaction history stays intact but the individual is no longer identifiable.
 
-**How to request erasure.** If you want your personal data permanently erased, email us at the address below and we will action it, subject to the financial and legal retention limits above. If you are a customer of a laundry, ask the laundry, and they can request erasure through us on your behalf.
+**How to request erasure.** If you want your personal data permanently erased, email us at the address below. Erasure requests are handled manually by our team: we verify the request, then permanently anonymise the relevant record. This is not an instant, automated process, and once completed it cannot be undone. If you are a customer of a laundry, ask the laundry, and they can request erasure through us on your behalf.
 
-**Retention schedule.** Records that are not erased on request are removed under a defined retention schedule for each type of data.
+**Retention schedule.** We intend for records that are not erased on request to also be removed automatically under a defined retention schedule for each type of data. The underlying mechanism exists in our systems but does not yet run, because the category-specific time periods below have not yet been finalised.
 
-> **Implementation note (remove before publication):** Before launch, Rinsion must research all applicable legal retention obligations (including tax, accounting, commercial, and data protection requirements), decide and document category-specific retention periods, implement those periods operationally, and replace this note with the final published retention schedule.
+> **Implementation note (remove before publication):** Before launch, Rinsion must research all applicable legal retention obligations (including tax, accounting, commercial, and data protection requirements), decide and document category-specific retention periods, configure those periods in our systems so the existing automated process takes effect, and replace this note with the final published retention schedule.
 
 ## 10. Your rights
 

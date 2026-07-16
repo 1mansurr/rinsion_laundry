@@ -53,12 +53,16 @@ export async function anonymizeCustomerTx(
   const oldPhonePlain = decryptField(customer.phone) ?? customer.phone
   const anonPhone = normalizeCustomerPhone(SENTINEL_PHONE)
 
+  // p_old_first_name/p_old_last_name feed a literal substring replace() over
+  // order_notes free text inside the RPC (see
+  // supabase/migrations/20240027000000_anonymize_rpcs.sql) — that text was
+  // never encrypted, so the values passed in must be plaintext too.
   const { error } = await admin.rpc('anonymize_customer_tx', {
     p_customer_id: customerId,
     p_anon_phone_ct: encryptField(anonPhone),
     p_anon_phone_bidx: computeBlindIndex(`anonymized:${customerId}`),
-    p_old_first_name: customer.first_name,
-    p_old_last_name: customer.last_name,
+    p_old_first_name: decryptField(customer.first_name) ?? customer.first_name,
+    p_old_last_name: decryptField(customer.last_name) ?? customer.last_name,
     p_old_phone_plain: oldPhonePlain,
     p_trigger_description: options.triggerDescription,
     p_erasure_request_id: options.erasureRequestId ?? null,

@@ -1,9 +1,9 @@
 # Rinsion Terms of Service
 
-**Status: DRAFT (v3), pending review by a qualified Ghanaian lawyer. Do not publish until the `[CONFIRM: …]` items below are resolved and the draft has been reviewed.**
+**Status: DRAFT (v4.1), verified against the live codebase and pending review by a qualified Ghanaian lawyer. Do not publish until the `[CONFIRM: …]` / `[FILL: …]` items below are resolved and the draft has been reviewed.**
 
-**Effective date:** [FILL: date this is published/becomes binding]
-**Last updated:** 2026-07-14
+**Effective date:** [FILL: date this is published/becomes binding — a business decision, to be set when Rinsion is ready to launch commercially]
+**Last updated:** 2026-07-15
 
 ---
 
@@ -28,10 +28,10 @@ Rinsion helps a Laundry manage orders, customers, pricing, payments (recording),
 ## 4. Accounts and eligibility
 
 - Rinsion is for business use only. Account Holders must be 18 or older.
-- You are responsible for everything done under your accounts.
+- A Laundry account may be created directly through our sign-up flow, or, in some cases, set up by our team as part of onboarding a new Laundry. Either way, these Terms apply from the point the account is created.
+- Every Account Holder holds one of two roles: **administrator** or **employee**. Administrators can invite, remove, and manage other Account Holders and are responsible for setting their roles correctly; employees have day-to-day operating access. You are responsible for everything done under your accounts, and for your Account Holders' use of the Service.
 - You must keep login credentials secure and notify us promptly of any unauthorised access.
-- You are responsible for your Account Holders' use of the Service and for setting their roles and permissions correctly.
-- In Product A, End Customers do not hold accounts; only Laundry staff do.
+- End Customers do not hold their own accounts or log in to the Service; only Laundry staff (Account Holders) do.
 
 ## 5. Free trial
 
@@ -41,27 +41,30 @@ New Laundries may receive a one-time free trial of **14 days**. During the trial
 
 Rinsion is offered on the plans below. Current pricing and allowances are shown here and on our Pricing page, and may change on reasonable notice.
 
-| Plan | Price | Billing cycle | Staff accounts | Branches | SMS included per cycle |
-|---|---|---|---|---|---|
-| Trial | Free | 14 days, one time | [CONFIRM: 4] | [CONFIRM: 1] | [CONFIRM: trial SMS allowance] |
-| Starter | GHS 90 per month | 30 days | 4 | 1 | 300 |
-| Growth | GHS 180 per month | 30 days | 9 | 3 | 800 |
+| Plan | Price | Billing cycle | Staff accounts | SMS included per cycle |
+|---|---|---|---|---|
+| Trial | Free | 14 days, one time | 4 | 300 |
+| Starter | GHS 90 per month | 30 days | 4 | 300 |
+| Growth | GHS 180 per month | 30 days | 9 | 800 |
 
 - SMS beyond your plan's included amount is charged at GHS 0.05 per message, up to 30 extra messages per cycle, after which further messages may not be sent until the next cycle or a plan upgrade.
 - After any trial, continued use requires an active paid subscription.
-- At launch, subscription payments are collected **manually via Mobile Money**; we may later enable in-app payment (for example through Paystack). We will tell you which methods apply.
+- Subscription payments are collected **manually via Mobile Money**; we may later enable in-app payment (for example through Paystack), and we will tell you when that changes. Because payment is manual, subscriptions do **not** renew automatically — you (or your administrator) must send payment and confirm it each cycle, as described below.
 - Fees are stated in Ghana Cedis (GHS) and are **[CONFIRM: inclusive or exclusive] of any applicable taxes**.
-- Subscriptions **[CONFIRM: renew automatically each cycle unless cancelled, or must be renewed manually]**.
-- A renewal starts a new 30-day cycle from the date the renewal payment is recorded.
+- **How a renewal is recorded.** After you send a Mobile Money payment, your administrator confirms this in the Service with the payment reference. We verify the payment and, once confirmed, your subscription becomes active again. A renewal starts a new 30-day cycle from the date **we record the payment as verified**, not from the date you sent it.
 - We may change pricing or plan allowances on reasonable notice **[CONFIRM: notice period, for example 30 days]**. Continued use after a change means you accept it.
 
-**If a subscription lapses.** After the due date there is a short grace period during which the Service continues to work. If payment is still not made, access is progressively restricted, and then paused, while your data is retained and can be recovered once you renew.
+**If a subscription lapses.** If payment is not made by your cycle's end date, your account moves through the following stages automatically:
 
-> [CONFIRM: make sure the product enforces this restriction consistently across all actions before relying on it here, and confirm the grace-period lengths.]
+1. **Days 1–10 past due (grace period):** the Service continues to work normally. You will see a reminder that your subscription is overdue.
+2. **Days 11–20 past due (restricted):** new orders, payments, and other write actions are blocked. You can still view your existing data.
+3. **From day 21 past due (paused):** the account is locked. Your data is retained and access is restored once you renew.
 
 ## 7. Refunds
 
-**[CONFIRM: your refund policy.]** Decide clearly, before launch, what you will and will not refund, and make sure it complies with any consumer-protection rules your lawyer identifies.
+This section covers refunds of **your Rinsion subscription fees**. It does not affect the Service's separate order-refund feature, which lets your staff record a refund to one of your own End Customers for a specific order — that is a record-keeping tool for your business, not a Rinsion billing refund.
+
+**[CONFIRM: your subscription-fee refund policy.]** Decide clearly, before launch, what you will and will not refund, and make sure it complies with any consumer-protection rules your lawyer identifies.
 
 ## 8. Customer Data and data processing
 
@@ -70,14 +73,16 @@ This section governs personal data about End Customers.
 - **You are the controller of Customer Data; we are the processor.** You decide what to collect and why; we process it only to provide the Service and on your reasonable instructions.
 - **Your responsibilities.** You confirm that you have a lawful basis, and any consent required under Ghana's Data Protection Act, 2012 (Act 843), to collect and store your End Customers' personal data and to have SMS messages sent to them through the Service. You are responsible for the accuracy of the phone numbers you enter, since messages go to whatever number you record. You are also responsible for your own registration with the Data Protection Commission if the Act requires it for your business.
 - **Our commitments.** We will keep Customer Data confidential, apply reasonable security, and use it only to run the Service. If we discover a data breach affecting your Customer Data, we will inform you without undue delay. We will pass on data-subject requests we receive that relate to your End Customers so you can handle them, and we can permanently erase Customer Data on your instruction.
-- **Sub-processors.** We use Supabase (database and authentication, hosted in the EU), mNotify (SMS delivery, Ghana), and Vercel (hosting). We may enable Paystack for payments in future. By using the Service you agree to our use of these providers. Some Customer Data may be be processed or stored outside Ghana through authorised service providers described in our Privacy Policy. We take reasonable steps to ensure such transfers comply with the Data Protection Act, 2012 (Act 843). Where required under applicable law, we will disclose the countries to which personal data may be transferred as part of our obligations under Act 843 and our registration with the Data Protection Commission.
+- **Sub-processors.** We use Supabase (database and authentication, hosted in the **European Union (Ireland, eu-west-1)**), mNotify (SMS delivery, Ghana), and Vercel (hosting). Paystack is not yet active; we will update this list before enabling it. By using the Service you agree to our use of these providers. Some Customer Data is processed or stored outside Ghana through these providers, as described in our Privacy Policy. We take reasonable steps to ensure such transfers comply with the Data Protection Act, 2012 (Act 843). Where required under applicable law, we will disclose the countries to which personal data may be transferred as part of our obligations under Act 843 and our registration with the Data Protection Commission.
 - **Erasure and retention.** We retain Customer Data only for as long as reasonably necessary for the purposes for which it was collected, unless a longer retention period is required or authorised by law, reasonably necessary for a lawful purpose, required under a contract, or authorised by the data subject. When Customer Data is no longer required, we permanently delete it or irreversibly de-identify it.
 
 > This Data Processing section forms part of these Terms and governs the controller–processor relationship between the parties. Rinsion intends to complete any registration required under the Data Protection Act, 2012 (Act 843), including registration as a data controller where applicable, before commercial launch.
 
 ## 9. Notifications and sender ID
 
-The Service sends SMS on your behalf at defined points, for example when an order is created or ready. At launch, messages are sent under a shared "Rinsion" sender identity, so the message body names your Laundry. You are responsible for ensuring you may lawfully message the recipients.
+The Service sends SMS on your behalf at defined points: to your End Customers when an order is created, ready for pickup, or when a pickup code is resent; and to your administrators for account-related matters such as subscription renewal reminders, SMS usage warnings, staff invitations, and password-reset codes. At launch, messages are sent under a shared "Rinsion" sender identity, so the message body names your Laundry. You are responsible for ensuring you may lawfully message the recipients.
+
+We use reasonable efforts to deliver messages through our SMS provider, but delivery is not guaranteed — messages can fail because of network issues, invalid numbers, or provider outages beyond our control, and a failed message is not automatically retried. We log delivery failures for our own review.
 
 ## 10. Acceptable use
 
@@ -111,7 +116,7 @@ You agree to cover us for claims arising from your misuse of the Service or your
 
 ## 15. Suspension and termination
 
-- You may stop using the Service and close your account at any time. Closure hides your data from your staff, and you may ask us to permanently erase it, subject to the retention limits in our Privacy Policy.
+- Your administrator may close your Laundry's account at any time. Closure immediately blocks every Account Holder's access and hides your data from your staff. **Closing an account cannot be undone by your administrator through the Service** — if you want the account reopened, contact us. Separately, you may ask us to permanently erase your data, subject to the retention limits in our Privacy Policy; erasure is handled manually by our team, not automatically, and is irreversible once completed.
 - We may suspend or terminate access if you breach these Terms, fail to pay, or use the Service unlawfully. Where reasonable, we will give notice and a chance to fix the problem first.
 - Provisions that by their nature should survive termination, for example payment obligations, intellectual property, liability, and indemnity, continue after termination.
 

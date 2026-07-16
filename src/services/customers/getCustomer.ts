@@ -16,5 +16,10 @@ export async function getCustomer(id: string) {
     .single()
 
   if (!data) return data
-  return { ...data, phone: decryptField(data.phone) ?? '' }
+  return {
+    ...data,
+    first_name: decryptField(data.first_name) ?? '',
+    last_name: decryptField(data.last_name) ?? '',
+    phone: decryptField(data.phone) ?? '',
+  }
 }

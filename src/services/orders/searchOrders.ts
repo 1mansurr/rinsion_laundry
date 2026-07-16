@@ -28,7 +28,7 @@ export async function searchOrders(laundryId: string, query: string): Promise<Or
       total: Number(r.total),
       pickupDate: r.pickup_date as string | null,
       createdAt: r.created_at as string,
-      customerName: customer ? `${customer.first_name} ${customer.last_name}` : '',
+      customerName: customer ? `${decryptField(customer.first_name) ?? ''} ${decryptField(customer.last_name) ?? ''}`.trim() : '',
       customerPhone: customer ? decryptField(customer.phone) ?? '' : '',
       branchName: (branch as { name: string } | null)?.name ?? '',
     }
@@ -44,22 +44,29 @@ export async function searchOrders(laundryId: string, query: string): Promise<Or
     .order('created_at', { ascending: false })
     .limit(20)
 
-  // Search by customer name / phone. phone is encrypted at rest — ciphertext
-  // can't substring-match, so phone search only matches a full, exact phone
+  // Search by customer name / phone. Names are encrypted at rest —
+  // ciphertext can't substring-match, so this fetches the laundry's
+  // customers and decrypts+filters in the app (Option B; see
+  // getCustomersList.ts). Phone search still matches a full, exact phone
   // number via the blind index.
   const qDigits = q.replace(/\D/g, '')
-  const customerOrFilter = qDigits.length >= 9
-    ? `first_name.ilike.*${q}*,last_name.ilike.*${q}*,phone_bidx.eq.${computeBlindIndex(normalizeCustomerPhone(q))}`
-    : `first_name.ilike.*${q}*,last_name.ilike.*${q}*`
-  const { data: matchingCustomers } = await supabase
+  const phoneBidx = qDigits.length >= 9 ? computeBlindIndex(normalizeCustomerPhone(q)) : null
+  const needle = q.toLowerCase()
+  const { data: allCustomers } = await supabase
     .from('customers')
-    .select('id')
+    .select('id, first_name, last_name, phone_bidx')
     .eq('laundry_id', laundryId)
     .is('deleted_at', null)
-    .or(customerOrFilter)
-    .limit(50)
 
-  const customerIds = (matchingCustomers ?? []).map(c => c.id)
+  const customerIds = (allCustomers ?? [])
+    .filter(c => {
+      if (phoneBidx !== null && c.phone_bidx === phoneBidx) return true
+      const fn = decryptField(c.first_name) ?? ''
+      const ln = decryptField(c.last_name) ?? ''
+      return `${fn} ${ln}`.toLowerCase().includes(needle)
+    })
+    .slice(0, 50)
+    .map(c => c.id)
   let byCustomer: typeof byOrder = []
   if (customerIds.length > 0) {
     const { data } = await supabase

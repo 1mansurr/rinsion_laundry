@@ -25,8 +25,8 @@ export async function getCustomers(laundryId: string): Promise<Customer[]> {
   return (data ?? []).map(r => ({
     id: r.id,
     customerCode: r.customer_code,
-    firstName: r.first_name,
-    lastName: r.last_name,
+    firstName: decryptField(r.first_name) ?? '',
+    lastName: decryptField(r.last_name) ?? '',
     phone: decryptField(r.phone) ?? '',
     lastVisitDate: r.last_visit_date,
     createdAt: r.created_at,

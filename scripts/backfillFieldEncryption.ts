@@ -3,8 +3,9 @@
  *
  * One-off backfill for application-level field encryption (see
  * src/lib/crypto/fieldEncryption.ts): encrypts existing plaintext
- * customers.phone, employees.email/phone, join_requests.email/phone, and
- * sms_messages.phone, and populates customers.phone_bidx for every row.
+ * customers.first_name/last_name/phone, employees.email/phone,
+ * join_requests.email/phone, and sms_messages.phone, and populates
+ * customers.phone_bidx for every row.
  *
  * join_requests/sms_messages were added later (see
  * docs/deletion_retention_plan.md §6) — same idempotent, envelope-check
@@ -30,6 +31,14 @@ import { normalizeCustomerPhone } from '../src/utils/normalizeCustomerPhone'
 const BATCH_SIZE = 500
 const ENVELOPE_PREFIX = 'v1:'
 
+// anonymize_customer_tx (supabase/migrations/20240027000000_anonymize_rpcs.sql)
+// writes this literal sentinel for erased customers, and
+// runScheduledAnonymization.ts filters on it staying literal plaintext
+// forever — never encrypt it, or that filter silently stops matching
+// already-anonymized rows.
+const ANON_FIRST_NAME = 'Deleted'
+const ANON_LAST_NAME = 'Customer'
+
 async function backfillCustomers(): Promise<number> {
   const supabase = createAdminClient()
   let offset = 0
@@ -38,7 +47,7 @@ async function backfillCustomers(): Promise<number> {
   while (true) {
     const { data, error } = await supabase
       .from('customers')
-      .select('id, phone')
+      .select('id, first_name, last_name, phone')
       .order('id', { ascending: true })
       .range(offset, offset + BATCH_SIZE - 1)
 
@@ -46,13 +55,22 @@ async function backfillCustomers(): Promise<number> {
     if (!data || data.length === 0) break
 
     for (const row of data) {
-      if (row.phone.startsWith(ENVELOPE_PREFIX)) continue // already migrated
+      const isAnonymized = row.first_name === ANON_FIRST_NAME && row.last_name === ANON_LAST_NAME
+      const firstNameNeedsEncrypt = !isAnonymized && !row.first_name.startsWith(ENVELOPE_PREFIX)
+      const lastNameNeedsEncrypt = !isAnonymized && !row.last_name.startsWith(ENVELOPE_PREFIX)
+      const phoneNeedsEncrypt = !row.phone.startsWith(ENVELOPE_PREFIX)
+      if (!firstNameNeedsEncrypt && !lastNameNeedsEncrypt && !phoneNeedsEncrypt) continue // already migrated
 
-      const normalized = normalizeCustomerPhone(row.phone)
-      const { error: updErr } = await supabase
-        .from('customers')
-        .update({ phone: encryptField(normalized), phone_bidx: computeBlindIndex(normalized) })
-        .eq('id', row.id)
+      const update: Record<string, string> = {}
+      if (firstNameNeedsEncrypt) update.first_name = encryptField(row.first_name)
+      if (lastNameNeedsEncrypt) update.last_name = encryptField(row.last_name)
+      if (phoneNeedsEncrypt) {
+        const normalized = normalizeCustomerPhone(row.phone)
+        update.phone = encryptField(normalized)
+        update.phone_bidx = computeBlindIndex(normalized)
+      }
+
+      const { error: updErr } = await supabase.from('customers').update(update).eq('id', row.id)
       if (updErr) throw new Error(`customers update failed for ${row.id}: ${updErr.message}`)
       updated++
     }
