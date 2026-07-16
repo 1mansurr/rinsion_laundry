@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase'
 import { getActiveSubscription, type ActiveSubscription } from '@/services/subscriptions/getActive'
-import { computeProrateAmount } from '@/services/subscriptions/computeProrateAmount'
 import { generatePaymentReference } from '@/services/subscriptions/generatePaymentReference'
 import { PLANS } from '@/constants/plans'
 import type { SubscriptionPlan, SubscriptionPaymentType } from '@/constants/subscriptionStatuses'
@@ -71,10 +70,16 @@ export async function getSubscriptionPageData(
   let newCycleEnd: string | null = null
   let referenceCode: string | null = null
 
-  if (subscription && (action === 'renew' || action === 'upgrade' || action === 'convert')) {
+  // Growth is not self-serve (see Rinsion_Business_Overview.md → Pricing
+  // Model) — a laundry moves onto it only after contacting us directly, who
+  // then convert them via the internal platform-admin tools
+  // (src/services/platform/convertTrial.ts, src/services/admin/resolvePayment.ts).
+  // So 'upgrade' (starter → growth) is not handled here at all, and 'convert'
+  // only recognises 'starter' as a selectable target plan.
+  if (subscription && (action === 'renew' || action === 'convert')) {
     const today = new Date()
 
-    if (action === 'convert' && selectedPlan) {
+    if (action === 'convert' && selectedPlan === 'starter') {
       paymentType = 'trial_conversion'
       targetPlan = selectedPlan as SubscriptionPlan
       paymentAmount = PLANS[selectedPlan as keyof typeof PLANS]?.price ?? null
@@ -83,13 +88,6 @@ export async function getSubscriptionPageData(
       end.setDate(end.getDate() + 30)
       newCycleEnd = end.toISOString().split('T')[0]
       referenceCode = generatePaymentReference(laundryId, 'trial_conversion')
-    } else if (action === 'upgrade' && subscription.plan === 'starter') {
-      paymentType = 'upgrade_prorate'
-      targetPlan = 'growth'
-      paymentAmount = computeProrateAmount(subscription.daysLeft)
-      newCycleStart = subscription.cycleStartDate
-      newCycleEnd = subscription.cycleEndDate
-      referenceCode = generatePaymentReference(laundryId, 'upgrade_prorate')
     } else if (action === 'renew') {
       paymentType = 'cycle_renewal'
       targetPlan = subscription.plan === 'trial' ? 'starter' : subscription.plan

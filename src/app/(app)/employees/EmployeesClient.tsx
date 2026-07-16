@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { inviteEmployee } from '@/services/employees/inviteEmployee'
 import { resendInvite } from '@/services/employees/resendInvite'
 import { toggleEmployee } from '@/services/employees/toggleEmployee'
@@ -256,10 +255,7 @@ export function EmployeesClient({
         atLimit ? (
           <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 text-sm text-amber-800">
             Employee limit reached ({employeeLimit}/{employeeLimit}).{' '}
-            <Link href="/settings/subscription?action=upgrade" className="font-semibold underline">
-              Upgrade to Growth
-            </Link>{' '}
-            to add up to 9 employees.
+            <a href="mailto:saymmmohamm265@gmail.com" className="font-semibold underline">Contact us</a> about Growth to add up to 9 employees.
           </div>
         ) : (
           <button

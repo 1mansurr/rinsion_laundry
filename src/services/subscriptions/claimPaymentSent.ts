@@ -26,6 +26,13 @@ export async function claimPaymentSent(formData: FormData): Promise<void> {
 
   if (!referenceCode || !paymentType || !targetPlan) redirect('/settings/subscription')
 
+  // Growth is not self-serve — a laundry can only be moved onto it by us,
+  // after they contact us directly (see Rinsion_Business_Overview.md →
+  // Pricing Model). Renewing an *existing* Growth subscription is still
+  // fine here; starting or upgrading into it through this form is not, even
+  // if a request is crafted to bypass the UI, which only ever offers Starter.
+  if (targetPlan === 'growth' && paymentType !== 'cycle_renewal') redirect('/settings/subscription')
+
   let claimedAmount: number
   let targetCycleStart: string
   let targetCycleEnd: string

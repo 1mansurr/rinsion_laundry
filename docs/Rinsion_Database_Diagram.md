@@ -704,7 +704,7 @@ updated_at
 * locked
 * cancelled
 
-`sms_quota` is denormalized for the current cycle (300 for Starter, 800 for Growth, 800 for Trial). It is locked at cycle start and only changes on upgrade.
+`sms_quota` is denormalized for the current cycle (300 for Starter, 800 for Growth, 300 for Trial — Trial mirrors Starter's limits). It is locked at cycle start and only changes on upgrade.
 
 `sms_warning_70_sent_at` records when the 70% threshold warning was sent in the current cycle. NULL means not yet sent. Cleared when a new cycle begins.
 

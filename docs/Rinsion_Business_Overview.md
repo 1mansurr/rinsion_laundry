@@ -522,6 +522,7 @@ Each order belongs to:
 
 Branch limits are enforced by plan tier:
 
+* Trial Plan: 1 branch (mirrors Starter)
 * Starter Plan: 1 branch
 * Growth Plan: up to 3 branches
 * Future Enterprise: unlimited branches
@@ -563,7 +564,7 @@ These settings allow each laundry to tailor the platform to its workflow.
 
 # **Pricing Model**
 
-Rinsion uses a two-tier pricing structure plus a free trial.
+Rinsion is sold as a single self-serve plan (Starter) plus a free trial. Growth exists as a higher-limit tier for laundries that outgrow Starter, but it is not offered as a self-serve signup or upgrade option — a laundry moves onto it only after contacting us directly, so we can understand what they actually need before adding the complexity of a second choice to the signup flow.
 
 Pricing combines:
 
@@ -576,7 +577,7 @@ Pricing combines:
 
 **Price:** GHS 90 per month
 
-**Target:** Small and growing laundries operating at a single location.
+**Target:** Small and growing laundries operating at a single location. This is the only plan offered at signup and the only one a laundry can select or renew into on their own.
 
 **Included Features:**
 
@@ -596,11 +597,13 @@ Pricing combines:
 * 1 Branch
 * 300 SMS per cycle
 
-## **Growth Plan**
+## **Growth Plan (Available on Request Only)**
 
 **Price:** GHS 180 per month
 
 **Target:** Established laundries with multiple locations or higher operational complexity.
+
+**Not self-serve.** Growth is never shown as a signup or in-app upgrade option. A laundry that needs more than Starter's limits contacts us directly; we discuss their needs and move their subscription onto Growth ourselves. This keeps the plan decision a laundry has to make down to one (Starter), and turns every Growth customer into a direct conversation rather than a self-selected checkbox.
 
 **Includes everything in Starter, plus:**
 
@@ -620,14 +623,14 @@ Pricing combines:
 
 Every new laundry receives:
 
-* 14 days of full Growth Plan access
+* 14 days of Starter-level access (1 Admin, up to 4 Employees, 1 Branch, 300 SMS per cycle) — the trial mirrors Starter rather than Growth, so moving to a paid plan afterward is a lateral move, not a downgrade
 * Full operational data is collected
 * No payment information required upfront
 
 At the end of the trial:
 
 * Usage is reviewed with the laundry
-* The most appropriate plan is recommended
+* Starter is the default recommendation; Growth is only raised if the laundry's usage during the trial (staff count, branches, SMS volume) shows they'd exceed Starter's limits
 * If no plan is selected and no payment is made, the laundry enters the same grace period as a missed renewal
 
 ## **Future Plans (Not Available at Launch)**

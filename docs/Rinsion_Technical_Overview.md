@@ -659,7 +659,7 @@ order_status_history
 
 # **10. Subscription Lifecycle**
 
-Trialing (14 days, Growth-level access)
+Trialing (14 days, Starter-level access)
  ↓
 Active (30-day cycle, Starter or Growth)
  ↓
@@ -1205,11 +1205,11 @@ Gated by a hardcoded email allowlist in `lib/internal-admins.ts`. Only Rinsion t
 
 # **23. Trial Restrictions**
 
-Trial accounts receive full Growth-tier access for 14 days. The subscription record is created with:
+Trial accounts receive Starter-tier access for 14 days (4 employees, 1 branch, 300 SMS) — this keeps the post-trial transition to a paid plan a lateral move rather than a downgrade. The subscription record is created with:
 
 * `plan = trial`
 * `status = trialing`
-* `sms_quota = 800`
+* `sms_quota = 300`
 * `cycle_start_date = signup_date`
 * `cycle_end_date = signup_date + 14 days`
 

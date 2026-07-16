@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getSubscriptionPageData } from '@/services/subscriptions/getSubscriptionPageData'
 import { claimPaymentSent } from '@/services/subscriptions/claimPaymentSent'
-import { computeProrateAmount } from '@/services/subscriptions/computeProrateAmount'
 import { PLANS } from '@/constants/plans'
 import { formatDate } from '@/utils/formatDate'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
@@ -152,9 +151,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
           </Link>
 
           <p className="text-ui font-semibold text-warm-950 mb-3">
-            {paymentType === 'upgrade_prorate'
-              ? `Upgrade to Growth — GHS ${paymentAmount}`
-              : paymentType === 'trial_conversion'
+            {paymentType === 'trial_conversion'
               ? `Start ${PLAN_LABELS[targetPlan]} — GHS ${paymentAmount}`
               : `Renew ${PLAN_LABELS[targetPlan]} — GHS ${paymentAmount}`}
           </p>
@@ -172,12 +169,10 @@ export default async function SubscriptionPage({ searchParams }: Props) {
               <span className="text-warm-600">Reference</span>
               <span className="tnum font-bold text-warm-950">{referenceCode}</span>
             </div>
-            {paymentType !== 'upgrade_prorate' && (
-              <div className="flex justify-between text-ui-sm">
-                <span className="text-warm-600">New cycle</span>
-                <span className="tnum text-warm-950">{newCycleStart} → {newCycleEnd}</span>
-              </div>
-            )}
+            <div className="flex justify-between text-ui-sm">
+              <span className="text-warm-600">New cycle</span>
+              <span className="tnum text-warm-950">{newCycleStart} → {newCycleEnd}</span>
+            </div>
           </div>
 
           <p className="text-caption text-warm-500 mb-3.5">
@@ -210,33 +205,24 @@ export default async function SubscriptionPage({ searchParams }: Props) {
               Renew {PLAN_LABELS[subscription.plan]} — GHS {PLANS[subscription.plan as 'starter' | 'growth']?.price}
             </Link>
           )}
-          {/* Upgrade button — only for active Starter */}
-          {subscription.plan === 'starter' && subscription.status === 'active' && (
+          {/* Trial conversion — Starter is the only self-serve option */}
+          {subscription.plan === 'trial' && (
             <Link
-              href="/settings/subscription?action=upgrade"
+              href="/settings/subscription?action=convert&plan=starter"
               className="w-full min-h-[48px] flex items-center justify-center text-center bg-brand text-[#FAF8F5] text-ui font-semibold py-3.5 rounded-10 hover:bg-brand-hover transition-colors"
             >
-              Upgrade to Growth — GHS {computeProrateAmount(subscription.daysLeft)} prorate
+              Start Starter — GHS 90 / month
             </Link>
           )}
-          {/* Trial conversion options */}
-          {subscription.plan === 'trial' && (
-            <>
-              <Link
-                href="/settings/subscription?action=convert&plan=starter"
-                className="w-full min-h-[48px] flex items-center justify-center text-center border border-warm-400 text-warm-950 bg-white text-ui font-semibold py-3.5 rounded-10 hover:bg-warm-100 transition-colors"
-              >
-                Start Starter — GHS 90 / month
-              </Link>
-              <Link
-                href="/settings/subscription?action=convert&plan=growth"
-                className="w-full min-h-[48px] flex items-center justify-center text-center bg-brand text-[#FAF8F5] text-ui font-semibold py-3.5 rounded-10 hover:bg-brand-hover transition-colors"
-              >
-                Start Growth — GHS 180 / month
-              </Link>
-            </>
-          )}
         </div>
+      )}
+
+      {/* Growth is available on request only, not self-serve — see the plan
+          comparison table below. */}
+      {subscription && (subscription.plan === 'trial' || subscription.plan === 'starter') && !paymentType && action !== 'claimed' && !existingClaim && (
+        <p className="text-caption text-warm-600 mb-4">
+          Need more than Starter provides? <a href="mailto:saymmmohamm265@gmail.com" className="font-semibold text-brand hover:text-brand-hover">Contact us</a> about Growth.
+        </p>
       )}
 
       {/* ── Locked state ── */}

@@ -22,6 +22,8 @@ export const PLANS = {
     branchLimit: 1,
     smsQuota: 300,
   },
+  // Not offered self-serve — see Rinsion_Business_Overview.md → Pricing Model.
+  // Laundries move onto this plan only via a manual, request-based conversion.
   growth: {
     price: 180,         // GHS 180/month
     dailyRate: 6,       // 180 / 30

@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from 'react'
 import { createBranch } from '@/services/branches'
-import Link from 'next/link'
 
 interface Props {
   branches: { id: string; name: string }[]
@@ -58,11 +57,10 @@ export function BranchesClient({ branches: init, branchLimit, plan }: Props) {
           <p className="text-sm text-amber-800">
             Branch limit reached ({branchLimit}/{branchLimit}) on the {plan} plan.{' '}
             {plan !== 'growth' && (
-              <Link href="/settings/subscription?action=upgrade" className="font-semibold underline">
-                Upgrade to Growth
-              </Link>
-            )}{' '}
-            {plan !== 'growth' && 'to add up to 3 branches.'}
+              <>
+                <a href="mailto:saymmmohamm265@gmail.com" className="font-semibold underline">Contact us</a> about Growth to add up to 3 branches.
+              </>
+            )}
           </p>
         </div>
       ) : !showForm ? (
