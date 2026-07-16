@@ -3,7 +3,7 @@
 **Status: DRAFT (v4.1), verified against the live codebase and pending review by a qualified Ghanaian lawyer. Do not publish until the `[CONFIRM: …]` / `[FILL: …]` items below are resolved and the draft has been reviewed.**
 
 **Effective date:** [FILL: date this is published/becomes binding — a business decision, to be set when Rinsion is ready to launch commercially]
-**Last updated:** 2026-07-15
+**Last updated:** 2026-07-16
 
 ---
 
@@ -39,15 +39,16 @@ New Laundries may receive a one-time free trial of **14 days**. During the trial
 
 ## 6. Plans, fees, and payment
 
-Rinsion is offered on the plans below. Current pricing and allowances are shown here and on our Pricing page, and may change on reasonable notice.
+Rinsion is offered on the plan below at signup. Current pricing and allowances are shown here and on our Pricing page, and may change on reasonable notice.
 
 | Plan | Price | Billing cycle | Staff accounts | SMS included per cycle |
 |---|---|---|---|---|
 | Trial | Free | 14 days, one time | 4 | 300 |
 | Starter | GHS 90 per month | 30 days | 4 | 300 |
-| Growth | GHS 180 per month | 30 days | 9 | 800 |
 
-- SMS beyond your plan's included amount is charged at GHS 0.05 per message, up to 30 extra messages per cycle, after which further messages may not be sent until the next cycle or a plan upgrade.
+**Growth** (GHS 180 per month, 30-day cycle, 9 staff accounts, 800 SMS per cycle) is a higher-limit plan for laundries that outgrow Starter. It is not available as a self-serve signup or upgrade — contact us directly and we will move your subscription onto it manually.
+
+- SMS beyond your plan's included amount is charged at GHS 0.05 per message, up to 30 extra messages per cycle, after which further messages may not be sent until the next cycle, or until you contact us about moving to a higher-limit plan.
 - After any trial, continued use requires an active paid subscription.
 - Subscription payments are collected **manually via Mobile Money**; we may later enable in-app payment (for example through Paystack), and we will tell you when that changes. Because payment is manual, subscriptions do **not** renew automatically — you (or your administrator) must send payment and confirm it each cycle, as described below.
 - Fees are stated in Ghana Cedis (GHS) and are **[CONFIRM: inclusive or exclusive] of any applicable taxes**.
@@ -72,7 +73,7 @@ This section governs personal data about End Customers.
 
 - **You are the controller of Customer Data; we are the processor.** You decide what to collect and why; we process it only to provide the Service and on your reasonable instructions.
 - **Your responsibilities.** You confirm that you have a lawful basis, and any consent required under Ghana's Data Protection Act, 2012 (Act 843), to collect and store your End Customers' personal data and to have SMS messages sent to them through the Service. You are responsible for the accuracy of the phone numbers you enter, since messages go to whatever number you record. You are also responsible for your own registration with the Data Protection Commission if the Act requires it for your business.
-- **Our commitments.** We will keep Customer Data confidential, apply reasonable security, and use it only to run the Service. If we discover a data breach affecting your Customer Data, we will inform you without undue delay. We will pass on data-subject requests we receive that relate to your End Customers so you can handle them, and we can permanently erase Customer Data on your instruction.
+- **Our commitments.** We will keep Customer Data confidential, apply reasonable security, and use it only to run the Service. If we discover a data breach affecting your Customer Data, we will inform you without undue delay. We will pass on data-subject requests we receive that relate to your End Customers so you can handle them, and we can permanently erase Customer Data on your instruction. Your administrator can generate and download a self-serve export of Customer Data and your other business records (staff, orders, payments, pricing) at any time through the Service (Settings → Data Export), covering active records at the time of export.
 - **Sub-processors.** We use Supabase (database and authentication, hosted in the **European Union (Ireland, eu-west-1)**), mNotify (SMS delivery, Ghana), and Vercel (hosting). Paystack is not yet active; we will update this list before enabling it. By using the Service you agree to our use of these providers. Some Customer Data is processed or stored outside Ghana through these providers, as described in our Privacy Policy. We take reasonable steps to ensure such transfers comply with the Data Protection Act, 2012 (Act 843). Where required under applicable law, we will disclose the countries to which personal data may be transferred as part of our obligations under Act 843 and our registration with the Data Protection Commission.
 - **Erasure and retention.** We retain Customer Data only for as long as reasonably necessary for the purposes for which it was collected, unless a longer retention period is required or authorised by law, reasonably necessary for a lawful purpose, required under a contract, or authorised by the data subject. When Customer Data is no longer required, we permanently delete it or irreversibly de-identify it.
 
@@ -116,7 +117,7 @@ You agree to cover us for claims arising from your misuse of the Service or your
 
 ## 15. Suspension and termination
 
-- Your administrator may close your Laundry's account at any time. Closure immediately blocks every Account Holder's access and hides your data from your staff. **Closing an account cannot be undone by your administrator through the Service** — if you want the account reopened, contact us. Separately, you may ask us to permanently erase your data, subject to the retention limits in our Privacy Policy; erasure is handled manually by our team, not automatically, and is irreversible once completed.
+- Your administrator may close your Laundry's account at any time. Closure immediately blocks every Account Holder's access and hides your data from your staff. **Closing an account cannot be undone by your administrator through the Service** — if you want the account reopened, contact us. Before closing an account, we recommend using Settings → Data Export to download a copy of your data, since it will no longer be accessible through the Service afterward. Separately, you may ask us to permanently erase your data, subject to the retention limits in our Privacy Policy; erasure is handled manually by our team, not automatically, and is irreversible once completed.
 - We may suspend or terminate access if you breach these Terms, fail to pay, or use the Service unlawfully. Where reasonable, we will give notice and a chance to fix the problem first.
 - Provisions that by their nature should survive termination, for example payment obligations, intellectual property, liability, and indemnity, continue after termination.
 

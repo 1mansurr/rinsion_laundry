@@ -133,6 +133,8 @@ Under Ghana's Data Protection Act, 2012 (Act 843), you have the right to:
 
 To exercise any of these, email **saymmmohamm265@gmail.com**. If you are a customer of a laundry (not an account holder), contact that laundry, since they control your data.
 
+**Self-serve export.** An administrator can generate and download a copy of their laundry's active data (staff, customers, orders, payments, pricing) at any time, from Settings → Data Export in the app — the fastest way to exercise the "get a copy" right above without waiting on an email request. This covers the laundry's own business records, including the Customer Data it controls as described in Section 2; it does not cover records already removed from the active dashboard (see Section 9's soft-delete/Recycle Bin). It does not replace the process above for correction or erasure requests, or for anyone who is not an account holder (a laundry's own customers should contact that laundry directly).
+
 ## 11. Children
 
 Rinsion is business software and is not intended for use by anyone under 18. We do not knowingly collect data from children.

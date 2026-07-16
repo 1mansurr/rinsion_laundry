@@ -32,6 +32,7 @@ const ROW_ICONS: Record<string, string> = {
   subscription: 'M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Zm2 3v9h14V9H5Zm2 5a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2H7Z',
   smsUsage: 'M12 2a10 10 0 1 0 6.2 17.9L21 21l-.9-2.9A10 10 0 0 0 12 2Zm-4 9a1.2 1.2 0 1 1 0 2.4A1.2 1.2 0 0 1 8 11Zm4 0a1.2 1.2 0 1 1 0 2.4A1.2 1.2 0 0 1 12 11Zm4 0a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4Z',
   recycleBin: 'M7 6V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h3a1 1 0 1 1 0 2h-1.07l-.86 12.06A2 2 0 0 1 16.08 22H7.92a2 2 0 0 1-1.99-1.94L5.07 8H4a1 1 0 0 1 0-2h3Zm2 0h6V4H9v2Z',
+  dataExport: 'M12 3a1 1 0 0 1 1 1v9.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42l2.3 2.3V4a1 1 0 0 1 1-1ZM5 19a1 1 0 1 0 0 2h14a1 1 0 1 0 0-2H5Z',
   dangerZone: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 5a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0V8a1 1 0 0 1 1-1Zm0 9a1.25 1.25 0 1 1 0 2.5A1.25 1.25 0 0 1 12 16Z',
 }
 
@@ -130,6 +131,7 @@ const NAV_ITEMS = [
   { href: '/settings/subscription', label: 'Subscription', desc: 'Plan, billing, upgrades and payment history', icon: 'subscription' },
   { href: '/settings/sms-usage',    label: 'SMS Usage',    desc: 'Cycle usage, message log and quota', icon: 'smsUsage' },
   { href: '/settings/recycle-bin',  label: 'Recycle Bin',  desc: 'Restore deleted customers, orders, items and services', icon: 'recycleBin' },
+  { href: '/settings/data-export',  label: 'Data Export',  desc: 'Download all your laundry data as a spreadsheet', icon: 'dataExport' },
   { href: '/settings/danger-zone',  label: 'Danger Zone',  desc: "Permanently close this laundry's Rinsion account", icon: 'dangerZone', danger: true },
 ]
 
