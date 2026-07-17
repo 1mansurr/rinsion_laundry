@@ -589,6 +589,7 @@ Pricing combines:
 * SMS Notifications (order created, order ready, pickup code delivery)
 * Basic Dashboard (today's orders, outstanding orders, today's payments, basic reports)
 * Workflow Configuration
+* Self-Serve Data Export (CSV and Excel)
 
 **Limits:**
 
@@ -608,7 +609,6 @@ Pricing combines:
 **Includes everything in Starter, plus:**
 
 * Advanced Reporting (Revenue, Payments, Customers, Employee Performance)
-* CSV and Excel Export
 * Priority Support
 * Customer Portal (Coming Soon) — Customer accounts, customer login, customer order tracking, customer order history, optional customer order submission
 
