@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { Wordmark } from '@/components/ui/Wordmark'
 
 const FAQS = [
   {
@@ -578,7 +577,7 @@ export function LandingPage() {
         <div className="max-w-[1120px] mx-auto">
           <div className="text-center max-w-[520px] mx-auto mb-[clamp(30px,4.5vw,46px)]">
             <div className="text-xs font-bold tracking-eyebrow-lg uppercase text-clay mb-3">Pricing</div>
-            <h2 className="m-0 text-[clamp(25px,4.4vw,40px)] font-extrabold tracking-[-0.03em] leading-[1.1]">One plan. That's the whole menu.</h2>
+            <h2 className="m-0 text-[clamp(25px,4.4vw,40px)] font-extrabold tracking-[-0.03em] leading-[1.1]">One plan. That&apos;s the whole menu.</h2>
           </div>
           <div className="max-w-[480px] mx-auto">
             <div className="bg-white border border-warm-300 rounded-[20px] p-[clamp(26px,4vw,36px)] shadow-[0_30px_64px_-40px_rgba(26,26,26,.32)]">
@@ -609,9 +608,9 @@ export function LandingPage() {
           </div>
           <div className="flex-[1_1_340px] min-w-[min(100%,300px)]">
             <div className="text-xs font-bold tracking-eyebrow-lg uppercase text-clay mb-3">Who we are</div>
-            <h2 className="m-0 text-[clamp(25px,4.4vw,40px)] font-extrabold tracking-[-0.03em] leading-[1.1]">We're new, and we pick up the phone.</h2>
-            <p className="mt-4 text-[clamp(16px,2vw,18px)] leading-[1.55] text-warm-800 max-w-[54ch]">Rinsion is built in Kumasi by Mansur Alidu. We're taking on our first laundries now and working with each one directly. When something breaks, you message a person, and that person is us.</p>
-            <p className="mt-3.5 text-[clamp(16px,2vw,18px)] leading-[1.55] text-warm-800 max-w-[54ch]">We'd rather say that plainly than pretend to be a big company.</p>
+            <h2 className="m-0 text-[clamp(25px,4.4vw,40px)] font-extrabold tracking-[-0.03em] leading-[1.1]">We&apos;re new, and we pick up the phone.</h2>
+            <p className="mt-4 text-[clamp(16px,2vw,18px)] leading-[1.55] text-warm-800 max-w-[54ch]">Rinsion is built in Kumasi by Mansur Alidu. We&apos;re taking on our first laundries now and working with each one directly. When something breaks, you message a person, and that person is us.</p>
+            <p className="mt-3.5 text-[clamp(16px,2vw,18px)] leading-[1.55] text-warm-800 max-w-[54ch]">We&apos;d rather say that plainly than pretend to be a big company.</p>
             <a href="https://wa.me/233257528042" target="_blank" rel="noopener" className="inline-flex items-center gap-2.5 mt-5 bg-white border border-warm-300 rounded-11 px-[18px] py-3 font-semibold text-[14.5px] text-brand hover:border-brand transition">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="#0F3D2E" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.05L2 22l5.1-1.34A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.03.8.81-2.95-.2-.31A8.2 8.2 0 1 1 12 20.2Zm4.5-6.13c-.25-.13-1.46-.72-1.68-.8-.23-.08-.39-.12-.55.13-.17.24-.64.8-.78.96-.14.17-.29.19-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.22-1.46-1.37-1.7-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.44.13-.14.17-.24.25-.41.09-.16.04-.31-.02-.44-.06-.12-.55-1.34-.76-1.83-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.42.06-.64.31-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.17 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.1.16 1.52.1.46-.07 1.46-.6 1.66-1.18.21-.58.21-1.07.15-1.18-.06-.1-.22-.16-.47-.29Z" /></svg>
               Message us on WhatsApp
@@ -623,7 +622,7 @@ export function LandingPage() {
       {/* ============ CLOSING ============ */}
       <section className="bg-[linear-gradient(165deg,#17604A,#0F3D2E)] text-center text-canvas px-[clamp(20px,5vw,40px)] py-[clamp(60px,9vw,104px)]">
         <div className="max-w-[1120px] mx-auto">
-          <h2 className="m-0 text-[clamp(26px,4.6vw,42px)] font-extrabold tracking-[-0.03em] leading-[1.1]">Start with tomorrow's first order.</h2>
+          <h2 className="m-0 text-[clamp(26px,4.6vw,42px)] font-extrabold tracking-[-0.03em] leading-[1.1]">Start with tomorrow&apos;s first order.</h2>
           <p className="mt-3.5 mx-auto max-w-[40ch] text-[16px] text-[#A8C3B6]">Set up your laundry, add your staff, and take your first tracked order before the day ends.</p>
           <Link
             href="/signup"
