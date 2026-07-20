@@ -49,7 +49,7 @@ export async function createBranch(name: string): Promise<ServiceResult<{ id: st
   if ((count ?? 0) >= limit) {
     return {
       success: false,
-      error: `Your ${plan} plan allows up to ${limit} branch${limit > 1 ? 'es' : ''}. Upgrade to Growth to add more.`,
+      error: `Your plan allows up to ${limit} branch${limit > 1 ? 'es' : ''}.`,
     }
   }
 

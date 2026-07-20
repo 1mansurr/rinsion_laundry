@@ -114,7 +114,7 @@ function BranchesPanel({ open }: { open: boolean }) {
           <span className="text-caption text-warm-500">Loading…</span>
         </div>
       ) : (
-        <BranchesClient branches={data.branches} branchLimit={data.branchLimit} plan={data.plan} />
+        <BranchesClient branches={data.branches} branchLimit={data.branchLimit} />
       )}
     </div>
   )

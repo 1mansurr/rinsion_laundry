@@ -44,7 +44,6 @@ export default async function BranchesPage() {
       <BranchesClient
         branches={branches}
         branchLimit={branchLimit}
-        plan={plan}
       />
     </div>
   )

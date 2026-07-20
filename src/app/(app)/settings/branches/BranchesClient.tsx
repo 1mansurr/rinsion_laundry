@@ -6,10 +6,9 @@ import { createBranch } from '@/services/branches'
 interface Props {
   branches: { id: string; name: string }[]
   branchLimit: number
-  plan: string
 }
 
-export function BranchesClient({ branches: init, branchLimit, plan }: Props) {
+export function BranchesClient({ branches: init, branchLimit }: Props) {
   const [branches, setBranches] = useState(init)
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState('')
@@ -55,12 +54,8 @@ export function BranchesClient({ branches: init, branchLimit, plan }: Props) {
       {atLimit ? (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
           <p className="text-sm text-amber-800">
-            Branch limit reached ({branchLimit}/{branchLimit}) on the {plan} plan.{' '}
-            {plan !== 'growth' && (
-              <>
-                <a href="mailto:saymmmohamm265@gmail.com" className="font-semibold underline">Contact us</a> about Growth to add up to 3 branches.
-              </>
-            )}
+            Branch limit reached ({branchLimit}/{branchLimit}).{' '}
+            <a href="mailto:saymmmohamm265@gmail.com" className="font-semibold underline">Contact us</a> if you need another branch.
           </p>
         </div>
       ) : !showForm ? (
