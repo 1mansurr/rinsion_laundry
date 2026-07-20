@@ -86,6 +86,11 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse
   }
 
+  // Public legal pages, linked from the landing page footer signed-out
+  if (pathname.startsWith('/terms') || pathname.startsWith('/privacy')) {
+    return supabaseResponse
+  }
+
   if (!user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
