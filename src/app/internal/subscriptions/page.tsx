@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase'
+import { PLANS } from '@/constants/plans'
 
 export default async function InternalSubscriptionsPage() {
   const supabase = createAdminClient()
@@ -37,8 +38,8 @@ export default async function InternalSubscriptionsPage() {
 
   const activeSubs = allSubs.filter(s => s.status === 'active')
   const mrr =
-    activeSubs.filter(s => s.plan === 'starter').length * 90 +
-    activeSubs.filter(s => s.plan === 'growth').length * 180
+    activeSubs.filter(s => s.plan === 'starter').length * PLANS.starter.price +
+    activeSubs.filter(s => s.plan === 'growth').length * PLANS.growth.price
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">

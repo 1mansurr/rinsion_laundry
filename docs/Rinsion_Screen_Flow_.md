@@ -163,7 +163,7 @@ A dedicated card showing:
 
 *"Cycle ends in X days"*
 
-*"GHS 90 to continue Starter — or — GHS 180 to upgrade to Growth"*
+*"GHS 120 to continue Starter — or — GHS 180 to upgrade to Growth"*
 
 Actions:
 

@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase'
 import { decryptField, encryptField } from '@/lib/crypto'
 import { smsProvider } from '@/lib/sms'
 import { ROLES } from '@/constants/statuses'
+import { PLANS } from '@/constants/plans'
 
 export type RenewalReminderTrigger = 'RENEWAL_REMINDER_3_DAYS' | 'RENEWAL_REMINDER_1_DAY' | 'RENEWAL_REMINDER_DAY_OF'
 
@@ -36,18 +37,16 @@ export async function sendRenewalReminderSms(
   if (!admin?.phone) return false
   const phone = decryptField(admin.phone) ?? admin.phone
 
-  const planPrices: Record<string, number> = { starter: 90, growth: 180, trial: 90 }
-  const amount = planPrices[plan] ?? 90
-  const upgradeNote = plan === 'starter' ? ` or GHS ${amount * 2} for Growth` : ''
+  const amount = plan === 'growth' ? PLANS.growth.price : PLANS.starter.price
 
   // TODO: confirm message wording after interviews
   let message: string
   if (daysLeft === 0) {
     message = `Rinsion: Your subscription expires today. Send GHS ${amount} to renew and keep your laundry running.`
   } else if (daysLeft === 1) {
-    message = `Rinsion: Your subscription expires tomorrow. Send GHS ${amount} to renew${upgradeNote}.`
+    message = `Rinsion: Your subscription expires tomorrow. Send GHS ${amount} to renew.`
   } else {
-    message = `Rinsion: Your subscription ends in ${daysLeft} days. Renew for GHS ${amount}${upgradeNote}.`
+    message = `Rinsion: Your subscription ends in ${daysLeft} days. Renew for GHS ${amount}.`
   }
 
   const result = await smsProvider.sendSms(phone, message, 'Rinsion')

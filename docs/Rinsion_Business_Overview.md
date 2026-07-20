@@ -575,7 +575,7 @@ Pricing combines:
 
 ## **Starter Plan**
 
-**Price:** GHS 90 per month
+**Price:** GHS 120 per month
 
 **Target:** Small and growing laundries operating at a single location. This is the only plan offered at signup and the only one a laundry can select or renew into on their own.
 
@@ -594,9 +594,9 @@ Pricing combines:
 **Limits:**
 
 * 1 Admin
-* Up to 4 Employees
+* Up to 5 Employees
 * 1 Branch
-* 300 SMS per cycle
+* 400 SMS per cycle
 
 ## **Growth Plan (Available on Request Only)**
 
@@ -623,7 +623,7 @@ Pricing combines:
 
 Every new laundry receives:
 
-* 14 days of Starter-level access (1 Admin, up to 4 Employees, 1 Branch, 300 SMS per cycle) — the trial mirrors Starter rather than Growth, so moving to a paid plan afterward is a lateral move, not a downgrade
+* 14 days of Starter-level access (1 Admin, up to 5 Employees, 1 Branch, 400 SMS per cycle) — the trial mirrors Starter rather than Growth, so moving to a paid plan afterward is a lateral move, not a downgrade
 * Full operational data is collected
 * No payment information required upfront
 
@@ -660,7 +660,7 @@ The Admin Dashboard always displays:
 
 Example dashboard text:
 
-*"Cycle ends in 5 days — GHS 90 to continue Starter or GHS 180 to upgrade to Growth."*
+*"Cycle ends in 5 days — GHS 120 to continue Starter or GHS 180 to upgrade to Growth."*
 
 ## **Renewal Reminders**
 
@@ -763,7 +763,7 @@ A customer who pays nothing at cycle end is treated as non-renewing and enters t
 
 ## **Included Allowance**
 
-* Starter: 300 SMS per cycle
+* Starter: 400 SMS per cycle
 * Growth: 800 SMS per cycle
 
 The counter resets at the start of each new cycle.

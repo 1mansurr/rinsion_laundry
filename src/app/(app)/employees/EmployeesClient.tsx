@@ -255,7 +255,7 @@ export function EmployeesClient({
         atLimit ? (
           <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 text-sm text-amber-800">
             Employee limit reached ({employeeLimit}/{employeeLimit}).{' '}
-            <a href="mailto:saymmmohamm265@gmail.com" className="font-semibold underline">Contact us</a> about Growth to add up to 9 employees.
+            <a href="mailto:saymmmohamm265@gmail.com" className="font-semibold underline">Contact us</a> if you need more seats.
           </div>
         ) : (
           <button

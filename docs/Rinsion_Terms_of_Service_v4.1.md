@@ -43,8 +43,8 @@ Rinsion is offered on the plan below at signup. Current pricing and allowances a
 
 | Plan | Price | Billing cycle | Staff accounts | SMS included per cycle |
 |---|---|---|---|---|
-| Trial | Free | 14 days, one time | 4 | 300 |
-| Starter | GHS 90 per month | 30 days | 4 | 300 |
+| Trial | Free | 14 days, one time | 5 | 400 |
+| Starter | GHS 120 per month | 30 days | 5 | 400 |
 
 **Growth** (GHS 180 per month, 30-day cycle, 9 staff accounts, 800 SMS per cycle) is a higher-limit plan for laundries that outgrow Starter. It is not available as a self-serve signup or upgrade — contact us directly and we will move your subscription onto it manually.
 
@@ -57,9 +57,9 @@ Rinsion is offered on the plan below at signup. Current pricing and allowances a
 
 **If a subscription lapses.** If payment is not made by your cycle's end date, your account moves through the following stages automatically:
 
-1. **Days 1–10 past due (grace period):** the Service continues to work normally. You will see a reminder that your subscription is overdue.
-2. **Days 11–20 past due (restricted):** new orders, payments, and other write actions are blocked. You can still view your existing data.
-3. **From day 21 past due (paused):** the account is locked. Your data is retained and access is restored once you renew.
+1. **Days 1–6 past due (grace period):** the Service continues to work normally. You will see a reminder that your subscription is overdue.
+2. **Days 7–12 past due (restricted):** new orders, payments, and other write actions are blocked. You can still view your existing data.
+3. **From day 13 past due (paused):** the account is locked. Your data is retained and access is restored once you renew.
 
 ## 7. Refunds
 

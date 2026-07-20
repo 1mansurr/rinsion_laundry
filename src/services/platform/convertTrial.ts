@@ -6,7 +6,7 @@ import { PLANS, CYCLE_DAYS } from '@/constants/plans'
 import { ACTIVITY_ACTION_TYPES } from '@/constants/subscriptionStatuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
-export async function convertTrial(laundryId: string, plan: 'starter' | 'growth'): Promise<ServiceResult<null>> {
+export async function convertTrial(laundryId: string, plan: 'starter'): Promise<ServiceResult<null>> {
   const platformAdminId = await requirePlatformAdmin()
   if (!platformAdminId) return { success: false, error: 'Unauthorized.' }
 

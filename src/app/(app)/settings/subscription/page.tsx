@@ -3,12 +3,11 @@ import Link from 'next/link'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getSubscriptionPageData } from '@/services/subscriptions/getSubscriptionPageData'
 import { claimPaymentSent } from '@/services/subscriptions/claimPaymentSent'
-import { PLANS } from '@/constants/plans'
+import { PLANS, TRIAL_DAYS, CYCLE_DAYS } from '@/constants/plans'
 import { formatDate } from '@/utils/formatDate'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { StartTrialButton } from './StartTrialButton'
 
-const PLAN_LABELS: Record<string, string> = { trial: 'Trial', starter: 'Starter', growth: 'Growth' }
 const STATUS_LABELS: Record<string, string> = {
   trialing: 'Active (trial)',
   active: 'Active',
@@ -55,7 +54,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
     paymentType, targetPlan, paymentAmount, newCycleStart, newCycleEnd, referenceCode, momoNumber,
   } = await getSubscriptionPageData(profile.laundryId, action, selectedPlan)
 
-  const cycleDays = subscription?.plan === 'trial' ? 14 : 30
+  const cycleDays = subscription?.plan === 'trial' ? TRIAL_DAYS : CYCLE_DAYS
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-4 md:p-6">
@@ -70,7 +69,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
       {subscription && (
         <div className="bg-white rounded-10 border border-warm-300 p-5 mb-3.5">
           <div className="flex items-center justify-between mb-3.5">
-            <span className="text-[18px] font-bold text-warm-950">{PLAN_LABELS[subscription.plan]}</span>
+            <span className="text-[18px] font-bold text-warm-950">{subscription.plan === 'trial' ? 'Trial' : 'Your plan'}</span>
             <span className={`text-micro font-bold px-2.5 py-1 rounded-full tracking-[0.04em] uppercase ${STATUS_COLORS[subscription.status] ?? 'text-warm-600 bg-warm-150'}`}>
               {STATUS_LABELS[subscription.status] ?? subscription.status}
             </span>
@@ -152,8 +151,8 @@ export default async function SubscriptionPage({ searchParams }: Props) {
 
           <p className="text-ui font-semibold text-warm-950 mb-3">
             {paymentType === 'trial_conversion'
-              ? `Start ${PLAN_LABELS[targetPlan]} — GHS ${paymentAmount}`
-              : `Renew ${PLAN_LABELS[targetPlan]} — GHS ${paymentAmount}`}
+              ? `Start — GHS ${paymentAmount}`
+              : `Renew — GHS ${paymentAmount}`}
           </p>
 
           <div className="bg-[#FAF8F5] rounded-9 px-4 py-3.5 mb-4 space-y-2">
@@ -202,27 +201,19 @@ export default async function SubscriptionPage({ searchParams }: Props) {
               href="/settings/subscription?action=renew"
               className="w-full min-h-[48px] flex items-center justify-center text-center border border-warm-400 text-warm-950 bg-white text-ui font-semibold py-3.5 rounded-10 hover:bg-warm-100 transition-colors"
             >
-              Renew {PLAN_LABELS[subscription.plan]} — GHS {PLANS[subscription.plan as 'starter' | 'growth']?.price}
+              Renew — GHS {PLANS[subscription.plan as 'starter' | 'growth']?.price}
             </Link>
           )}
-          {/* Trial conversion — Starter is the only self-serve option */}
+          {/* Trial conversion */}
           {subscription.plan === 'trial' && (
             <Link
               href="/settings/subscription?action=convert&plan=starter"
               className="w-full min-h-[48px] flex items-center justify-center text-center bg-brand text-[#FAF8F5] text-ui font-semibold py-3.5 rounded-10 hover:bg-brand-hover transition-colors"
             >
-              Start Starter — GHS 90 / month
+              Continue — GHS {PLANS.starter.price} / month
             </Link>
           )}
         </div>
-      )}
-
-      {/* Growth is available on request only, not self-serve — see the plan
-          comparison table below. */}
-      {subscription && (subscription.plan === 'trial' || subscription.plan === 'starter') && !paymentType && action !== 'claimed' && !existingClaim && (
-        <p className="text-caption text-warm-600 mb-4">
-          Need more than Starter provides? <a href="mailto:saymmmohamm265@gmail.com" className="font-semibold text-brand hover:text-brand-hover">Contact us</a> about Growth.
-        </p>
       )}
 
       {/* ── Locked state ── */}
@@ -232,25 +223,19 @@ export default async function SubscriptionPage({ searchParams }: Props) {
         </div>
       )}
 
-      {/* ── Plan comparison — flex rows, not a table, so it holds up at phone widths ── */}
-      <div className="bg-white border border-warm-300 rounded-10 overflow-hidden mb-4">
-        <div className="flex px-5 py-3 border-b border-warm-200 text-micro font-semibold text-warm-500 uppercase tracking-eyebrow">
-          <span className="flex-1">Feature</span>
-          <span className="w-20 text-right">Starter</span>
-          <span className="w-20 text-right">Growth</span>
-        </div>
-        {[
-          ['Price', 'GHS 90/mo', 'GHS 180/mo'],
-          ['Employees', 'Up to 4', 'Up to 9'],
-          ['Branches', '1', 'Up to 3'],
-          ['SMS / cycle', '300', '800'],
-        ].map(([feature, starter, growth]) => (
-          <div key={feature} className="flex items-center px-5 py-3 border-b border-warm-100 last:border-0 text-ui-sm">
-            <span className="flex-1 font-semibold text-warm-950">{feature}</span>
-            <span className="tnum w-20 text-right text-warm-700">{starter}</span>
-            <span className="tnum w-20 text-right text-warm-700">{growth}</span>
-          </div>
-        ))}
+      {/* ── What's included — Rinsion is a single plan, so this is a feature
+          list rather than a comparison table ── */}
+      <div className="bg-white border border-warm-300 rounded-10 p-5 mb-4">
+        <p className="text-[18px] font-bold text-warm-950">
+          GHS {PLANS.starter.price} <span className="text-ui-sm font-normal text-warm-600">/ month</span>
+        </p>
+        <p className="text-caption text-warm-500 mt-1 mb-3.5">{TRIAL_DAYS} days free first.</p>
+        <ul className="space-y-2 text-ui-sm text-warm-800">
+          <li>You, plus up to {PLANS.starter.employeeLimit - 1} staff</li>
+          <li>{PLANS.starter.smsQuota} texts a month</li>
+          <li>Unlimited orders, customers and payments</li>
+          <li>Every action logged. Export any time.</li>
+        </ul>
       </div>
 
       {/* ── Recent payments ── */}

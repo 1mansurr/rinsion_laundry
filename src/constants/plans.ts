@@ -10,23 +10,25 @@ export const PLANS = {
   trial: {
     price: 0,
     dailyRate: 0,
-    employeeLimit: 4,
+    employeeLimit: 6,   // owner + up to 5 staff
     branchLimit: 1,
-    smsQuota: 300,
+    smsQuota: 400,
     durationDays: 14,
   },
   starter: {
-    price: 90,          // GHS 90/month
-    dailyRate: 3,       // 90 / 30
-    employeeLimit: 4,
+    price: 120,          // GHS 120/month
+    dailyRate: 4,        // 120 / 30
+    employeeLimit: 6,    // owner + up to 5 staff
     branchLimit: 1,
-    smsQuota: 300,
+    smsQuota: 400,
   },
-  // Not offered self-serve — see Rinsion_Business_Overview.md → Pricing Model.
-  // Laundries move onto this plan only via a manual, request-based conversion.
+  // Retired — Rinsion is a single-plan product now (never sold to a real
+  // laundry). Kept only because the DB enum (subscription_plan) and
+  // subscription_payments.plan_at_payment can't drop the value, and
+  // convertTrial/canDowngrade still reference it defensively.
   growth: {
-    price: 180,         // GHS 180/month
-    dailyRate: 6,       // 180 / 30
+    price: 180,
+    dailyRate: 6,
     employeeLimit: 9,
     branchLimit: 3,
     smsQuota: 800,
@@ -36,9 +38,9 @@ export const PLANS = {
 export type PlanKey = keyof typeof PLANS
 
 /** Days of full access before warnings start (soft block day 1) */
-export const GRACE_PERIOD_SOFT_DAYS = 10   // days 1-10 past cycle end → soft_block
-export const GRACE_PERIOD_HARD_DAYS = 10   // days 11-20 past cycle end → hard_block
-// Day 21+ → locked
+export const GRACE_PERIOD_SOFT_DAYS = 6   // days 1-6 past cycle end → soft_block
+export const GRACE_PERIOD_HARD_DAYS = 6   // days 7-12 past cycle end → hard_block
+// Day 13+ → locked
 
 export const CYCLE_DAYS = 30
 export const TRIAL_DAYS = 14
