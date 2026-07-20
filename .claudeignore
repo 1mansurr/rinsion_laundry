@@ -1,4 +1,3 @@
 # Secrets — Claude Code cannot read these
 .env*
 
-.src/constants/internalAdmins.ts
