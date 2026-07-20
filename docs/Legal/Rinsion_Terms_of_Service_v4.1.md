@@ -1,17 +1,13 @@
 # Rinsion Terms of Service
 
-**Status: DRAFT (v4.1), verified against the live codebase and pending review by a qualified Ghanaian lawyer. Do not publish until the `[CONFIRM: …]` / `[FILL: …]` items below are resolved and the draft has been reviewed.**
-
-**Effective date:** [FILL: date this is published/becomes binding — a business decision, to be set when Rinsion is ready to launch commercially]
-**Last updated:** 2026-07-16
+**Effective date:** 2026-07-20
+**Last updated:** 2026-07-20
 
 ---
 
 ## 1. About these terms
 
 These Terms of Service ("Terms") are a legal agreement between the business using Rinsion ("you", "the Laundry") and **Alidu Yakubu Suhyini Mansur** currently operating as an individual in Ghana ("Rinsion", "we", "us"). We have not yet registered a company. By creating an account or using Rinsion, you agree to these Terms. If you are accepting on behalf of a business, you confirm you are authorised to bind that business.
-
-> [CONFIRM: replace the operator details if you register a company before launch. Note for your lawyer: operating together unregistered may be treated as a partnership with joint personal liability.]
 
 ## 2. Definitions
 
@@ -51,9 +47,9 @@ Rinsion is offered on the plan below at signup. Current pricing and allowances a
 - SMS beyond your plan's included amount is charged at GHS 0.05 per message, up to 30 extra messages per cycle, after which further messages may not be sent until the next cycle, or until you contact us about moving to a higher-limit plan.
 - After any trial, continued use requires an active paid subscription.
 - Subscription payments are collected **manually via Mobile Money**; we may later enable in-app payment (for example through Paystack), and we will tell you when that changes. Because payment is manual, subscriptions do **not** renew automatically — you (or your administrator) must send payment and confirm it each cycle, as described below.
-- Fees are stated in Ghana Cedis (GHS) and are **[CONFIRM: inclusive or exclusive] of any applicable taxes**.
+- Fees are stated in Ghana Cedis (GHS) and are inclusive of any applicable taxes.
 - **How a renewal is recorded.** After you send a Mobile Money payment, your administrator confirms this in the Service with the payment reference. We verify the payment and, once confirmed, your subscription becomes active again. A renewal starts a new 30-day cycle from the date **we record the payment as verified**, not from the date you sent it.
-- We may change pricing or plan allowances on reasonable notice **[CONFIRM: notice period, for example 30 days]**. Continued use after a change means you accept it.
+- We may change pricing or plan allowances on at least 30 days' notice. Continued use after a change means you accept it.
 
 **If a subscription lapses.** If payment is not made by your cycle's end date, your account moves through the following stages automatically:
 
@@ -65,7 +61,7 @@ Rinsion is offered on the plan below at signup. Current pricing and allowances a
 
 This section covers refunds of **your Rinsion subscription fees**. It does not affect the Service's separate order-refund feature, which lets your staff record a refund to one of your own End Customers for a specific order — that is a record-keeping tool for your business, not a Rinsion billing refund.
 
-**[CONFIRM: your subscription-fee refund policy.]** Decide clearly, before launch, what you will and will not refund, and make sure it complies with any consumer-protection rules your lawyer identifies.
+Subscription fees already paid are non-refundable, including if you close your account partway through a billing cycle. We may issue a refund at our discretion — for example, if we made a billing error.
 
 ## 8. Customer Data and data processing
 
@@ -105,11 +101,9 @@ The Service is provided on an "as available" basis. As an early-stage product, w
 
 We take responsibility for running the Service with reasonable care. Subject to the paragraph below, and to the fullest extent allowed by law:
 - We are not liable for indirect or consequential losses, or for loss of profit or revenue, arising from your use of the Service.
-- Our total liability to you in any 12-month period is limited to **[CONFIRM: for example, the subscription fees you paid to us in that period]**.
+- Our total liability to you in any 12-month period is limited to the subscription fees you paid us in that period.
 
 Nothing in these Terms limits or excludes our liability for death or personal injury caused by our negligence, fraud or fraudulent misrepresentation, deliberate or wilful misconduct, or any liability that cannot lawfully be limited or excluded under the laws of Ghana, including mandatory rights under applicable data-protection law. If any limitation in this section is found unenforceable, the remaining limitations continue to apply.
-
-> [CONFIRM with lawyer: the exact cap, the carve-outs required under Ghanaian law, and whether consumer-protection rules apply to your business customers.]
 
 ## 14. Indemnity
 
@@ -129,12 +123,6 @@ We may update these Terms as the Service evolves. If we make a significant chang
 
 These Terms are governed by the laws of the **Republic of Ghana**, and any dispute will be subject to the jurisdiction of the courts of Ghana.
 
-> [CONFIRM: whether you want to require a good-faith negotiation or mediation step before either party goes to court.]
-
 ## 18. Contact
 
 Questions about these Terms: **saymmmohamm265@gmail.com**
-
----
-
-*This document is a draft prepared to be reviewed and finalised by a qualified lawyer in Ghana. It is not legal advice.*

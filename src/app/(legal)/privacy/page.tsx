@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function PrivacyPage() {
   const content = await readFile(
-    path.join(process.cwd(), 'docs', 'Rinsion_Privacy_Policy_v4.1.md'),
+    path.join(process.cwd(), 'docs', 'Legal', 'Rinsion_Privacy_Policy_v4.1.md'),
     'utf-8',
   )
   return <MarkdownDoc content={content} />

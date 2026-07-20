@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function TermsPage() {
   const content = await readFile(
-    path.join(process.cwd(), 'docs', 'Rinsion_Terms_of_Service_v4.1.md'),
+    path.join(process.cwd(), 'docs', 'Legal', 'Rinsion_Terms_of_Service_v4.1.md'),
     'utf-8',
   )
   return <MarkdownDoc content={content} />

@@ -1,9 +1,7 @@
 # Rinsion Privacy Policy
 
-**Status: DRAFT (v4.1), verified against the live codebase and pending review by a qualified Ghanaian lawyer. Do not publish until the `[CONFIRM: …]` / `[FILL: …]` items below are resolved and the draft has been reviewed.**
-
-**Effective date:** [FILL: date this is published/becomes binding — a business decision, to be set when Rinsion is ready to launch commercially]
-**Last updated:** 2026-07-16
+**Effective date:** 2026-07-20
+**Last updated:** 2026-07-20
 
 ---
 
@@ -14,8 +12,6 @@ Rinsion is a laundry management platform used by laundries and dry cleaners to m
 Rinsion is operated by **Alidu Yakubu Suhyini Mansur** as an individual based in Ghana ("Rinsion", "we", "us", "our"). We have not yet registered a company. You can contact us about this policy at **saymmmohamm265@gmail.com** (or, once live, **support@rinsion.com**).
 
 We intend to complete any registration required under the Data Protection Act, 2012 (Act 843), including registration as a data controller where applicable, before commercial launch. Once registered, our registration details will be published here.
-
-> [CONFIRM: if you register a limited liability company, replace the operator details with the company name, registration number, and registered address. Note for your lawyer: two people operating together without registration may be treated as a partnership, which can create joint personal liability.]
 
 ## 2. Who this policy covers, and the two roles we play
 
@@ -69,8 +65,6 @@ Messages sent to a laundry's customers contain the **laundry's name, an order nu
 
 Delivery is not guaranteed. If a message fails to send (for example due to a network issue or an invalid number), we log the failure internally for review; failed messages are not automatically retried.
 
-> [CONFIRM: message wording is still being finalised (confirmed in the codebase as of this review — every SMS template carries an internal "confirm wording after laundry owner interviews" note). Keep this section describing *categories* of information, not exact copy, so it does not go stale.]
-
 ## 6. Third parties who process data for us
 
 We rely on a small number of service providers ("sub-processors") to run Rinsion. They may only use data to provide their service to us.
@@ -117,8 +111,6 @@ Ghana's Data Protection Act, 2012 (Act 843), expects personal data not to be kep
 
 **Retention schedule.** We intend for records that are not erased on request to also be removed automatically under a defined retention schedule for each type of data. The underlying mechanism exists in our systems but does not yet run, because the category-specific time periods below have not yet been finalised.
 
-> **Implementation note (remove before publication):** Before launch, Rinsion must research all applicable legal retention obligations (including tax, accounting, commercial, and data protection requirements), decide and document category-specific retention periods, configure those periods in our systems so the existing automated process takes effect, and replace this note with the final published retention schedule.
-
 ## 10. Your rights
 
 Under Ghana's Data Protection Act, 2012 (Act 843), you have the right to:
@@ -146,7 +138,3 @@ We may update this policy as the service changes. If we make a significant chang
 ## 13. Contact
 
 Questions or requests: **saymmmohamm265@gmail.com**
-
----
-
-*This document is a draft prepared to be reviewed and finalised by a qualified lawyer in Ghana. It is not legal advice.*
