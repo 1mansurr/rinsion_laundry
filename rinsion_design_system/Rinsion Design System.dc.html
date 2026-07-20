@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #FAF8F5;
+    color: #1A1A1A;
+    font-family: 'Public Sans', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: #0F3D2E; text-decoration: none; }
+  a:hover { color: #17604A; }
+  .tnum { font-variant-numeric: tabular-nums lining-nums; font-feature-settings: 'tnum' 1, 'lnum' 1; }
+  @keyframes rin-spin { to { transform: rotate(360deg); } }
+  input.rin-field, select.rin-field { font-family: inherit; }
+  input.rin-field:focus, select.rin-field:focus { outline: none; border-color: #0F3D2E; box-shadow: 0 0 0 3px rgba(15,61,46,0.12); }
+</style>
+</helmet>
+
+<div style="max-width: 1080px; margin: 0 auto; padding: 0 clamp(20px,5vw,32px) 120px;">
+
+  <!-- ===================== MASTHEAD ===================== -->
+  <header style="padding: clamp(48px,8vw,80px) 0 52px; border-bottom: 1px solid #E8E4DD;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 40px; flex-wrap: wrap;">
+      <svg viewBox="0 0 100 100" width="22" height="22" style="display:block;">
+        <circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="15" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle>
+      </svg>
+      <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #6B6259;">Rinsion · Design System</span>
+      <span style="margin-left:auto; font-size: 12px; font-weight: 500; color: #9A9088; letter-spacing: 0.04em;">One system · Light mode</span>
+    </div>
+
+    <div style="font-weight: 800; font-size: clamp(56px,12vw,96px); letter-spacing: -0.045em; line-height: 1; color: #1A1A1A; white-space: nowrap;">
+      <span>R</span>
+      <span style="display:inline-block; vertical-align:baseline; text-align:center; line-height:0; margin:0 0.018em;">
+        <span style="display:block; width:0.18em; height:0.18em; border-radius:999px; background:#0F3D2E; margin:0 auto;"></span>
+        <span style="display:block; width:0.16em; height:0.5em; border-radius:0.03em; background:#1A1A1A; margin:0.055em auto 0;"></span>
+      </span>
+      <span>ns</span>
+      <span style="display:inline-block; vertical-align:baseline; text-align:center; line-height:0; margin:0 0.018em;">
+        <span style="display:block; width:0.18em; height:0.18em; border-radius:999px; background:#0F3D2E; margin:0 auto;"></span>
+        <span style="display:block; width:0.16em; height:0.5em; border-radius:0.03em; background:#1A1A1A; margin:0.055em auto 0;"></span>
+      </span>
+      <span style="display:inline-flex; align-items:center; justify-content:center; width:0.66em; height:0.66em; vertical-align:baseline; transform:translateY(0.02em); margin: 0 0.004em;">
+        <svg viewBox="0 0 100 100" width="100%" height="100%" style="display:block;">
+          <circle cx="50" cy="50" r="36" fill="none" stroke="#0F3D2E" strokeWidth="23" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle>
+        </svg>
+      </span>
+      <span>n</span>
+    </div>
+
+    <p style="max-width: 640px; margin: 32px 0 0; font-size: clamp(17px,2.4vw,19px); line-height: 1.55; color: #43403B; font-weight: 400;">
+      The single source of truth for every Rinsion surface — from sign-up, to taking an order, to editing and cancelling it, to the owner's dashboard, to whatever we build next. One mark, one palette, one type system, one set of components. If a screen doesn't look like it belongs here, it isn't finished.
+    </p>
+
+    <!-- what changed banner -->
+    <div style="margin-top:36px; background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:22px 24px;">
+      <div style="font-size:12px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#C25A3C; margin-bottom:14px;">The rules — settled once, applied everywhere</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px;">
+        <div style="display:flex; gap:11px; align-items:flex-start;"><span style="flex:none;width:8px;height:8px;border-radius:999px;background:#0F3D2E;margin-top:7px;"></span><div><div style="font-size:14.5px; font-weight:600;">Soft corners everywhere</div><div style="font-size:13px; color:#6B6259; margin-top:2px;">Cards 18px, buttons &amp; inputs 12px, pills 999px. No more 6px vs 24px drift.</div></div></div>
+        <div style="display:flex; gap:11px; align-items:flex-start;"><span style="flex:none;width:8px;height:8px;border-radius:999px;background:#0F3D2E;margin-top:7px;"></span><div><div style="font-size:14.5px; font-weight:600;">Two-part codes</div><div style="font-size:13px; color:#6B6259; margin-top:2px;">Long <span class="tnum">ORD-…</span> id for staff &amp; audit; short pickup code for the customer &amp; SMS.</div></div></div>
+        <div style="display:flex; gap:11px; align-items:flex-start;"><span style="flex:none;width:8px;height:8px;border-radius:999px;background:#0F3D2E;margin-top:7px;"></span><div><div style="font-size:14.5px; font-weight:600;">One status palette</div><div style="font-size:13px; color:#6B6259; margin-top:2px;">Six states, fixed colours, used identically in tables, cards and timelines.</div></div></div>
+        <div style="display:flex; gap:11px; align-items:flex-start;"><span style="flex:none;width:8px;height:8px;border-radius:999px;background:#0F3D2E;margin-top:7px;"></span><div><div style="font-size:14.5px; font-weight:600;">Ghana + mNotify baked in</div><div style="font-size:13px; color:#6B6259; margin-top:2px;">Cedis, day-month dates, local phone grouping, SMS sender ID “Rinsion”.</div></div></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== 01 THE MARK ===================== -->
+  <section style="padding: clamp(48px,7vw,64px) 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">01 — The mark</div>
+    <h2 style="font-size: clamp(24px,4vw,30px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">One shape. Every job.</h2>
+    <p style="max-width: 640px; margin: 0 0 40px; font-size: 17px; line-height: 1.55; color: #43403B;">
+      The wordmark carries no separate icon. The <span style="font-weight:600;">o</span> is built heavier than the letters around it, with a single notch cut at the top-right — the rinse notch. Pulled out of the word, that notched ring is unmistakably Rinsion. It prints in pure black, it spins to load, it collapses to a status dot, and it opens up to frame a pickup code.
+    </p>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 16px;">
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:28px 20px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:18px;">
+        <svg viewBox="0 0 100 100" width="76" height="76" style="display:block;">
+          <circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="15" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle>
+        </svg>
+        <div><div style="font-size:14px; font-weight:600;">The icon</div><div style="font-size:12.5px; color:#6B6259; margin-top:3px;">Favicon · app icon · avatar</div></div>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:28px 20px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:18px;">
+        <svg viewBox="0 0 100 100" width="76" height="76" style="display:block; animation: rin-spin 0.9s linear infinite; transform-origin: 50% 50%;">
+          <circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="15" strokeLinecap="round" pathLength="100" strokeDasharray="70 30" transform="rotate(-58 50 50)"></circle>
+        </svg>
+        <div><div style="font-size:14px; font-weight:600;">The spinner</div><div style="font-size:12.5px; color:#6B6259; margin-top:3px;">Loading · the o, lifted</div></div>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:28px 20px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:18px;">
+        <div style="height:76px; display:flex; align-items:center;">
+          <span style="display:inline-flex; align-items:center; gap:8px; background:#E3EDE8; color:#0F3D2E; font-weight:600; font-size:14px; padding:7px 14px 7px 11px; border-radius:999px;"><span style="width:9px; height:9px; border-radius:999px; background:#0F3D2E; display:inline-block;"></span>Ready</span>
+        </div>
+        <div><div style="font-size:14px; font-weight:600;">The status dot</div><div style="font-size:12.5px; color:#6B6259; margin-top:3px;">A small, filled o</div></div>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:28px 20px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:18px;">
+        <div style="height:76px; display:flex; align-items:center; justify-content:center; position:relative; width:76px;">
+          <svg viewBox="0 0 100 100" width="76" height="76" style="display:block; position:absolute; inset:0;">
+            <circle cx="50" cy="50" r="44" fill="none" stroke="#0F3D2E" strokeWidth="3" pathLength="100" strokeDasharray="92 8" transform="rotate(-77 50 50)"></circle>
+          </svg>
+          <span class="tnum" style="font-size:17px; font-weight:700; letter-spacing:0.02em; color:#0F3D2E;">K7MQ2P</span>
+        </div>
+        <div><div style="font-size:14px; font-weight:600;">The code frame</div><div style="font-size:12.5px; color:#6B6259; margin-top:3px;">Pickup code in a thin o</div></div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:16px;">
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:26px 28px;">
+        <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:22px;">Scale — legible from 96px to 16px</div>
+        <div style="display:flex; align-items:flex-end; gap:26px; flex-wrap:wrap;">
+          <svg viewBox="0 0 100 100" width="64" height="64"><circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="15" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>
+          <svg viewBox="0 0 100 100" width="44" height="44"><circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="15" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>
+          <svg viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="15" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>
+          <svg viewBox="0 0 100 100" width="20" height="20"><circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="16" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>
+          <svg viewBox="0 0 100 100" width="16" height="16"><circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="17" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>
+        </div>
+      </div>
+      <div style="background:#1A1A1A; border-radius:18px; padding:26px 28px; display:flex; flex-direction:column; justify-content:space-between; gap:22px;">
+        <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088;">Mono · reversed</div>
+        <div style="display:flex; align-items:center; gap:28px;">
+          <svg viewBox="0 0 100 100" width="48" height="48"><circle cx="50" cy="50" r="36" fill="none" stroke="#FAF8F5" strokeWidth="23" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>
+          <div style="font-weight:800; font-size:34px; letter-spacing:-0.045em; line-height:1; color:#FAF8F5; white-space:nowrap;">
+            <span>R</span>
+            <span style="display:inline-block; vertical-align:baseline; text-align:center; line-height:0; margin:0 0.018em;"><span style="display:block; width:0.18em; height:0.18em; border-radius:999px; background:#FAF8F5; margin:0 auto;"></span><span style="display:block; width:0.16em; height:0.5em; border-radius:0.04em; background:#FAF8F5; margin:0.055em auto 0;"></span></span>
+            <span>ns</span>
+            <span style="display:inline-block; vertical-align:baseline; text-align:center; line-height:0; margin:0 0.018em;"><span style="display:block; width:0.18em; height:0.18em; border-radius:999px; background:#FAF8F5; margin:0 auto;"></span><span style="display:block; width:0.16em; height:0.5em; border-radius:0.04em; background:#FAF8F5; margin:0.055em auto 0;"></span></span>
+            <span style="display:inline-flex; align-items:center; justify-content:center; width:0.66em; height:0.66em; vertical-align:baseline; transform:translateY(0.02em); margin:0 0.004em;"><svg viewBox="0 0 100 100" width="100%" height="100%" style="display:block;"><circle cx="50" cy="50" r="36" fill="none" stroke="#FAF8F5" strokeWidth="23" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg></span>
+            <span>n</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 02 COLOUR ===================== -->
+  <section style="padding: clamp(48px,7vw,64px) 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">02 — Colour</div>
+    <h2 style="font-size: clamp(24px,4vw,30px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">Deep emerald, warmed by clay.</h2>
+    <p style="max-width: 640px; margin: 0 0 40px; font-size: 17px; line-height: 1.55; color: #43403B;">
+      A green you can build a business on, an accent used so rarely it always means something, and a background warmed just off white — that warmth is where the local feeling lives.
+    </p>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-bottom:16px;">
+      <div style="border-radius:18px; overflow:hidden; border:1px solid #E8E4DD;">
+        <div style="background:#0F3D2E; height:150px; display:flex; align-items:flex-end; padding:18px; color:#FAF8F5;"><span style="font-size:16px; font-weight:600;">Primary — Deep Emerald</span></div>
+        <div style="display:flex; background:#FFFFFF;">
+          <div style="flex:1; padding:13px 16px; border-right:1px solid #E8E4DD;"><div style="font-size:12px; color:#9A9088;">Base</div><div class="tnum" style="font-size:14px; font-weight:600;">#0F3D2E</div></div>
+          <div style="flex:1; padding:13px 16px;"><div style="font-size:12px; color:#9A9088;">Hover / mid</div><div class="tnum" style="font-size:14px; font-weight:600;">#17604A</div></div>
+        </div>
+      </div>
+      <div style="border-radius:18px; overflow:hidden; border:1px solid #E8E4DD;">
+        <div style="background:#C25A3C; height:150px; display:flex; align-items:flex-end; padding:18px; color:#FFF6F1;"><span style="font-size:16px; font-weight:600;">Accent — Clay</span></div>
+        <div style="display:flex; background:#FFFFFF;">
+          <div style="flex:1; padding:13px 16px; border-right:1px solid #E8E4DD;"><div style="font-size:12px; color:#9A9088;">Base</div><div class="tnum" style="font-size:14px; font-weight:600;">#C25A3C</div></div>
+          <div style="flex:1; padding:13px 16px;"><div style="font-size:12px; color:#9A9088;">Hover</div><div class="tnum" style="font-size:14px; font-weight:600;">#A94B30</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-bottom:32px;">
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; overflow:hidden;"><div style="height:64px; background:#FAF8F5; border-bottom:1px solid #E8E4DD;"></div><div style="padding:12px 14px;"><div style="font-size:13px; font-weight:600;">Background</div><div class="tnum" style="font-size:12.5px; color:#6B6259; margin-top:2px;">#FAF8F5</div></div></div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; overflow:hidden;"><div style="height:64px; background:#FFFFFF; border-bottom:1px solid #E8E4DD;"></div><div style="padding:12px 14px;"><div style="font-size:13px; font-weight:600;">Surface</div><div class="tnum" style="font-size:12.5px; color:#6B6259; margin-top:2px;">#FFFFFF</div></div></div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; overflow:hidden;"><div style="height:64px; background:#F1ECE4; border-bottom:1px solid #E8E4DD;"></div><div style="padding:12px 14px;"><div style="font-size:13px; font-weight:600;">Surface tint</div><div class="tnum" style="font-size:12.5px; color:#6B6259; margin-top:2px;">#F1ECE4</div></div></div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; overflow:hidden;"><div style="height:64px; background:#E8E4DD; border-bottom:1px solid #E8E4DD;"></div><div style="padding:12px 14px;"><div style="font-size:13px; font-weight:600;">Border</div><div class="tnum" style="font-size:12.5px; color:#6B6259; margin-top:2px;">#E8E4DD</div></div></div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; overflow:hidden;"><div style="height:64px; background:#1A1A1A; border-bottom:1px solid #E8E4DD;"></div><div style="padding:12px 14px;"><div style="font-size:13px; font-weight:600;">Text — Charcoal</div><div class="tnum" style="font-size:12.5px; color:#6B6259; margin-top:2px;">#1A1A1A</div></div></div>
+    </div>
+
+    <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:14px;">Text ramp — on background / surface</div>
+    <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:22px 26px; display:flex; flex-wrap:wrap; gap:28px; margin-bottom:32px;">
+      <div><div style="font-size:18px; font-weight:600; color:#1A1A1A;">Primary</div><div class="tnum" style="font-size:12.5px; color:#9A9088;">#1A1A1A</div></div>
+      <div><div style="font-size:18px; font-weight:600; color:#43403B;">Secondary</div><div class="tnum" style="font-size:12.5px; color:#9A9088;">#43403B</div></div>
+      <div><div style="font-size:18px; font-weight:600; color:#6B6259;">Muted</div><div class="tnum" style="font-size:12.5px; color:#9A9088;">#6B6259</div></div>
+      <div><div style="font-size:18px; font-weight:600; color:#9A9088;">Faint / hint</div><div class="tnum" style="font-size:12.5px; color:#9A9088;">#9A9088</div></div>
+    </div>
+
+    <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:14px;">Functional</div>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:36px;">
+      <div style="background:#E6F0EA; border:1px solid #CFE2D6; border-radius:14px; padding:16px 18px;"><div style="width:22px;height:22px;border-radius:7px;background:#2E7D5B;margin-bottom:12px;"></div><div style="font-size:14px;font-weight:600;color:#1E5C40;">Success · Paid</div><div class="tnum" style="font-size:12.5px;color:#3D6B52;margin-top:2px;">#2E7D5B</div></div>
+      <div style="background:#F7EFD9; border:1px solid #EADFBE; border-radius:14px; padding:16px 18px;"><div style="width:22px;height:22px;border-radius:7px;background:#B8801F;margin-bottom:12px;"></div><div style="font-size:14px;font-weight:600;color:#7A5512;">Warning</div><div class="tnum" style="font-size:12.5px;color:#8A6420;margin-top:2px;">#B8801F</div></div>
+      <div style="background:#F4E3E1; border:1px solid #E6CCC8; border-radius:14px; padding:16px 18px;"><div style="width:22px;height:22px;border-radius:7px;background:#B0413A;margin-bottom:12px;"></div><div style="font-size:14px;font-weight:600;color:#8A322C;">Error · Overdue</div><div class="tnum" style="font-size:12.5px;color:#9A463F;margin-top:2px;">#B0413A</div></div>
+      <div style="background:#E4ECF3; border:1px solid #CCDCE9; border-radius:14px; padding:16px 18px;"><div style="width:22px;height:22px;border-radius:7px;background:#2F6F9E;margin-bottom:12px;"></div><div style="font-size:14px;font-weight:600;color:#234F70;">Info</div><div class="tnum" style="font-size:12.5px;color:#356486;margin-top:2px;">#2F6F9E</div></div>
+    </div>
+
+    <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:14px;">Order status — the most-used colour system</div>
+    <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:24px; display:flex; flex-wrap:wrap; gap:14px 12px; align-items:center;">
+      <span style="display:inline-flex; align-items:center; gap:8px; background:#EEEAE3; color:#5A5249; font-weight:600; font-size:14px; padding:7px 14px 7px 11px; border-radius:999px;"><span style="width:9px;height:9px;border-radius:999px;background:#8C857B;"></span>Received</span>
+      <span style="color:#C7C0B6;">→</span>
+      <span style="display:inline-flex; align-items:center; gap:8px; background:#E4ECF3; color:#234F70; font-weight:600; font-size:14px; padding:7px 14px 7px 11px; border-radius:999px;"><span style="width:9px;height:9px;border-radius:999px;background:#2F6F9E;"></span>Confirmed</span>
+      <span style="color:#C7C0B6;">→</span>
+      <span style="display:inline-flex; align-items:center; gap:8px; background:#F7EFD9; color:#7A5512; font-weight:600; font-size:14px; padding:7px 14px 7px 11px; border-radius:999px;"><span style="width:9px;height:9px;border-radius:999px;background:#B8801F;"></span>Processing</span>
+      <span style="color:#C7C0B6;">→</span>
+      <span style="display:inline-flex; align-items:center; gap:8px; background:#E3EDE8; color:#0F3D2E; font-weight:700; font-size:14px; padding:7px 14px 7px 11px; border-radius:999px; outline:2px solid rgba(15,61,46,0.16); outline-offset:1px;"><span style="width:9px;height:9px;border-radius:999px;background:#0F3D2E;"></span>Ready</span>
+      <span style="color:#C7C0B6;">→</span>
+      <span style="display:inline-flex; align-items:center; gap:8px; background:#EAEDE9; color:#455749; font-weight:600; font-size:14px; padding:7px 14px 7px 11px; border-radius:999px;"><span style="width:9px;height:9px;border-radius:999px;background:#5E7A6B;"></span>Collected</span>
+      <span style="margin:0 4px; width:1px; height:22px; background:#E8E4DD;"></span>
+      <span style="display:inline-flex; align-items:center; gap:8px; background:#F4E3E1; color:#8A322C; font-weight:600; font-size:14px; padding:7px 14px 7px 11px; border-radius:999px;"><span style="width:9px;height:9px;border-radius:999px;background:#B0413A;"></span>Cancelled</span>
+    </div>
+    <p style="margin:14px 0 0; font-size:14px; color:#6B6259; max-width:640px;">Ready wears the brand primary on purpose — it's the moment the customer gets the SMS and the laundry has done its job. It should feel like a small win, every time.</p>
+  </section>
+
+  <!-- ===================== 03 TYPOGRAPHY ===================== -->
+  <section style="padding: clamp(48px,7vw,64px) 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">03 — Typography</div>
+    <h2 style="font-size: clamp(24px,4vw,30px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">Public Sans — humanist, with character.</h2>
+    <p style="max-width: 640px; margin: 0 0 40px; font-size: 17px; line-height: 1.55; color: #43403B;">
+      One warm humanist sans does everything: titles, body, labels, and — critically — numbers, set in tabular figures so every price and code lines up down a column.
+    </p>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap:16px;">
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:26px 30px;">
+        <div style="display:flex; align-items:baseline; gap:14px; padding:13px 0; border-bottom:1px solid #F1ECE4;"><span style="width:96px; font-size:12px; color:#9A9088; font-weight:500; flex:none;">Display · 800</span><span style="font-size:38px; font-weight:800; letter-spacing:-0.03em;">All caught up</span></div>
+        <div style="display:flex; align-items:baseline; gap:14px; padding:13px 0; border-bottom:1px solid #F1ECE4;"><span style="width:96px; font-size:12px; color:#9A9088; font-weight:500; flex:none;">H1 · 700</span><span style="font-size:26px; font-weight:700; letter-spacing:-0.015em;">Create order</span></div>
+        <div style="display:flex; align-items:baseline; gap:14px; padding:13px 0; border-bottom:1px solid #F1ECE4;"><span style="width:96px; font-size:12px; color:#9A9088; font-weight:500; flex:none;">H2 · 600</span><span style="font-size:19px; font-weight:600;">Ready for collection</span></div>
+        <div style="display:flex; align-items:baseline; gap:14px; padding:13px 0; border-bottom:1px solid #F1ECE4;"><span style="width:96px; font-size:12px; color:#9A9088; font-weight:500; flex:none;">Body · 400</span><span style="font-size:16px; font-weight:400; color:#43403B;">New orders appear here as staff create them.</span></div>
+        <div style="display:flex; align-items:baseline; gap:14px; padding:13px 0; border-bottom:1px solid #F1ECE4;"><span style="width:96px; font-size:12px; color:#9A9088; font-weight:500; flex:none;">Label · 600</span><span style="font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#9A9088;">PICKUP DATE</span></div>
+        <div style="display:flex; align-items:baseline; gap:14px; padding:13px 0 0;"><span style="width:96px; font-size:12px; color:#9A9088; font-weight:500; flex:none;">Caption · 400</span><span style="font-size:12.5px; font-weight:400; color:#6B6259;">Updated by Kojo · 16:30</span></div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:24px 26px;">
+          <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:16px;">Tabular figures align</div>
+          <div class="tnum" style="font-size:18px; line-height:1.9; font-weight:500;">
+            <div style="display:flex; justify-content:space-between;"><span style="color:#6B6259;">Shirt × 3</span><span>GHS&nbsp;&nbsp;45.00</span></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:#6B6259;">Suit × 1</span><span>GHS&nbsp;145.00</span></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:#6B6259;">Bedsheet × 2</span><span>GHS&nbsp;&nbsp;90.00</span></div>
+            <div style="display:flex; justify-content:space-between; border-top:1px solid #E8E4DD; padding-top:8px; margin-top:6px; font-weight:700;"><span>Total</span><span>GHS&nbsp;280.00</span></div>
+          </div>
+        </div>
+        <div style="background:#0F3D2E; border-radius:18px; padding:24px 26px; color:#FAF8F5;">
+          <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#7FA896; margin-bottom:14px;">Pickup code — a moment</div>
+          <div class="tnum" style="font-size:44px; font-weight:700; letter-spacing:0.14em;">K7MQ2P</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 04 SHAPE, ELEVATION & SPACE ===================== -->
+  <section style="padding: clamp(48px,7vw,64px) 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">04 — Shape, elevation &amp; space</div>
+    <h2 style="font-size: clamp(24px,4vw,30px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">Soft corners, quiet shadows, an 8px grid.</h2>
+    <p style="max-width: 640px; margin: 0 0 40px; font-size: 17px; line-height: 1.55; color: #43403B;">
+      This is the section that ends the drift. One radius scale, one shadow scale, one spacing rhythm — applied on every screen so nothing feels borrowed from a different app.
+    </p>
+
+    <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:14px;">Radius scale</div>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap:16px; margin-bottom:36px;">
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:20px;"><div style="height:56px; background:#E3EDE8; border-radius:10px; margin-bottom:14px;"></div><div style="font-size:14px; font-weight:600;">10px — sm</div><div style="font-size:12.5px; color:#6B6259; margin-top:2px;">Chips, tiles, tags</div></div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:20px;"><div style="height:56px; background:#E3EDE8; border-radius:12px; margin-bottom:14px;"></div><div style="font-size:14px; font-weight:600;">12px — md</div><div style="font-size:12.5px; color:#6B6259; margin-top:2px;">Buttons, inputs, selects</div></div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:20px;"><div style="height:56px; background:#E3EDE8; border-radius:18px; margin-bottom:14px;"></div><div style="font-size:14px; font-weight:600;">18px — lg</div><div style="font-size:12.5px; color:#6B6259; margin-top:2px;">Cards, panels</div></div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:20px;"><div style="height:56px; background:#E3EDE8; border-radius:22px; margin-bottom:14px;"></div><div style="font-size:14px; font-weight:600;">22px — xl</div><div style="font-size:12.5px; color:#6B6259; margin-top:2px;">Modals, mobile sheets</div></div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:20px;"><div style="height:56px; background:#E3EDE8; border-radius:999px; margin-bottom:14px;"></div><div style="font-size:14px; font-weight:600;">999px — full</div><div style="font-size:12.5px; color:#6B6259; margin-top:2px;">Pills, status, avatars</div></div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin-bottom:36px;">
+      <div>
+        <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:14px;">Elevation</div>
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:16px 18px;"><div style="font-size:14px; font-weight:600;">Flat · border only</div><div style="font-size:12.5px; color:#6B6259;">Default surface. 1px #E8E4DD.</div></div>
+          <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:16px 18px; box-shadow:0 24px 50px -32px rgba(26,26,26,.28);"><div style="font-size:14px; font-weight:600;">Raised</div><div style="font-size:12.5px; color:#6B6259;">Popovers, sticky bars, floating cards.</div></div>
+          <div style="background:#FFFFFF; border:1px solid #E2DCD2; border-radius:22px; padding:16px 18px; box-shadow:0 40px 80px -40px rgba(26,26,26,.45);"><div style="font-size:14px; font-weight:600;">Overlay</div><div style="font-size:12.5px; color:#6B6259;">Modals &amp; dialogs above a scrim.</div></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:14px;">Spacing — 4 / 8 base</div>
+        <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:22px; display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; align-items:center; gap:14px;"><div style="height:14px; width:4px; background:#0F3D2E; border-radius:2px;"></div><span class="tnum" style="font-size:13.5px;">4 · hairline gaps</span></div>
+          <div style="display:flex; align-items:center; gap:14px;"><div style="height:14px; width:8px; background:#0F3D2E; border-radius:2px;"></div><span class="tnum" style="font-size:13.5px;">8 · icon ↔ label</span></div>
+          <div style="display:flex; align-items:center; gap:14px;"><div style="height:14px; width:12px; background:#0F3D2E; border-radius:2px;"></div><span class="tnum" style="font-size:13.5px;">12 · inside controls</span></div>
+          <div style="display:flex; align-items:center; gap:14px;"><div style="height:14px; width:16px; background:#0F3D2E; border-radius:2px;"></div><span class="tnum" style="font-size:13.5px;">16 · card gap</span></div>
+          <div style="display:flex; align-items:center; gap:14px;"><div style="height:14px; width:24px; background:#0F3D2E; border-radius:2px;"></div><span class="tnum" style="font-size:13.5px;">24 · card padding</span></div>
+          <div style="display:flex; align-items:center; gap:14px;"><div style="height:14px; width:32px; background:#17604A; border-radius:2px;"></div><span class="tnum" style="font-size:13.5px;">32 · section inset</span></div>
+          <div style="display:flex; align-items:center; gap:14px;"><div style="height:14px; width:64px; background:#17604A; border-radius:2px;"></div><span class="tnum" style="font-size:13.5px;">64 · section rhythm</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#F1ECE4; border:1px solid #E8E4DD; border-radius:14px; padding:16px 20px; font-size:14px; color:#43403B; line-height:1.55;">
+      <b>Touch targets:</b> every interactive element is at least <b>44×44px</b> on mobile — buttons, back arrows, status toggles, table rows. Lay groups out with flex/grid <span class="tnum">gap</span>, never margins between inline items.
+    </div>
+  </section>
+
+  <!-- ===================== 05 APP SHELL ===================== -->
+  <section style="padding: clamp(48px,7vw,64px) 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">05 — App shell</div>
+    <h2 style="font-size: clamp(24px,4vw,30px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">The frame every screen sits inside.</h2>
+    <p style="max-width: 640px; margin: 0 0 40px; font-size: 17px; line-height: 1.55; color: #43403B;">
+      Desktop gets an emerald sidebar; phones get a bottom tab bar. Both carry the same destinations in the same order. Every page opens with the same header block: breadcrumb, title, and its primary action pinned to the right.
+    </p>
+
+    <!-- desktop shell -->
+    <div style="border:1px solid #E8E4DD; border-radius:18px; overflow:hidden; background:#FFFFFF; display:flex; min-height:360px; margin-bottom:16px;">
+      <!-- sidebar -->
+      <aside style="width:210px; flex:none; background:#0F3D2E; color:#FAF8F5; padding:18px 14px; display:flex; flex-direction:column; gap:4px;">
+        <div style="display:flex; align-items:center; gap:8px; font-weight:800; font-size:18px; letter-spacing:-0.04em; padding:6px 8px 16px;"><svg viewBox="0 0 100 100" width="16" height="16"><circle cx="50" cy="50" r="37" fill="none" stroke="#FAF8F5" strokeWidth="16" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>Rinsion</div>
+        <span style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px; background:rgba(250,248,245,.14); font-size:14px; font-weight:600;"><svg width="17" height="17" viewBox="0 0 24 24" fill="#FAF8F5"><path d="M3 12 12 4l9 8v8a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-8Z"></path></svg>Dashboard</span>
+        <span style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px; color:rgba(250,248,245,.72); font-size:14px; font-weight:500;"><svg width="17" height="17" viewBox="0 0 24 24" fill="rgba(250,248,245,.72)"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Zm3 3a1 1 0 0 0 0 2h10a1 1 0 1 0 0-2H7Zm0 4a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2H7Z"></path></svg>Orders</span>
+        <span style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px; color:rgba(250,248,245,.72); font-size:14px; font-weight:500;"><svg width="17" height="17" viewBox="0 0 24 24" fill="rgba(250,248,245,.72)"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.5-8 5.5V21a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5c0-3-3.6-5.5-8-5.5Z"></path></svg>Customers</span>
+        <span style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px; color:rgba(250,248,245,.72); font-size:14px; font-weight:500;"><svg width="17" height="17" viewBox="0 0 24 24" fill="rgba(250,248,245,.72)"><path d="M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Zm2 3v9h14V9H5Z"></path></svg>Reports</span>
+        <div style="flex:1;"></div>
+        <span style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px; color:rgba(250,248,245,.72); font-size:14px; font-weight:500;"><svg width="17" height="17" viewBox="0 0 24 24" fill="rgba(250,248,245,.72)"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm8.4 4a8.4 8.4 0 0 0-.13-1.45l2-1.55-2-3.46-2.36.95a8.3 8.3 0 0 0-2.5-1.45L14.6 2h-5.2l-.4 2.59a8.3 8.3 0 0 0-2.5 1.45l-2.36-.95-2 3.46 2 1.55a8.5 8.5 0 0 0 0 2.9l-2 1.55 2 3.46 2.36-.95a8.3 8.3 0 0 0 2.5 1.45L9.4 22h5.2l.4-2.59a8.3 8.3 0 0 0 2.5-1.45l2.36.95 2-3.46-2-1.55c.08-.48.13-.96.13-1.45Z"></path></svg>Settings</span>
+        <div style="display:flex; align-items:center; gap:10px; padding:10px 8px; margin-top:4px; border-top:1px solid rgba(250,248,245,.12);"><span style="width:30px;height:30px;border-radius:999px;background:#C25A3C;color:#FFF6F1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">KA</span><div style="min-width:0;"><div style="font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Kwesi A.</div><div style="font-size:11px; color:rgba(250,248,245,.6);">Owner</div></div></div>
+      </aside>
+      <!-- content -->
+      <div style="flex:1; min-width:0; background:#FAF8F5; display:flex; flex-direction:column;">
+        <!-- page header -->
+        <div style="padding:18px 24px; border-bottom:1px solid #E8E4DD; background:#FFFFFF;">
+          <div style="display:flex; align-items:center; gap:7px; font-size:12.5px; color:#9A9088; margin-bottom:8px;"><span>Dashboard</span><span>/</span><span style="color:#6B6259; font-weight:600;">Orders</span></div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+            <div><h3 style="margin:0; font-size:22px; font-weight:700; letter-spacing:-0.02em;">Orders</h3><div style="font-size:13px; color:#6B6259; margin-top:2px;">47 total · 6 ready for collection</div></div>
+            <button style="font-family:inherit; cursor:pointer; display:inline-flex; align-items:center; gap:8px; background:#0F3D2E; color:#FAF8F5; border:none; font-size:14.5px; font-weight:600; padding:10px 16px; border-radius:12px;" style-hover="background:#17604A;"><svg width="15" height="15" viewBox="0 0 24 24" fill="#FAF8F5"><path d="M11 5a1 1 0 1 1 2 0v6h6a1 1 0 1 1 0 2h-6v6a1 1 0 1 1-2 0v-6H5a1 1 0 1 1 0-2h6V5Z"></path></svg>Create order</button>
+          </div>
+        </div>
+        <div style="padding:24px; flex:1; display:flex; align-items:center; justify-content:center; color:#9A9088; font-size:13.5px;">↑ Sidebar · breadcrumb · page title · primary action — the frame for every screen.</div>
+      </div>
+    </div>
+
+    <!-- mobile shell -->
+    <div style="display:flex; gap:16px; flex-wrap:wrap;">
+      <div style="width:260px; max-width:100%; border:1px solid #E8E4DD; border-radius:22px; overflow:hidden; background:#FAF8F5;">
+        <div style="background:#FFFFFF; padding:14px 16px; border-bottom:1px solid #E8E4DD; display:flex; align-items:center; justify-content:space-between;"><span style="display:flex; align-items:center; gap:7px; font-weight:800; font-size:16px; letter-spacing:-0.04em;"><svg viewBox="0 0 100 100" width="14" height="14"><circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="16" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>Orders</span><span style="width:30px;height:30px;border-radius:999px;background:#C25A3C;color:#FFF6F1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">KA</span></div>
+        <div style="height:150px; display:flex; align-items:center; justify-content:center; color:#9A9088; font-size:12.5px; text-align:center; padding:16px;">Content scrolls here.<br>Primary action is a bottom-right FAB.</div>
+        <div style="background:#FFFFFF; border-top:1px solid #E8E4DD; display:flex; justify-content:space-around; padding:8px 6px;">
+          <span style="display:flex; flex-direction:column; align-items:center; gap:3px; color:#0F3D2E; font-size:10px; font-weight:600;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#0F3D2E"><path d="M3 12 12 4l9 8v8a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-8Z"></path></svg>Home</span>
+          <span style="display:flex; flex-direction:column; align-items:center; gap:3px; color:#9A9088; font-size:10px; font-weight:500;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#9A9088"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z"></path></svg>Orders</span>
+          <span style="display:flex; flex-direction:column; align-items:center; gap:3px; color:#9A9088; font-size:10px; font-weight:500;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#9A9088"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.5-8 5.5V21a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5c0-3-3.6-5.5-8-5.5Z"></path></svg>People</span>
+          <span style="display:flex; flex-direction:column; align-items:center; gap:3px; color:#9A9088; font-size:10px; font-weight:500;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#9A9088"><path d="M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Z"></path></svg>Reports</span>
+        </div>
+      </div>
+      <div style="flex:1; min-width:min(100%,240px); background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:22px 24px;">
+        <div style="font-size:14px; font-weight:600; margin-bottom:10px;">Navigation rules</div>
+        <ul style="margin:0; padding-left:18px; font-size:14px; line-height:1.7; color:#43403B;">
+          <li>Same four destinations, same order, everywhere.</li>
+          <li>Current page is emerald-filled on desktop, emerald-tinted on mobile.</li>
+          <li>The page's one primary action lives top-right (desktop) or as a FAB (mobile).</li>
+          <li>Back is always a 44×44 target; breadcrumb is the desktop equivalent.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 06 BUTTONS ===================== -->
+  <section style="padding: clamp(48px,7vw,64px) 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">06 — Buttons</div>
+    <h2 style="font-size: clamp(24px,4vw,30px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">Verbs. Filled icons. Never icon-only for the main action.</h2>
+    <p style="max-width: 640px; margin: 0 0 32px; font-size: 17px; line-height: 1.55; color: #43403B;">One primary per screen (emerald). Clay is reserved for money and “tell the customer” moments. Destructive actions are outlined red until the final confirm.</p>
+
+    <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:26px 28px; display:flex; flex-wrap:wrap; gap:14px; align-items:center; margin-bottom:16px;">
+      <button style="font-family:inherit; cursor:pointer; display:inline-flex; align-items:center; gap:8px; background:#0F3D2E; color:#FAF8F5; border:none; font-size:15px; font-weight:600; padding:12px 18px; border-radius:12px;" style-hover="background:#17604A;"><svg width="16" height="16" viewBox="0 0 24 24" fill="#FAF8F5"><path d="M11 5a1 1 0 1 1 2 0v6h6a1 1 0 1 1 0 2h-6v6a1 1 0 1 1-2 0v-6H5a1 1 0 1 1 0-2h6V5Z"></path></svg>Create order</button>
+      <button style="font-family:inherit; cursor:pointer; background:#FFFFFF; color:#1A1A1A; border:1px solid #CDC7BD; font-size:15px; font-weight:600; padding:12px 18px; border-radius:12px;" style-hover="background:#F1ECE4;">Cancel</button>
+      <button style="font-family:inherit; cursor:pointer; background:transparent; color:#0F3D2E; border:none; font-size:15px; font-weight:600; padding:12px 14px; border-radius:12px;" style-hover="background:#E9F0EC;">View all orders</button>
+      <button style="font-family:inherit; cursor:pointer; display:inline-flex; align-items:center; gap:8px; background:#C25A3C; color:#FFF6F1; border:none; font-size:15px; font-weight:600; padding:12px 18px; border-radius:12px;" style-hover="background:#A94B30;"><svg width="16" height="16" viewBox="0 0 24 24" fill="#FFF6F1"><path d="M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-4 3.5A1 1 0 0 1 3 20V6Z"></path></svg>Record payment</button>
+      <button style="font-family:inherit; cursor:pointer; background:#FFFFFF; color:#8A322C; border:1px solid #E0BBB6; font-size:15px; font-weight:600; padding:12px 18px; border-radius:12px;" style-hover="background:#F8ECEA;">Cancel order</button>
+      <button disabled style="font-family:inherit; background:#F1ECE4; color:#B6AFA4; border:none; font-size:15px; font-weight:600; padding:12px 18px; border-radius:12px; cursor:not-allowed;">Create order</button>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px;">
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:22px 24px;">
+        <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:16px;">Sizes</div>
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <button style="font-family:inherit; cursor:pointer; background:#0F3D2E; color:#FAF8F5; border:none; font-size:13px; font-weight:600; padding:8px 13px; border-radius:10px;">Small</button>
+          <button style="font-family:inherit; cursor:pointer; background:#0F3D2E; color:#FAF8F5; border:none; font-size:15px; font-weight:600; padding:12px 18px; border-radius:12px;">Medium</button>
+          <button style="font-family:inherit; cursor:pointer; background:#0F3D2E; color:#FAF8F5; border:none; font-size:16px; font-weight:700; padding:15px 24px; border-radius:12px;">Large</button>
+        </div>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:22px 24px;">
+        <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:16px;">Loading &amp; full-width (mobile)</div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <button style="font-family:inherit; cursor:progress; display:flex; align-items:center; justify-content:center; gap:10px; background:#0F3D2E; color:#FAF8F5; border:none; font-size:15px; font-weight:600; padding:12px 18px; border-radius:12px; width:100%;"><svg viewBox="0 0 100 100" width="16" height="16" style="animation:rin-spin .9s linear infinite;"><circle cx="50" cy="50" r="37" fill="none" stroke="#FAF8F5" strokeWidth="15" strokeLinecap="round" pathLength="100" strokeDasharray="70 30"></circle></svg>Saving…</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 07 FORMS ===================== -->
+  <section style="padding: clamp(48px,7vw,64px) 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">07 — Forms &amp; validation</div>
+    <h2 style="font-size: clamp(24px,4vw,30px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">Ask for the least. Explain the rest.</h2>
+    <p style="max-width: 640px; margin: 0 0 40px; font-size: 17px; line-height: 1.55; color: #43403B;">Every field has a label above it. Required fields carry a clay dot, not the word “required”. Help text sits under the field in muted grey; errors replace it in red and turn the border red. This is the exact kit that builds Create&nbsp;order and Edit&nbsp;order.</p>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-bottom:16px;">
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:26px 28px;">
+        <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:18px;">Field states</div>
+        <label style="display:flex; align-items:center; gap:6px; font-size:13.5px; font-weight:600; margin-bottom:7px;">Customer phone <span style="width:6px;height:6px;border-radius:999px;background:#C25A3C;"></span></label>
+        <input class="rin-field" value="0244 567 890" style="width:100%; font-size:15px; padding:12px 13px; border:1px solid #CDC7BD; border-radius:12px; background:#FFFFFF; color:#1A1A1A;"></input>
+        <div style="font-size:12.5px; color:#6B6259; margin-top:7px;">Search an existing customer or add a new one.</div>
+
+        <label style="display:block; font-size:13.5px; font-weight:600; margin:20px 0 7px;">Focused</label>
+        <input class="rin-field" value="Ama Owusu" style="width:100%; font-size:15px; padding:12px 13px; border:1px solid #0F3D2E; border-radius:12px; background:#FFFFFF; color:#1A1A1A; box-shadow:0 0 0 3px rgba(15,61,46,0.12);"></input>
+
+        <label style="display:flex; align-items:center; gap:6px; font-size:13.5px; font-weight:600; margin:20px 0 7px;">Amount paid <span style="width:6px;height:6px;border-radius:999px;background:#C25A3C;"></span></label>
+        <input class="rin-field" value="GHS 3O.OO" style="width:100%; font-size:15px; padding:12px 13px; border:1px solid #B0413A; border-radius:12px; background:#FDF6F5; color:#1A1A1A;"></input>
+        <div style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:#B0413A; margin-top:7px; font-weight:500;"><svg width="14" height="14" viewBox="0 0 24 24" fill="#B0413A"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 5a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0V8a1 1 0 0 1 1-1Zm0 9.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Z"></path></svg>Enter a number, e.g. 30.00.</div>
+
+        <label style="display:block; font-size:13.5px; font-weight:600; margin:20px 0 7px; color:#9A9088;">Notes (disabled until customer set)</label>
+        <input class="rin-field" disabled placeholder="Add a note" style="width:100%; font-size:15px; padding:12px 13px; border:1px solid #E8E4DD; border-radius:12px; background:#F6F2EC; color:#B6AFA4;"></input>
+      </div>
+
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:26px 28px;">
+        <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:18px;">Selects, segmented &amp; toggle</div>
+        <label style="display:block; font-size:13.5px; font-weight:600; margin-bottom:7px;">Branch</label>
+        <div style="display:flex; align-items:center; justify-content:space-between; font-size:15px; padding:12px 13px; border:1px solid #CDC7BD; border-radius:12px; background:#FFFFFF;"><span>Osu — Oxford Street</span><svg width="16" height="16" viewBox="0 0 24 24" fill="#6B6259"><path d="M12 15.5 5.7 9.2a1 1 0 0 1 1.4-1.4l5.9 5.9 5.9-5.9a1 1 0 1 1 1.4 1.4L12 15.5Z"></path></svg></div>
+
+        <label style="display:block; font-size:13.5px; font-weight:600; margin:20px 0 7px;">Priority</label>
+        <div style="display:inline-flex; gap:6px; background:#F1ECE4; padding:4px; border-radius:12px;">
+          <span style="font-size:14px; font-weight:600; padding:8px 16px; border-radius:9px; background:#FFFFFF; color:#1A1A1A;">Normal</span>
+          <span style="font-size:14px; font-weight:500; padding:8px 16px; border-radius:9px; color:#6B6259;">Express</span>
+          <span style="font-size:14px; font-weight:500; padding:8px 16px; border-radius:9px; color:#6B6259;">Urgent</span>
+        </div>
+
+        <label style="display:block; font-size:13.5px; font-weight:600; margin:20px 0 7px;">Text customer when ready</label>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="width:46px; height:27px; border-radius:999px; background:#0F3D2E; padding:3px; display:inline-flex; align-items:center;"><span style="width:21px; height:21px; border-radius:999px; background:#FFFFFF; margin-left:auto;"></span></span>
+          <span style="font-size:14px; color:#43403B;">On — sender ID “Rinsion”</span>
+        </div>
+
+        <label style="display:block; font-size:13.5px; font-weight:600; margin:20px 0 10px;">Pay now?</label>
+        <div style="display:flex; gap:18px;">
+          <span style="display:flex; align-items:center; gap:8px; font-size:14px;"><span style="width:18px;height:18px;border-radius:999px;border:2px solid #0F3D2E;display:inline-flex;align-items:center;justify-content:center;"><span style="width:8px;height:8px;border-radius:999px;background:#0F3D2E;"></span></span>On collection</span>
+          <span style="display:flex; align-items:center; gap:8px; font-size:14px; color:#6B6259;"><span style="width:18px;height:18px;border-radius:999px;border:2px solid #CDC7BD;"></span>Full now</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- create order layout -->
+    <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin:32px 0 14px;">Pattern in use — Create order</div>
+    <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; overflow:hidden;">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 24px; border-bottom:1px solid #E8E4DD;"><div style="font-size:18px; font-weight:700;">New order</div><div style="font-size:12.5px; color:#9A9088;"><span style="color:#C25A3C;">•</span> required</div></div>
+      <div style="padding:24px; display:grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:20px;">
+        <div>
+          <label style="display:flex; align-items:center; gap:6px; font-size:13.5px; font-weight:600; margin-bottom:7px;">Customer <span style="width:6px;height:6px;border-radius:999px;background:#C25A3C;"></span></label>
+          <div style="display:flex; align-items:center; gap:8px; font-size:15px; padding:12px 13px; border:1px solid #CDC7BD; border-radius:12px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="#9A9088"><path d="M10 3a7 7 0 1 0 4.2 12.6l4.1 4.1a1 1 0 0 0 1.4-1.4l-4.1-4.1A7 7 0 0 0 10 3Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"></path></svg><span style="color:#9A9088;">Search name or phone</span></div>
+        </div>
+        <div>
+          <label style="display:block; font-size:13.5px; font-weight:600; margin-bottom:7px;">Pickup date</label>
+          <div style="display:flex; align-items:center; justify-content:space-between; font-size:15px; padding:12px 13px; border:1px solid #CDC7BD; border-radius:12px;"><span class="tnum">28 Jun 2026</span><svg width="16" height="16" viewBox="0 0 24 24" fill="#6B6259"><path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1Zm12 7H5v10h14V9Z"></path></svg></div>
+        </div>
+        <div style="grid-column:1/-1;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:13.5px; font-weight:600; margin-bottom:7px;">Items <span style="width:6px;height:6px;border-radius:999px;background:#C25A3C;"></span></label>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <span style="display:inline-flex; align-items:center; gap:8px; background:#F1ECE4; border-radius:10px; padding:9px 12px; font-size:13.5px; font-weight:500;">Shirt × 3 <span class="tnum" style="color:#6B6259;">45.00</span></span>
+            <span style="display:inline-flex; align-items:center; gap:8px; background:#F1ECE4; border-radius:10px; padding:9px 12px; font-size:13.5px; font-weight:500;">Suit × 1 <span class="tnum" style="color:#6B6259;">145.00</span></span>
+            <span style="display:inline-flex; align-items:center; gap:8px; border:1px dashed #CDC7BD; color:#0F3D2E; border-radius:10px; padding:9px 12px; font-size:13.5px; font-weight:600;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#0F3D2E"><path d="M11 5a1 1 0 1 1 2 0v6h6a1 1 0 1 1 0 2h-6v6a1 1 0 1 1-2 0v-6H5a1 1 0 1 1 0-2h6V5Z"></path></svg>Add item</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:16px 24px; border-top:1px solid #E8E4DD; background:#FAF8F5;">
+        <span class="tnum" style="font-size:16px; font-weight:700;">Total GHS 190.00</span>
+        <div style="display:flex; gap:10px;">
+          <button style="font-family:inherit; cursor:pointer; background:#FFFFFF; color:#1A1A1A; border:1px solid #CDC7BD; font-size:14.5px; font-weight:600; padding:11px 16px; border-radius:12px;">Cancel</button>
+          <button style="font-family:inherit; cursor:pointer; background:#0F3D2E; color:#FAF8F5; border:none; font-size:14.5px; font-weight:600; padding:11px 18px; border-radius:12px;">Create order</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 08 LISTS ===================== -->
+  <section style="padding: clamp(48px,7vw,64px) 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">08 — Lists, filters &amp; pagination</div>
+    <h2 style="font-size: clamp(24px,4vw,30px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">The table breathes, and glows on overdue.</h2>
+    <p style="max-width: 640px; margin: 0 0 32px; font-size: 17px; line-height: 1.55; color: #43403B;">Search and filters sit in a toolbar above. Names lead each row; overdue rows get a warm red tint. On phones, the same data reflows into cards — never a squeezed table.</p>
+
+    <!-- toolbar -->
+    <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:16px;">
+      <div style="display:flex; align-items:center; gap:8px; background:#FFFFFF; border:1px solid #CDC7BD; border-radius:12px; padding:10px 13px; flex:1; min-width:220px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="#9A9088"><path d="M10 3a7 7 0 1 0 4.2 12.6l4.1 4.1a1 1 0 0 0 1.4-1.4l-4.1-4.1A7 7 0 0 0 10 3Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"></path></svg><span style="font-size:14.5px; color:#9A9088;">Search by name or code</span></div>
+      <span style="display:inline-flex; align-items:center; gap:7px; background:#0F3D2E; color:#FAF8F5; border-radius:999px; padding:8px 14px; font-size:13.5px; font-weight:600;">All</span>
+      <span style="display:inline-flex; align-items:center; gap:7px; background:#FFFFFF; border:1px solid #CDC7BD; color:#43403B; border-radius:999px; padding:8px 14px; font-size:13.5px; font-weight:500;">Ready</span>
+      <span style="display:inline-flex; align-items:center; gap:7px; background:#FFFFFF; border:1px solid #CDC7BD; color:#43403B; border-radius:999px; padding:8px 14px; font-size:13.5px; font-weight:500;">Overdue</span>
+      <span style="display:inline-flex; align-items:center; gap:7px; background:#FFFFFF; border:1px solid #CDC7BD; color:#43403B; border-radius:999px; padding:8px 13px; font-size:13.5px; font-weight:500;"><svg width="14" height="14" viewBox="0 0 24 24" fill="#6B6259"><path d="M3 5a1 1 0 0 1 1-1h16a1 1 0 0 1 .78 1.63L14 13.05V19a1 1 0 0 1-1.45.9l-3-1.5A1 1 0 0 1 9 17.5v-4.45L3.22 5.63A1 1 0 0 1 3 5Z"></path></svg>Filters</span>
+    </div>
+
+    <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; overflow:hidden; margin-bottom:16px;">
+      <div style="display:grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 0.8fr; gap:16px; padding:13px 24px; background:#F6F2EC; border-bottom:1px solid #E8E4DD; font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#8A8175;"><span>Customer</span><span>Order</span><span>Status</span><span>Balance</span><span style="text-align:right;">Pickup</span></div>
+      <div style="display:grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 0.8fr; gap:16px; padding:16px 24px; border-bottom:1px solid #F1ECE4; align-items:center;">
+        <div><div style="font-size:15px; font-weight:600;">Ama Owusu</div><div class="tnum" style="font-size:12.5px; color:#6B6259;">0244 567 890</div></div>
+        <span class="tnum" style="font-size:13px; color:#43403B;">ORD-4KP7MX2A</span>
+        <span><span style="display:inline-flex; align-items:center; gap:7px; background:#E3EDE8; color:#0F3D2E; font-weight:600; font-size:13px; padding:5px 11px 5px 9px; border-radius:999px;"><span style="width:8px;height:8px;border-radius:999px;background:#0F3D2E;"></span>Ready</span></span>
+        <span class="tnum" style="font-size:14.5px; font-weight:600; color:#1A1A1A;">GHS 0.00</span>
+        <span class="tnum" style="font-size:13.5px; color:#43403B; text-align:right;">28 Jun</span>
+      </div>
+      <div style="display:grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 0.8fr; gap:16px; padding:16px 24px; border-bottom:1px solid #F1ECE4; align-items:center;">
+        <div><div style="font-size:15px; font-weight:600;">Kwabena Mensah</div><div class="tnum" style="font-size:12.5px; color:#6B6259;">0201 234 567</div></div>
+        <span class="tnum" style="font-size:13px; color:#43403B;">ORD-3J8LTRNX</span>
+        <span><span style="display:inline-flex; align-items:center; gap:7px; background:#F7EFD9; color:#7A5512; font-weight:600; font-size:13px; padding:5px 11px 5px 9px; border-radius:999px;"><span style="width:8px;height:8px;border-radius:999px;background:#B8801F;"></span>Processing</span></span>
+        <span class="tnum" style="font-size:14.5px; font-weight:700; color:#B0413A;">GHS 60.00</span>
+        <span class="tnum" style="font-size:13.5px; color:#43403B; text-align:right;">29 Jun</span>
+      </div>
+      <div style="display:grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 0.8fr; gap:16px; padding:16px 24px; align-items:center; background:#FBF4F2;">
+        <div><div style="font-size:15px; font-weight:600;">Akosua Boateng</div><div class="tnum" style="font-size:12.5px; color:#6B6259;">0556 880 145</div></div>
+        <span class="tnum" style="font-size:13px; color:#43403B;">ORD-M6YJT9ZK</span>
+        <span><span style="display:inline-flex; align-items:center; gap:7px; background:#E4ECF3; color:#234F70; font-weight:600; font-size:13px; padding:5px 11px 5px 9px; border-radius:999px;"><span style="width:8px;height:8px;border-radius:999px;background:#2F6F9E;"></span>Confirmed</span></span>
+        <span class="tnum" style="font-size:14.5px; font-weight:700; color:#B0413A;">GHS 120.00</span>
+        <span class="tnum" style="font-size:13.5px; color:#B0413A; font-weight:600; text-align:right;">Overdue</span>
+      </div>
+    </div>
+
+    <!-- mobile card equivalent + pagination -->
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:16px;">
+      <div style="background:#FBF4F2; border:1px solid #E6CCC8; border-radius:18px; padding:16px 18px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+          <div><div style="font-size:15px; font-weight:600;">Akosua Boateng</div><div class="tnum" style="font-size:12px; color:#6B6259;">ORD-M6YJT9ZK</div></div>
+          <span style="display:inline-flex; align-items:center; gap:6px; background:#E4ECF3; color:#234F70; font-weight:600; font-size:12px; padding:4px 10px 4px 8px; border-radius:999px;"><span style="width:7px;height:7px;border-radius:999px;background:#2F6F9E;"></span>Confirmed</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid #E6CCC8;"><span class="tnum" style="font-size:13px; color:#B0413A; font-weight:600;">Overdue</span><span class="tnum" style="font-size:14.5px; font-weight:700; color:#B0413A;">GHS 120.00</span></div>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:16px 18px; display:flex; flex-direction:column; justify-content:center;">
+        <div style="font-size:12.5px; color:#6B6259; margin-bottom:12px;">Showing 1–10 of 47</div>
+        <div style="display:flex; gap:4px; align-items:center;">
+          <span style="font-size:14px; font-weight:600; color:#9A9088; padding:6px 11px;">←</span>
+          <span style="font-size:14px; font-weight:600; color:#FAF8F5; background:#0F3D2E; padding:6px 12px; border-radius:10px;">1</span>
+          <span style="font-size:14px; font-weight:500; color:#43403B; padding:6px 12px;">2</span>
+          <span style="font-size:14px; font-weight:500; color:#43403B; padding:6px 12px;">3</span>
+          <span style="font-size:14px; font-weight:500; color:#43403B; padding:6px 12px;">4</span>
+          <span style="font-size:14px; font-weight:600; color:#0F3D2E; padding:6px 11px;">→</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 09 STATUS LIFECYCLE ===================== -->
+  <section style="padding: clamp(48px,7vw,64px) 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">09 — Order status &amp; lifecycle</div>
+    <h2 style="font-size: clamp(24px,4vw,30px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">One tap forward. Every move signed.</h2>
+    <p style="max-width: 640px; margin: 0 0 32px; font-size: 17px; line-height: 1.55; color: #43403B;">The order detail is the heart of the app. A signed timeline down the left, the current action pinned at the bottom. Marking <b>Ready</b> is the moment the SMS fires.</p>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:16px;">
+      <!-- detail header + timeline -->
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; overflow:hidden;">
+        <div style="background:linear-gradient(160deg,#17604A,#0F3D2E); color:#FAF8F5; padding:18px 20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:11px; font-weight:700; letter-spacing:0.12em; color:#8FB6A5;">ORDER</span><span style="display:inline-flex; align-items:center; gap:6px; background:#E3EDE8; color:#0F3D2E; border-radius:999px; padding:4px 11px 4px 9px; font-size:11.5px; font-weight:700;"><span style="width:7px;height:7px;border-radius:999px;background:#0F3D2E;"></span>READY</span></div>
+          <div class="tnum" style="font-size:24px; font-weight:800; margin-top:4px;">ORD-4KP7MX2A</div>
+          <div style="font-size:12.5px; color:#A8C3B6; margin-top:3px;">Pickup code <span class="tnum" style="color:#FAF8F5; font-weight:600;">K7MQ2P</span> · Ama Owusu</div>
+        </div>
+        <div style="padding:18px 20px;">
+          <div style="display:flex; gap:12px; align-items:flex-start; padding:3px 0;"><div style="width:22px;flex:none;display:flex;flex-direction:column;align-items:center;"><div style="width:20px;height:20px;border-radius:999px;background:#0F3D2E;display:flex;align-items:center;justify-content:center;"><span style="width:7px;height:7px;border-radius:999px;background:#FAF8F5;"></span></div><div style="width:2px;height:22px;background:#0F3D2E;margin-top:1px;"></div></div><div><div style="font-size:13.5px; font-weight:600;">Received</div><div class="tnum" style="font-size:11.5px; color:#6B6259;">Kwesi · 16 Jul, 09:14</div></div></div>
+          <div style="display:flex; gap:12px; align-items:flex-start; padding:3px 0;"><div style="width:22px;flex:none;display:flex;flex-direction:column;align-items:center;"><div style="width:20px;height:20px;border-radius:999px;background:#0F3D2E;display:flex;align-items:center;justify-content:center;"><span style="width:7px;height:7px;border-radius:999px;background:#FAF8F5;"></span></div><div style="width:2px;height:22px;background:#0F3D2E;margin-top:1px;"></div></div><div><div style="font-size:13.5px; font-weight:600;">Processing</div><div class="tnum" style="font-size:11.5px; color:#6B6259;">Adjoa · 16 Jul, 14:02</div></div></div>
+          <div style="display:flex; gap:12px; align-items:flex-start; padding:3px 0;"><div style="width:22px;flex:none;display:flex;flex-direction:column;align-items:center;"><div style="width:20px;height:20px;border-radius:999px;border:2px solid #0F3D2E;background:#E3EDE8;display:flex;align-items:center;justify-content:center;"><span style="width:7px;height:7px;border-radius:999px;background:#0F3D2E;"></span></div><div style="width:2px;height:22px;background:#E4DFD6;margin-top:1px;"></div></div><div><div style="font-size:13.5px; font-weight:700; color:#0F3D2E;">Ready · text sent</div><div class="tnum" style="font-size:11.5px; color:#6B6259;">Adjoa · 16 Jul, 16:30</div></div></div>
+          <div style="display:flex; gap:12px; align-items:flex-start; padding:3px 0;"><div style="width:22px;flex:none;display:flex;flex-direction:column;align-items:center;"><div style="width:20px;height:20px;border-radius:999px;border:2px solid #D8D2C8;display:flex;align-items:center;justify-content:center;"><span style="width:7px;height:7px;border-radius:999px;background:#D8D2C8;"></span></div></div><div><div style="font-size:13.5px; font-weight:600; color:#9A9088;">Collected</div><div style="font-size:11.5px; color:#9A9088;">Pending</div></div></div>
+        </div>
+        <div style="display:flex; gap:10px; padding:0 20px 20px;">
+          <button style="flex:1; font-family:inherit; cursor:pointer; background:#0F3D2E; color:#FAF8F5; border:none; font-size:14px; font-weight:600; padding:12px; border-radius:12px;">Mark collected</button>
+          <button style="font-family:inherit; cursor:pointer; background:#FFFFFF; color:#8A322C; border:1px solid #E0BBB6; font-size:14px; font-weight:600; padding:12px 16px; border-radius:12px;">Cancel</button>
+        </div>
+      </div>
+
+      <!-- guidance -->
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:22px 24px;">
+          <div style="font-size:14px; font-weight:600; margin-bottom:12px;">The five states</div>
+          <div style="display:flex; flex-direction:column; gap:10px; font-size:14px; color:#43403B; line-height:1.4;">
+            <div><b>Received</b> — logged, not yet checked in.</div>
+            <div><b>Confirmed</b> — items &amp; price agreed with customer.</div>
+            <div><b>Processing</b> — in the wash.</div>
+            <div><b style="color:#0F3D2E;">Ready</b> — done; customer texted automatically.</div>
+            <div><b>Collected</b> — handed over &amp; paid in full.</div>
+          </div>
+        </div>
+        <div style="background:#F1ECE4; border:1px solid #E8E4DD; border-radius:14px; padding:16px 20px; font-size:14px; color:#43403B; line-height:1.55;">
+          <b>Cancelled</b> sits outside the flow and is always reachable, but it is a destructive action — see §11. Every transition records <i>who</i> and <i>when</i>; nothing in Rinsion changes state anonymously.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 10 CODES ===================== -->
+  <section style="padding: clamp(48px,7vw,64px) 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">10 — Codes</div>
+    <h2 style="font-size: clamp(24px,4vw,30px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">Two codes, two jobs.</h2>
+    <p style="max-width: 640px; margin: 0 0 32px; font-size: 17px; line-height: 1.55; color: #43403B;">The long order id is for the shop and the audit trail. The short pickup code is the only thing the customer ever sees or reads aloud. Never mix them.</p>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:16px;">
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:26px 28px;">
+        <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:14px;">Order id — internal</div>
+        <div style="display:inline-flex; align-items:center; gap:8px; background:#F1ECE4; border-radius:10px; padding:9px 13px;"><span class="tnum" style="font-size:18px; font-weight:700; letter-spacing:0.02em;">ORD-4KP7MX2A</span></div>
+        <ul style="margin:16px 0 0; padding-left:18px; font-size:14px; line-height:1.7; color:#43403B;"><li><b>ORD-</b> prefix + 8 uppercase chars.</li><li>Shown in tables, detail headers, the log &amp; exports.</li><li>Unique forever; never reused.</li></ul>
+      </div>
+      <div style="background:#0F3D2E; border-radius:18px; padding:26px 28px; color:#FAF8F5;">
+        <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#7FA896; margin-bottom:14px;">Pickup code — the customer's</div>
+        <div class="tnum" style="font-size:40px; font-weight:700; letter-spacing:0.14em;">K7MQ2P</div>
+        <ul style="margin:16px 0 0; padding-left:18px; font-size:14px; line-height:1.7; color:#CFE0D8;"><li>6 chars, no confusable 0/O/1/I.</li><li>Goes in the SMS &amp; on the counter screen.</li><li>Short enough to read over a phone call.</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 11 FEEDBACK & DESTRUCTIVE ===================== -->
+  <section style="padding: clamp(48px,7vw,64px) 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">11 — Feedback &amp; destructive actions</div>
+    <h2 style="font-size: clamp(24px,4vw,30px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">The more it costs to undo, the louder we get.</h2>
+    <p style="max-width: 640px; margin: 0 0 32px; font-size: 17px; line-height: 1.55; color: #43403B;">Toasts confirm the reversible. Banners carry account-level issues. Modals stop you before anything you can't take back — deleting or cancelling an order names the customer and states the consequence plainly.</p>
+
+    <!-- toasts -->
+    <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:14px;">Toasts — brief, with an undo where it makes sense</div>
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:32px; max-width:520px;">
+      <div style="display:flex; align-items:center; gap:12px; background:#1A1A1A; color:#FAF8F5; padding:13px 16px; border-radius:12px; box-shadow:0 24px 50px -32px rgba(26,26,26,.5);"><svg width="18" height="18" viewBox="0 0 24 24" fill="#7FD6AE"><path d="M9 16.17 5.53 12.7a1 1 0 0 0-1.42 1.42l4.18 4.17a1 1 0 0 0 1.42 0L20.3 7.88a1 1 0 1 0-1.42-1.42L9 16.17Z"></path></svg><span style="font-size:14px; flex:1;">Order marked Ready. Text sent to Ama.</span></div>
+      <div style="display:flex; align-items:center; gap:12px; background:#1A1A1A; color:#FAF8F5; padding:13px 16px; border-radius:12px; box-shadow:0 24px 50px -32px rgba(26,26,26,.5);"><svg width="18" height="18" viewBox="0 0 24 24" fill="#9A9088"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z"></path></svg><span style="font-size:14px; flex:1;">Order deleted.</span><button style="font-family:inherit; cursor:pointer; background:none; border:none; color:#8FD3B4; font-size:14px; font-weight:700;">Undo</button></div>
+    </div>
+
+    <!-- banners -->
+    <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:14px;">Banners — account &amp; billing</div>
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:32px;">
+      <div style="display:flex; align-items:center; gap:14px; background:#B0413A; color:#FFF1EF; padding:15px 20px; border-radius:14px; flex-wrap:wrap;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#FFF1EF" style="flex:none;"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 5a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0V8a1 1 0 0 1 1-1Zm0 9.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Z"></path></svg><span style="font-size:15px; font-weight:500; flex:1; min-width:200px;">Your subscription expired 3 days ago. You have 3 days of read-only access left.</span><button style="font-family:inherit; cursor:pointer; background:#FFF1EF; color:#8A322C; border:none; font-size:14px; font-weight:600; padding:9px 16px; border-radius:10px;">Pay now</button></div>
+      <div style="display:flex; align-items:center; gap:14px; background:#F7EFD9; color:#7A5512; padding:15px 20px; border-radius:14px; border:1px solid #EADFBE; flex-wrap:wrap;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#B8801F" style="flex:none;"><path d="M12 2 1 21h22L12 2Zm0 6a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0V9a1 1 0 0 1 1-1Zm0 9a1.25 1.25 0 1 1 0 2.5A1.25 1.25 0 0 1 12 17Z"></path></svg><span style="font-size:15px; font-weight:500; flex:1; min-width:200px;">You've used <span class="tnum" style="font-weight:700;">340 / 400</span> texts this month. Overage bills at <span class="tnum" style="font-weight:700;">GHS 0.05</span> each.</span><button style="font-family:inherit; cursor:pointer; background:transparent; color:#7A5512; border:none; font-size:14px; font-weight:600; padding:9px 10px;">View usage</button></div>
+    </div>
+
+    <!-- destructive modals -->
+    <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088; margin-bottom:14px;">Destructive confirmations</div>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:16px;">
+      <div style="background:#F1ECE4; border:1px solid #E8E4DD; border-radius:18px; padding:24px; display:flex; align-items:center; justify-content:center;">
+        <div style="background:#FFFFFF; border:1px solid #E2DCD2; border-radius:22px; padding:24px; width:100%; max-width:340px; box-shadow:0 40px 80px -40px rgba(26,26,26,.45);">
+          <span style="display:inline-flex; width:36px; height:36px; border-radius:11px; background:#F4E3E1; align-items:center; justify-content:center; margin-bottom:12px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="#B0413A"><path d="M12 2 1 21h22L12 2Zm0 6a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0V9a1 1 0 0 1 1-1Zm0 9a1.25 1.25 0 1 1 0 2.5A1.25 1.25 0 0 1 12 17Z"></path></svg></span>
+          <div style="font-size:18px; font-weight:700; margin-bottom:8px;">Cancel this order?</div>
+          <div style="font-size:14.5px; color:#43403B; line-height:1.5; margin-bottom:22px;">Akosua Boateng's order <span class="tnum" style="font-weight:600;">ORD-M6YJT9ZK</span> will be marked cancelled. The customer won't be notified. This can't be undone.</div>
+          <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button style="font-family:inherit; cursor:pointer; background:#FFFFFF; color:#1A1A1A; border:1px solid #CDC7BD; font-size:14.5px; font-weight:600; padding:11px 16px; border-radius:12px;">Keep order</button>
+            <button style="font-family:inherit; cursor:pointer; background:#B0413A; color:#FFF1EF; border:none; font-size:14.5px; font-weight:600; padding:11px 16px; border-radius:12px;">Cancel order</button>
+          </div>
+        </div>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:24px 26px;">
+        <div style="font-size:14px; font-weight:600; margin-bottom:12px;">Rules for destructive actions</div>
+        <ul style="margin:0; padding-left:18px; font-size:14px; line-height:1.7; color:#43403B;">
+          <li>Always a modal, never an inline one-tap.</li>
+          <li>Name the record and the person it belongs to.</li>
+          <li>State the consequence — including whether the customer is told.</li>
+          <li>Confirm button is red and repeats the verb (“Cancel order”), never just “OK”.</li>
+          <li>Where safe, prefer soft-delete + an <b>Undo</b> toast over a hard confirm.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 12 EMPTY & FIRST-RUN ===================== -->
+  <section style="padding: clamp(48px,7vw,64px) 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">12 — Empty &amp; first-run states</div>
+    <h2 style="font-size: clamp(24px,4vw,30px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 32px;">An empty screen is a first instruction, not a dead end.</h2>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:16px;">
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:40px 30px; display:flex; flex-direction:column; align-items:center; text-align:center;">
+        <svg viewBox="0 0 120 120" width="72" height="72" style="margin-bottom:20px;"><circle cx="60" cy="60" r="46" fill="none" stroke="#E8E4DD" strokeWidth="2"></circle><circle cx="60" cy="60" r="32" fill="none" stroke="#E0DAD0" strokeWidth="2"></circle><circle cx="60" cy="60" r="11" fill="none" stroke="#0F3D2E" strokeWidth="6" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 60 60)"></circle></svg>
+        <div style="font-size:19px; font-weight:600; margin-bottom:6px;">No orders yet</div>
+        <div style="font-size:14.5px; color:#6B6259; max-width:280px; line-height:1.5; margin-bottom:20px;">New orders appear here as staff create them.</div>
+        <button style="font-family:inherit; cursor:pointer; background:#0F3D2E; color:#FAF8F5; border:none; font-size:14.5px; font-weight:600; padding:12px 18px; border-radius:12px;">Create your first order</button>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:26px 28px;">
+        <div style="font-size:14px; font-weight:600; margin-bottom:6px;">First-run checklist</div>
+        <div style="font-size:13.5px; color:#6B6259; margin-bottom:16px;">Shown on the dashboard until each step is done.</div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid #E8E4DD; border-radius:12px;"><span style="width:22px;height:22px;border-radius:999px;background:#0F3D2E;display:flex;align-items:center;justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#FAF8F5"><path d="M9 16.17 5.53 12.7a1 1 0 0 0-1.42 1.42l4.18 4.17a1 1 0 0 0 1.42 0L20.3 7.88a1 1 0 1 0-1.42-1.42L9 16.17Z"></path></svg></span><span style="font-size:14px; color:#9A9088; text-decoration:line-through;">Name your laundry</span></div>
+          <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid #0F3D2E; border-radius:12px; background:#F4F8F6;"><span style="width:22px;height:22px;border-radius:999px;border:2px solid #0F3D2E;"></span><span style="font-size:14px; font-weight:600;">Add your first staff member</span></div>
+          <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid #E8E4DD; border-radius:12px;"><span style="width:22px;height:22px;border-radius:999px;border:2px solid #CDC7BD;"></span><span style="font-size:14px; color:#43403B;">Take your first order</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 13 AUTH ===================== -->
+  <section style="padding: clamp(48px,7vw,64px) 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">13 — Auth</div>
+    <h2 style="font-size: clamp(24px,4vw,30px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">The first screen sets the tone.</h2>
+    <p style="max-width: 640px; margin: 0 0 32px; font-size: 17px; line-height: 1.55; color: #43403B;">Sign-up and log-in share one centred card on the warm background, the mark on top. Phone number is the account key — no email required. Same buttons, same fields, same radii as the rest of the app.</p>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:16px;">
+      <div style="background:#FAF8F5; border:1px solid #E8E4DD; border-radius:18px; padding:32px; display:flex; align-items:center; justify-content:center;">
+        <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:22px; padding:28px; width:100%; max-width:320px; box-shadow:0 24px 50px -32px rgba(26,26,26,.28);">
+          <div style="display:flex; align-items:center; gap:8px; font-weight:800; font-size:20px; letter-spacing:-0.04em; margin-bottom:20px;"><svg viewBox="0 0 100 100" width="18" height="18"><circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="16" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>Rinsion</div>
+          <div style="font-size:20px; font-weight:700; letter-spacing:-0.02em;">Create your laundry</div>
+          <div style="font-size:13.5px; color:#6B6259; margin:6px 0 20px;">14 days free. No payment upfront.</div>
+          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Laundry name</label>
+          <input class="rin-field" value="Clean Pro Laundry" style="width:100%; font-size:14.5px; padding:11px 13px; border:1px solid #CDC7BD; border-radius:12px; margin-bottom:14px;"></input>
+          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Phone number</label>
+          <input class="rin-field" value="0244 567 890" style="width:100%; font-size:14.5px; padding:11px 13px; border:1px solid #CDC7BD; border-radius:12px; margin-bottom:18px;"></input>
+          <button style="font-family:inherit; cursor:pointer; width:100%; background:#0F3D2E; color:#FAF8F5; border:none; font-size:15px; font-weight:600; padding:13px; border-radius:12px;">Start free trial</button>
+          <div style="text-align:center; font-size:13px; color:#6B6259; margin-top:16px;">Already have an account? <span style="color:#0F3D2E; font-weight:600;">Log in</span></div>
+        </div>
+      </div>
+      <div style="background:#0F3D2E; border-radius:18px; padding:32px; display:flex; align-items:center; justify-content:center;">
+        <div style="background:#FFFFFF; border-radius:22px; padding:28px; width:100%; max-width:320px; box-shadow:0 40px 80px -40px rgba(0,0,0,.5);">
+          <div style="display:flex; align-items:center; gap:8px; font-weight:800; font-size:20px; letter-spacing:-0.04em; margin-bottom:20px;"><svg viewBox="0 0 100 100" width="18" height="18"><circle cx="50" cy="50" r="37" fill="none" stroke="#0F3D2E" strokeWidth="16" strokeLinecap="round" pathLength="100" strokeDasharray="86 14" transform="rotate(-56 50 50)"></circle></svg>Rinsion</div>
+          <div style="font-size:20px; font-weight:700; letter-spacing:-0.02em;">Welcome back</div>
+          <div style="font-size:13.5px; color:#6B6259; margin:6px 0 20px;">We'll text you a one-time code.</div>
+          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Phone number</label>
+          <input class="rin-field" value="0244 567 890" style="width:100%; font-size:14.5px; padding:11px 13px; border:1px solid #CDC7BD; border-radius:12px; margin-bottom:18px;"></input>
+          <button style="font-family:inherit; cursor:pointer; width:100%; background:#0F3D2E; color:#FAF8F5; border:none; font-size:15px; font-weight:600; padding:13px; border-radius:12px;">Send code</button>
+          <div style="text-align:center; font-size:13px; color:#6B6259; margin-top:16px;">New here? <span style="color:#0F3D2E; font-weight:600;">Create a laundry</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 14 ICONOGRAPHY ===================== -->
+  <section style="padding: clamp(48px,7vw,64px) 0; border-bottom: 1px solid #E8E4DD;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">14 — Iconography</div>
+    <h2 style="font-size: clamp(24px,4vw,30px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">Filled. Confident. Supporting text, never replacing it.</h2>
+    <p style="max-width: 640px; margin: 0 0 36px; font-size: 17px; line-height: 1.55; color: #43403B;">Outline icons read light and tentative — the opposite of sharp. These are solid forms with weight, on a 24px grid.</p>
+    <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:16px; display:grid; grid-template-columns: repeat(auto-fit,minmax(84px,1fr)); gap:8px;">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M11 5a1 1 0 1 1 2 0v6h6a1 1 0 1 1 0 2h-6v6a1 1 0 1 1-2 0v-6H5a1 1 0 1 1 0-2h6V5Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">New</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M10 3a7 7 0 1 0 4.2 12.6l4.1 4.1a1 1 0 0 0 1.4-1.4l-4.1-4.1A7 7 0 0 0 10 3Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Search</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.5-8 5.5V21a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5c0-3-3.6-5.5-8-5.5Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Customer</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Zm3 3a1 1 0 0 0 0 2h10a1 1 0 1 0 0-2H7Zm0 4a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2H7Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Order</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Zm2 3v9h14V9H5Zm2 5a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2H7Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Payment</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm8.4 4a8.4 8.4 0 0 0-.13-1.45l2-1.55-2-3.46-2.36.95a8.3 8.3 0 0 0-2.5-1.45L14.6 2h-5.2l-.4 2.59a8.3 8.3 0 0 0-2.5 1.45l-2.36-.95-2 3.46 2 1.55a8.5 8.5 0 0 0 0 2.9l-2 1.55 2 3.46 2.36-.95a8.3 8.3 0 0 0 2.5 1.45L9.4 22h5.2l.4-2.59a8.3 8.3 0 0 0 2.5-1.45l2.36.95 2-3.46-2-1.55c.08-.48.13-.96.13-1.45Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Settings</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M12 2a6 6 0 0 0-6 6c0 3.5-1.5 5.5-2.4 6.4A1 1 0 0 0 4.3 16h15.4a1 1 0 0 0 .7-1.6C19.5 13.5 18 11.5 18 8a6 6 0 0 0-6-6Zm0 20a3 3 0 0 0 2.8-2H9.2A3 3 0 0 0 12 22Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Alerts</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M9 16.17 5.53 12.7a1 1 0 0 0-1.42 1.42l4.18 4.17a1 1 0 0 0 1.42 0L20.3 7.88a1 1 0 1 0-1.42-1.42L9 16.17Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Done</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Close</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-4 3.5A1 1 0 0 1 3 20V6Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">SMS</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M6.6 2.2c.6-.27 1.3-.13 1.76.34l2.4 2.4a1.5 1.5 0 0 1 .3 1.7L10 9a13 13 0 0 0 5 5l1.36-1.06a1.5 1.5 0 0 1 1.7-.3l2.4 2.4c.47.46.6 1.16.34 1.76A4.5 4.5 0 0 1 16.5 19 13.5 13.5 0 0 1 5 7.5 4.5 4.5 0 0 1 6.6 2.2Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Call</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1Zm12 7H5v10h14V9Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Date</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M3 5a1 1 0 0 1 1-1h16a1 1 0 0 1 .78 1.63L14 13.05V19a1 1 0 0 1-1.45.9l-3-1.5A1 1 0 0 1 9 17.5v-4.45L3.22 5.63A1 1 0 0 1 3 5Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Filter</span></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 8px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M5 4h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm2 2v4h7V6H7Zm5 6a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"></path></svg><span style="font-size:11.5px; color:#6B6259;">Save</span></div>
+    </div>
+  </section>
+
+  <!-- ===================== 15 FORMATS + VOICE ===================== -->
+  <section style="padding: clamp(48px,7vw,64px) 0;">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #C25A3C; margin-bottom: 10px;">15 — Formats &amp; voice</div>
+    <h2 style="font-size: clamp(24px,4vw,30px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px;">Ghana defaults, from day one.</h2>
+    <p style="max-width: 640px; margin: 0 0 36px; font-size: 17px; line-height: 1.55; color: #43403B;">No dollar signs, no MM/DD dates. The SMS — the customer's first touch — goes out through <b>mNotify</b> and always leads with the laundry's name, because the sender ID only ever says “Rinsion”.</p>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:16px;">
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:8px 28px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 0; border-bottom:1px solid #F1ECE4;"><span style="font-size:14px; color:#6B6259;">Currency</span><span class="tnum" style="font-size:16px; font-weight:600;">GHS 90.00</span></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 0; border-bottom:1px solid #F1ECE4;"><span style="font-size:14px; color:#6B6259;">Date</span><span class="tnum" style="font-size:16px; font-weight:600;">28 June 2026</span></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 0; border-bottom:1px solid #F1ECE4;"><span style="font-size:14px; color:#6B6259;">Compact date</span><span class="tnum" style="font-size:16px; font-weight:600;">28 Jun 2026</span></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 0; border-bottom:1px solid #F1ECE4;"><span style="font-size:14px; color:#6B6259;">Time</span><span class="tnum" style="font-size:16px; font-weight:600;">16:30 · 4:30 pm</span></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 0;"><span style="font-size:14px; color:#6B6259;">Phone</span><span class="tnum" style="font-size:16px; font-weight:600;">0244 567 890</span></div>
+      </div>
+
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:26px 28px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:8px;">
+          <div style="font-size:12.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#9A9088;">Live SMS preview</div>
+          <span style="font-size:12px; color:#6B6259;">Sender ID: <span style="font-weight:600; color:#1A1A1A;">Rinsion</span> · via mNotify</span>
+        </div>
+        <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+          <div style="flex:1.4; min-width:140px;"><label style="display:block; font-size:12.5px; font-weight:500; margin-bottom:6px; color:#43403B;">Laundry display name</label><input class="rin-field" value="{{ laundry }}" onInput="{{ onLaundry }}" style="width:100%; font-size:14px; padding:10px 11px; border:1px solid #CDC7BD; border-radius:12px;"></input></div>
+          <div style="flex:1; min-width:110px;"><label style="display:block; font-size:12.5px; font-weight:500; margin-bottom:6px; color:#43403B;">Customer</label><input class="rin-field" value="{{ first }}" onInput="{{ onFirst }}" style="width:100%; font-size:14px; padding:10px 11px; border:1px solid #CDC7BD; border-radius:12px;"></input></div>
+        </div>
+        <div style="background:#F1ECE4; border-radius:14px; padding:14px 16px; margin-bottom:10px;">
+          <div style="font-size:11.5px; color:#8A8175; font-weight:600; margin-bottom:6px; letter-spacing:0.04em;">ORDER READY</div>
+          <div style="font-size:14.5px; line-height:1.5; color:#1A1A1A;">{{ smsReady }}</div>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+          <span style="font-size:12.5px; color:{{ readyColor }}; font-weight:600;">{{ readyCount }} / 160 characters</span>
+          <span style="font-size:12px; color:#9A9088;">{{ readyNote }}</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px; border-top:1px solid #F1ECE4; padding-top:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline;"><span style="font-size:13px; color:#6B6259;">Order created</span><span class="tnum" style="font-size:12.5px; color:#6B6259;">{{ createdCount }} chars</span></div>
+          <div style="font-size:13.5px; line-height:1.45; color:#43403B;">{{ smsCreated }}</div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:8px;"><span style="font-size:13px; color:#6B6259;">Code resend</span><span class="tnum" style="font-size:12.5px; color:#6B6259;">{{ resendCount }} chars</span></div>
+          <div style="font-size:13.5px; line-height:1.45; color:#43403B;">{{ smsResend }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px; background:#F1ECE4; border:1px solid #E8E4DD; border-radius:14px; padding:16px 20px; font-size:14px; color:#43403B; line-height:1.6;">
+      <b>Voice:</b> plain, warm, and short. Address the customer by first name. State the fact, then the code. No exclamation marks, no marketing. If it wouldn't fit in one SMS, it's too long.
+    </div>
+  </section>
+
+  <!-- ===================== HANDOFF ===================== -->
+  <section style="padding: clamp(48px,7vw,72px) 0 0; border-top: 1px solid #E8E4DD;">
+    <div style="font-size:13px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:#6B6259; margin-bottom:14px;">Handoff notes · For the build phase</div>
+    <h2 style="font-size:clamp(24px,4vw,30px); font-weight:700; letter-spacing:-0.02em; margin:0 0 14px;">How to use this file.</h2>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap:16px;">
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:22px 24px;"><div style="font-size:15px; font-weight:700; margin-bottom:6px;">This is the only source of truth</div><p style="margin:0; font-size:14px; line-height:1.6; color:#43403B;">This file replaces the old Brand Foundations entirely. If a screen doesn't match what's here — radius, codes, status colour, spacing — the screen is wrong, not this.</p></div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:22px 24px;"><div style="font-size:15px; font-weight:700; margin-bottom:6px;">Reports keep the bar charts</div><p style="margin:0; font-size:14px; line-height:1.6; color:#43403B;">The three lightweight CSS bar charts on Reports are an approved deviation. Ship them; don't strip Reports back to plain tables.</p></div>
+      <div style="background:#FFFFFF; border:1px solid #E8E4DD; border-radius:18px; padding:22px 24px;"><div style="font-size:15px; font-weight:700; margin-bottom:6px;">Responsive is not optional</div><p style="margin:0; font-size:14px; line-height:1.6; color:#43403B;">Every pattern here has a phone form. Tables become cards; sidebar becomes a bottom bar; primary action becomes a FAB. Build both.</p></div>
+    </div>
+    <p style="margin:28px 0 0; font-size:13.5px; color:#9A9088;">Rinsion — Design System · Light mode. Dark mode is future work: invert to #14140F surfaces, keep emerald &amp; clay hues, re-check contrast on status pills.</p>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1080,&quot;height&quot;:920}}">
+class Component extends DCLogic {
+  state = { laundry: 'Clean Pro Laundry', first: 'Ama', code: 'K7MQ2P' };
+
+  renderVals() {
+    const L = (this.state.laundry || '').trim() || 'Your Laundry';
+    const F = (this.state.first || '').trim() || 'there';
+    const C = this.state.code;
+
+    const smsCreated = `${L}: Hi ${F}, your order is in. Pickup code: ${C}. We'll text you when it's ready.`;
+    const smsReady = `${L}: Hi ${F}, your order is ready for pickup. Pickup code: ${C}. See you soon.`;
+    const smsResend = `${L}: Hi ${F}, your pickup code is ${C}.`;
+
+    const readyCount = smsReady.length;
+    const over = readyCount > 160;
+    const warn = readyCount > 140;
+
+    return {
+      laundry: this.state.laundry,
+      first: this.state.first,
+      onLaundry: (e) => this.setState({ laundry: e.target.value }),
+      onFirst: (e) => this.setState({ first: e.target.value }),
+      smsCreated, smsReady, smsResend,
+      createdCount: smsCreated.length,
+      resendCount: smsResend.length,
+      readyCount,
+      readyColor: over ? '#B0413A' : (warn ? '#7A5512' : '#1E5C40'),
+      readyNote: over ? 'Too long — shorten the name' : (warn ? 'Getting long' : 'Fits comfortably'),
+    };
+  }
+}
+</script>
+</body>
+</html>
