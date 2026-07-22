@@ -37,7 +37,29 @@ These came up reading the new design system doc against the live app and are set
 
 2. **Auth screens are a visual reference only.** The design system doc's §13 mocks phone-only, passwordless "send code" login. The live app has password-based login with a phone/email identity toggle, plus a full password-reset and phone-reset system already built (see project memory: `project_phone_reset_rewrite`). Do not change the auth *flow* or *behavior*. Restyle the existing login/signup cards (radius, spacing, button treatment, card shadow) to match §13's visual treatment — same card layout, same soft-corner card-on-warm-background composition — but keep the real fields, the phone/email toggle, and the password flow exactly as they are.
 
-## Phase 1 — Token correction (radius)
+## Roadmap surfaces this pass must not paint into a corner
+
+Cross-checked against `docs/Legal/legal_and_prod_audit.md` and `docs/Rinsion_Business_Overview.md`'s plan tiers. Not work to do now — decisions/notes to carry forward so Phase 1's token cleanup doesn't have to be redone when these land:
+
+- **Customer Portal** (Growth plan, "Coming Soon" — customer accounts, login, order tracking/history). This is a fourth surface beyond app/landing/legal, and it's customer-facing rather than staff-facing — different auth model, likely different chrome. When it's scoped, give it its own entry in this doc's "three surfaces" framing rather than folding it into "whatever ships next."
+- **White-label / custom branding** (Enterprise plan). The token system this pass builds is a single hardcoded palette in `tailwind.config.ts`. There is no tenant-theming layer. If Enterprise ships as planned, per-laundry branding will need colors to route through something swappable (CSS variables, most likely) rather than direct Tailwind color classes. Not in scope for this pass, but worth deciding the theming approach before the color system (Phase 2) hardens further in the wrong direction.
+- **`draft` order status** (reserved in the DB enum for Product B customer submissions). `StatusBadge` correctly excludes it today per Resolved Decision #1 below — that exclusion is temporary, not final. No design-system color is assigned to it yet. Flag when Product B is scoped.
+
+## Phase 1 — Token correction (radius) — DONE
+
+**Completed.** `tailwind.config.ts` now defines the radius scale as named pixel tokens (`rounded-10/12/18/22`); the old `rounded-5/6/7/9/11` classes and all arbitrary `rounded-[Npx]` values are migrated and removed from the theme. `npm run build` and `npm run lint` are clean.
+
+Two deliberate exceptions left as-is (illustrative, not UI chrome, no reason to conform):
+- `LandingPage.tsx`'s torn-notebook-page mockup (`rounded-md`) and founder-photo placeholder (`rounded-2xl`)
+- `OnboardingClient.tsx`'s SMS-preview chat bubble (`rounded-[14px_14px_14px_4px]`, an asymmetric speech-bubble tail, not a drift case)
+
+**Also found and fixed along the way, beyond the original file list:** `StatCard.tsx`, `RestrictedCard.tsx`, `PageSkeleton.tsx`, `Pagination.tsx`, and `Table.tsx` all had their own radius drift and weren't in the primitives list above — they're migrated now too.
+
+**Found but deliberately NOT fixed in this phase — flag for Phase 2:** `customers/new/page.tsx`, `settings/laundry/LaundryForm.tsx` + `page.tsx`, `settings/subscription/StartTrialButton.tsx`, `settings/workflow/page.tsx`, `settings/branches/BranchesClient.tsx`, `pickup/PickupFlow.tsx`, `employees/EmployeesClient.tsx`, and `internal/laundries/[laundryId]/LaundryDetailClient.tsx` don't use the app's `warm-*`/`brand`/`clay` palette at all — they're built on raw generic Tailwind grays (`gray-50`, `gray-900`, `red-50`, `green-50`, `amber-50`, etc.). Their radius values were migrated to the new scale (mechanical, low-risk), but the color mismatch is a bigger, more visually-consequential fix that needs the same page-by-page judgment Phase 2 already calls for on the landing page — do it there, not as a drive-by.
+
+<details><summary>Original Phase 1 spec (for reference)</summary>
+
+
 
 **Goal:** Fix the radius scale everywhere it's wrong, from the theme down. This is the highest-leverage, lowest-risk phase — most of it is a Tailwind config change plus a mechanical class-rename pass, not new component work.
 
@@ -74,9 +96,13 @@ The app also has **three parallel radius mechanisms** in play: the custom pixel 
 - Visual pass on Dashboard, Orders list, Order Detail, Create Order, a Modal (e.g. Cancel Order confirm), and the landing page — corners should read as a single consistent system across all of them, not "close enough"
 - No visual regression — nothing should look broken, only corrected
 
+</details>
+
 ## Phase 2 — Landing ↔ app token unification
 
 **Goal:** Beyond radius, make sure the landing page and the app aren't independently reinventing the same values.
+
+2.0 **Not just the landing page.** Phase 1 surfaced a bigger instance of this problem inside the app itself: `customers/new/page.tsx`, `settings/laundry/LaundryForm.tsx` + `page.tsx`, `settings/subscription/StartTrialButton.tsx`, `settings/workflow/page.tsx`, `settings/branches/BranchesClient.tsx`, `pickup/PickupFlow.tsx`, `employees/EmployeesClient.tsx`, and `internal/laundries/[laundryId]/LaundryDetailClient.tsx` are built entirely on raw Tailwind grays (`gray-50` … `gray-900`, `red-50`, `green-50`, `amber-50`, `emerald-600`) instead of the `warm-*`/`brand`/`clay`/`error`/`success`/`warning` tokens every other screen uses. These read as a visibly different, generic product when navigated to from Dashboard or Orders. This needs the same page-by-page color remap as 2.1 below, just applied to real app screens instead of the landing page — treat it as equal priority, not an afterthought.
 
 2.1 Audit `LandingPage.tsx` and `src/app/(legal)/*` for one-off hex colors, font sizes, and shadows that duplicate an existing Tailwind token under a different spelling (e.g. inline `rgba(26,26,26,.32)` shadows vs the app's `shadow-modal`/`shadow-sticky-top` tokens). Replace with the shared token where it's a genuine match; only keep a bespoke value where the landing page has a real reason to differ (e.g. the large-format hero gradient, which the app doesn't have an equivalent for).
 
