@@ -76,15 +76,15 @@ export default async function PaymentsPage({ searchParams }: Props) {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-[18px] mb-[18px]">
-        <div className="bg-white border border-warm-300 rounded-10 px-5 py-[18px]">
+        <div className="bg-white border border-warm-300 rounded-18 px-5 py-[18px]">
           <p className="text-label text-warm-800 font-medium">Collected today</p>
           <p className="tnum text-[26px] font-bold text-warm-950 mt-1.5">{formatCurrency(summary.collectedToday)}</p>
         </div>
-        <div className="bg-white border border-warm-300 rounded-10 px-5 py-[18px]">
+        <div className="bg-white border border-warm-300 rounded-18 px-5 py-[18px]">
           <p className="text-label text-warm-800 font-medium">Collected this week</p>
           <p className="tnum text-[26px] font-bold text-warm-950 mt-1.5">{formatCurrency(summary.collectedThisWeek)}</p>
         </div>
-        <div className="bg-white border border-warm-300 rounded-10 px-5 py-[18px]">
+        <div className="bg-white border border-warm-300 rounded-18 px-5 py-[18px]">
           <p className="text-label text-warm-800 font-medium">Outstanding balance</p>
           <p className="tnum text-[26px] font-bold mt-1.5" style={{ color: summary.outstandingBalance > 0 ? '#B0413A' : '#1A1A1A' }}>
             {formatCurrency(summary.outstandingBalance)}
@@ -99,7 +99,7 @@ export default async function PaymentsPage({ searchParams }: Props) {
 
       {/* Table / empty */}
       {rows.length === 0 ? (
-        <div className="bg-white border border-warm-300 rounded-10 py-[58px] px-[30px] flex flex-col items-center text-center">
+        <div className="bg-white border border-warm-300 rounded-18 py-[58px] px-[30px] flex flex-col items-center text-center">
           <svg viewBox="0 0 120 120" width="78" height="78" className="mb-[18px]">
             <circle cx="60" cy="60" r="48" fill="none" stroke="#E8E4DD" strokeWidth="2" />
             <circle cx="60" cy="60" r="33" fill="none" stroke="#E0DAD0" strokeWidth="2" />
@@ -116,7 +116,7 @@ export default async function PaymentsPage({ searchParams }: Props) {
         </div>
       ) : (
         <>
-          <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+          <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
             {/* Desktop header */}
             <div
               className="hidden min-[720px]:grid px-[22px] py-3"

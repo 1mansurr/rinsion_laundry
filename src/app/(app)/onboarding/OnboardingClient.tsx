@@ -265,7 +265,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
               {/* SMS preview */}
               <div>
                 <p className="text-micro font-semibold text-warm-500 uppercase tracking-eyebrow mb-2.5">SMS preview</p>
-                <div className="bg-white border border-warm-300 rounded-[14px] p-3.5">
+                <div className="bg-white border border-warm-300 rounded-18 p-3.5">
                   <p className="bg-[#E7EEF4] text-[#1A2A33] rounded-[14px_14px_14px_4px] px-3.5 py-3 text-body leading-relaxed">
                     {smsPreview}
                   </p>
@@ -303,7 +303,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                   return (
                     <label
                       key={svc.id}
-                      className={`flex items-center gap-3 rounded-10 px-4 py-[15px] cursor-pointer transition-colors border ${
+                      className={`flex items-center gap-3 rounded-18 px-4 py-[15px] cursor-pointer transition-colors border ${
                         checked ? 'border-[#9CC1B2] bg-brand-pale' : 'border-warm-300 bg-white hover:bg-warm-50'
                       }`}
                     >
@@ -313,7 +313,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                         onChange={() => toggleServiceSelection(svc.id)}
                         className="sr-only"
                       />
-                      <span className={`w-6 h-6 rounded-7 flex items-center justify-center shrink-0 ${checked ? 'bg-brand' : 'border border-warm-400 bg-white'}`}>
+                      <span className={`w-6 h-6 rounded-12 flex items-center justify-center shrink-0 ${checked ? 'bg-brand' : 'border border-warm-400 bg-white'}`}>
                         {checked && (
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="#FAF8F5" aria-hidden>
                             <path d="M9 16.17 5.53 12.7a1 1 0 0 0-1.42 1.42l4.18 4.17a1 1 0 0 0 1.42 0L20.3 7.88a1 1 0 1 0-1.42-1.42L9 16.17Z" />
@@ -360,7 +360,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                     key={m}
                     type="button"
                     onClick={() => setPricingModel(m)}
-                    className={`w-full flex items-center gap-3 text-left px-4 py-3.5 rounded-10 border transition-colors ${
+                    className={`w-full flex items-center gap-3 text-left px-4 py-3.5 rounded-18 border transition-colors ${
                       pricingModel === m ? 'border-brand bg-brand-pale' : 'border-warm-300 hover:bg-warm-50'
                     }`}
                   >
@@ -416,7 +416,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
               </div>
 
               {priceEntryMode === 'import' ? (
-                <div className="bg-white border border-warm-300 rounded-10 p-5 text-center space-y-3">
+                <div className="bg-white border border-warm-300 rounded-18 p-5 text-center space-y-3">
                   <p className="text-body text-warm-600">
                     Upload an Excel or CSV file with your services, item types, and prices — we&apos;ll set them all up in bulk.
                   </p>
@@ -425,13 +425,13 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                   </Button>
                 </div>
               ) : createdServiceIds.length === 0 ? (
-                <div className="bg-white border border-warm-300 rounded-10 p-5 text-center">
+                <div className="bg-white border border-warm-300 rounded-18 p-5 text-center">
                   <p className="text-body text-warm-500">
                     No services were created in the previous step. You can set pricing from Settings → Items &amp; Services.
                   </p>
                 </div>
               ) : pricingModel === 'per_kg' ? (
-                <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+                <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
                   {createdServiceIds.map(svc => (
                     <div key={svc.id} className="flex items-center justify-between px-5 py-3.5 border-b border-warm-100 last:border-0">
                       <span className="text-ui text-warm-950">{svc.name}</span>
@@ -444,7 +444,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                           value={kgRatesMin[svc.id] ?? ''}
                           onChange={e => setKgRateMin(svc.id, e.target.value)}
                           placeholder="Min"
-                          className="w-16 border border-warm-300 rounded-7 px-2 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                          className="w-16 border border-warm-300 rounded-12 px-2 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
                         />
                         <span className="text-warm-400">–</span>
                         <input
@@ -454,7 +454,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                           value={kgRatesMax[svc.id] ?? ''}
                           onChange={e => setKgRateMax(svc.id, e.target.value)}
                           placeholder="Max"
-                          className="w-16 border border-warm-300 rounded-7 px-2 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                          className="w-16 border border-warm-300 rounded-12 px-2 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
                         />
                         <span className="text-caption text-warm-500">/ kg</span>
                       </div>
@@ -464,7 +464,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
               ) : createdItemIds.length > 0 ? (
                 <>
                   {/* Desktop: full item × service grid */}
-                  <div className="hidden md:block bg-white border border-warm-300 rounded-10 overflow-hidden">
+                  <div className="hidden md:block bg-white border border-warm-300 rounded-18 overflow-hidden">
                     <div
                       className="grid bg-[#F4F0EA] px-5 py-2.5 border-b border-warm-200"
                       style={{ gridTemplateColumns: `1fr ${createdServiceIds.map(() => '170px').join(' ')}` }}
@@ -491,7 +491,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                               value={pricingGridMin[item.id]?.[svc.id] ?? ''}
                               onChange={e => setPriceCellMin(item.id, svc.id, e.target.value)}
                               placeholder="Min"
-                              className="w-14 border border-warm-300 rounded-7 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                              className="w-14 border border-warm-300 rounded-12 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
                             />
                             <span className="text-warm-400">–</span>
                             <input
@@ -501,7 +501,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                               value={pricingGridMax[item.id]?.[svc.id] ?? ''}
                               onChange={e => setPriceCellMax(item.id, svc.id, e.target.value)}
                               placeholder="Max"
-                              className="w-14 border border-warm-300 rounded-7 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                              className="w-14 border border-warm-300 rounded-12 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
                             />
                           </div>
                         ))}
@@ -518,7 +518,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                         return !!min && parseFloat(min) > 0
                       }).length
                       return (
-                        <div key={item.id} className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+                        <div key={item.id} className="bg-white border border-warm-300 rounded-18 overflow-hidden">
                           <button
                             type="button"
                             onClick={() => setExpandedOnbItemId(isOpen ? null : item.id)}
@@ -546,7 +546,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                                       value={pricingGridMin[item.id]?.[svc.id] ?? ''}
                                       onChange={e => setPriceCellMin(item.id, svc.id, e.target.value)}
                                       placeholder="Min"
-                                      className="w-14 border border-warm-300 rounded-7 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                                      className="w-14 border border-warm-300 rounded-12 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
                                     />
                                     <span className="text-warm-400">–</span>
                                     <input
@@ -556,7 +556,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                                       value={pricingGridMax[item.id]?.[svc.id] ?? ''}
                                       onChange={e => setPriceCellMax(item.id, svc.id, e.target.value)}
                                       placeholder="Max"
-                                      className="w-14 border border-warm-300 rounded-7 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                                      className="w-14 border border-warm-300 rounded-12 px-1.5 py-1.5 text-ui text-right tnum text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
                                     />
                                   </div>
                                 </div>
@@ -569,7 +569,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                   </div>
                 </>
               ) : (
-                <div className="bg-white border border-warm-300 rounded-10 p-5 text-center">
+                <div className="bg-white border border-warm-300 rounded-18 p-5 text-center">
                   <p className="text-body text-warm-500">
                     No item types were created in the previous step. You can set pricing from Settings → Items &amp; Services.
                   </p>

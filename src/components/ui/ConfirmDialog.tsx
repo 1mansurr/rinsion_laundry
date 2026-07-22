@@ -37,7 +37,7 @@ export function ConfirmDialog({
             <input
               value={typed}
               onChange={e => setTyped(e.target.value)}
-              className="w-full border border-warm-400 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+              className="w-full border border-warm-400 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
               autoFocus
             />
           </div>

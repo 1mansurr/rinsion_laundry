@@ -32,9 +32,9 @@ export default function NewCustomerPage() {
     <div className="p-6 max-w-lg mx-auto">
       <h1 className="text-xl font-bold text-gray-900 mb-6">New Customer</h1>
 
-      <form action={action} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+      <form action={action} className="bg-white rounded-18 border border-gray-200 p-6 space-y-4">
         {state.error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700">
+          <div className="bg-red-50 border border-red-200 rounded-10 px-3 py-2 text-sm text-red-700">
             {state.error}
           </div>
         )}
@@ -50,7 +50,7 @@ export default function NewCustomerPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+            className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-12 text-sm hover:bg-gray-50 transition-colors"
           >
             Cancel
           </button>
@@ -72,7 +72,7 @@ function Field({ label, name, placeholder, required }: {
       <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
       <input
         id={name} name={name} placeholder={placeholder} required={required}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+        className="w-full border border-gray-300 rounded-12 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
       />
     </div>
   )
@@ -83,7 +83,7 @@ function SubmitButton() {
   return (
     <button
       type="submit" disabled={pending}
-      className="flex-1 bg-gray-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
+      className="flex-1 bg-gray-900 text-white py-2.5 rounded-12 text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
     >
       {pending ? 'Saving…' : 'Save Customer'}
     </button>

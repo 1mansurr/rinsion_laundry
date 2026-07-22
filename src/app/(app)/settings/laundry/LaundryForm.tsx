@@ -38,7 +38,7 @@ export function LaundryForm({ currentName, laundryCode, joinPin: initJoinPin }: 
     <div className="space-y-4">
       <div>
         <label className="block text-xs font-medium text-gray-700 mb-1">Laundry Code</label>
-        <p className="text-sm font-mono text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+        <p className="text-sm font-mono text-gray-500 bg-gray-50 border border-gray-200 rounded-10 px-3 py-2">
           {laundryCode}
         </p>
         <p className="text-xs text-gray-400 mt-1">This code cannot be changed.</p>
@@ -50,7 +50,7 @@ export function LaundryForm({ currentName, laundryCode, joinPin: initJoinPin }: 
           type="text"
           value={name}
           onChange={e => { setName(e.target.value); setSuccess(false) }}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+          className="w-full border border-gray-300 rounded-12 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
       </div>
 
@@ -60,7 +60,7 @@ export function LaundryForm({ currentName, laundryCode, joinPin: initJoinPin }: 
       <button
         onClick={handleSave}
         disabled={isPending || !name.trim() || name.trim() === currentName}
-        className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-40 transition-colors"
+        className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-12 hover:bg-gray-800 disabled:opacity-40 transition-colors"
       >
         {isPending ? 'Saving…' : 'Save'}
       </button>
@@ -71,13 +71,13 @@ export function LaundryForm({ currentName, laundryCode, joinPin: initJoinPin }: 
           Share this with staff so they can request to join from the signup page. Regenerate it if it leaks.
         </p>
         <div className="flex items-center gap-2">
-          <p className="text-lg font-mono tracking-[0.3em] text-gray-900 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+          <p className="text-lg font-mono tracking-[0.3em] text-gray-900 bg-gray-50 border border-gray-200 rounded-10 px-3 py-2">
             {joinPin}
           </p>
           <button
             onClick={handleRegeneratePin}
             disabled={pinPending}
-            className="px-3 py-2 border border-gray-300 text-sm text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+            className="px-3 py-2 border border-gray-300 text-sm text-gray-700 rounded-12 hover:bg-gray-50 disabled:opacity-40 transition-colors"
           >
             {pinPending ? 'Regenerating…' : 'Regenerate'}
           </button>

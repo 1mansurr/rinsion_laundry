@@ -60,7 +60,7 @@ export default async function SmsHealthPage() {
         <Card label="Success Rate"   value={`${successRate}%`} warn={successRate < 90} />
       </div>
 
-      <div className="bg-white rounded-10 border border-warm-200">
+      <div className="bg-white rounded-18 border border-warm-200">
         <div className="px-5 py-3.5 border-b border-warm-100">
           <h2 className="text-ui font-semibold text-warm-950">Quota Usage by Laundry (current cycle)</h2>
         </div>
@@ -96,7 +96,7 @@ export default async function SmsHealthPage() {
 
 function Card({ label, value, warn }: { label: string; value: number | string; warn?: boolean }) {
   return (
-    <div className="bg-white rounded-10 border border-warm-200 p-4">
+    <div className="bg-white rounded-18 border border-warm-200 p-4">
       <p className="text-caption text-warm-600 mb-1">{label}</p>
       <p className={`tnum text-xl font-bold ${warn ? 'text-amber-600' : 'text-warm-950'}`}>{value}</p>
     </div>

@@ -346,7 +346,7 @@ export function OrderDetail({
       {/* Mobile-only pickup-code hero header — replaces the back link + white header card below 720px */}
       <div className="md:hidden -mx-6 -mt-6 mb-4 bg-brand text-[#EAF2EE] px-5 pt-4 pb-5">
         <div className="flex items-center justify-between">
-          <Link href="/orders" aria-label="Back to orders" className="w-11 h-11 rounded-10 bg-white/10 flex items-center justify-center">
+          <Link href="/orders" aria-label="Back to orders" className="w-11 h-11 rounded-12 bg-white/10 flex items-center justify-center">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="#EAF2EE" aria-hidden>
               <path d="M15.4 5.6 8.99 12l6.41 6.4a1 1 0 0 1-1.42 1.42l-7.1-7.1a1 1 0 0 1 0-1.42l7.1-7.1a1 1 0 1 1 1.42 1.4Z" />
             </svg>
@@ -410,7 +410,7 @@ export function OrderDetail({
         <div className="space-y-4 min-w-0">
 
           {/* Order header card — desktop only; the mobile hero header above replaces it */}
-          <div className="hidden md:block bg-white border border-warm-300 rounded-10 p-6">
+          <div className="hidden md:block bg-white border border-warm-300 rounded-18 p-6">
             <div className="flex items-start justify-between gap-6">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center flex-wrap gap-2 mb-1">
@@ -464,7 +464,7 @@ export function OrderDetail({
 
           {/* Mobile vertical timeline — replaces the desktop horizontal stepper below 720px */}
           {!isCancelled && (
-            <div className="md:hidden bg-white border border-warm-300 rounded-10 px-[18px] py-4">
+            <div className="md:hidden bg-white border border-warm-300 rounded-18 px-[18px] py-4">
               <p className="text-micro font-semibold text-warm-500 uppercase tracking-eyebrow mb-3.5">Progress</p>
               <MobileTimeline currentIdx={currentStepIdx} activities={activities} createdAt={createdAt} />
             </div>
@@ -517,7 +517,7 @@ export function OrderDetail({
                 {showMoreMenu && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowMoreMenu(false)} />
-                    <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-warm-300 rounded-10 shadow-modal min-w-[160px] overflow-hidden">
+                    <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-warm-300 rounded-18 shadow-modal min-w-[160px] overflow-hidden">
                       <button
                         type="button"
                         className="w-full px-4 py-2.5 text-left text-ui text-error-fg hover:bg-[#FDF1EF]"
@@ -553,7 +553,7 @@ export function OrderDetail({
           )}
 
           {/* Customer */}
-          <div className="bg-white border border-warm-300 rounded-10 p-5">
+          <div className="bg-white border border-warm-300 rounded-18 p-5">
             <h2 className="text-label font-semibold text-warm-500 uppercase tracking-wider mb-3">Customer</h2>
             <Link href={`/customers/${customerId}`} className="group flex items-center gap-3">
               <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-warm-200 text-[14px] font-semibold text-warm-700 shrink-0">
@@ -570,7 +570,7 @@ export function OrderDetail({
           </div>
 
           {/* Items */}
-          <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+          <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
             <div className="px-5 py-3.5 border-b border-warm-200">
               <h2 className="text-ui font-semibold text-warm-950">Items</h2>
             </div>
@@ -668,7 +668,7 @@ export function OrderDetail({
 
           {/* Payments */}
           {payments.length > 0 && (
-            <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+            <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
               <div className="flex items-center justify-between px-5 py-3.5 border-b border-warm-200">
                 <h2 className="text-ui font-semibold text-warm-950">Payments</h2>
                 <span className={`tnum text-label font-medium ${balance <= 0 ? 'text-success-fg' : 'text-error-fg'}`}>
@@ -695,7 +695,7 @@ export function OrderDetail({
 
           {/* Refunds */}
           {refunds.length > 0 && (
-            <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+            <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
               <div className="px-5 py-3.5 border-b border-warm-200">
                 <h2 className="text-ui font-semibold text-warm-950">Refunds</h2>
               </div>
@@ -720,7 +720,7 @@ export function OrderDetail({
           )}
 
           {/* Notes */}
-          <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+          <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
             <div className="px-5 py-3.5 border-b border-warm-200">
               <h2 className="text-ui font-semibold text-warm-950">Notes</h2>
             </div>
@@ -746,7 +746,7 @@ export function OrderDetail({
                     onChange={e => setNoteText(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleAddNote()}
                     placeholder="Add a note…"
-                    className="flex-1 border border-warm-400 rounded-7 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                    className="flex-1 border border-warm-400 rounded-12 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
                   />
                   <Button
                     variant="secondary"
@@ -765,7 +765,7 @@ export function OrderDetail({
 
           {/* Activity history */}
           {activities.length > 0 && (
-            <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+            <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
               <button
                 type="button"
                 className="w-full flex items-center justify-between px-5 py-3.5 border-b border-warm-200 text-left"
@@ -801,7 +801,7 @@ export function OrderDetail({
 
         {/* Right column — desktop summary */}
         <div className="hidden lg:block space-y-4">
-          <div className="bg-white border border-warm-300 rounded-10 p-5 space-y-3">
+          <div className="bg-white border border-warm-300 rounded-18 p-5 space-y-3">
             {taxAmount > 0 && (
               <div className="flex items-center justify-between">
                 <span className="text-label text-warm-500">Tax</span>
@@ -864,7 +864,7 @@ export function OrderDetail({
               onKeyDown={e => e.key === 'Enter' && handleCollect()}
               placeholder="······"
               autoFocus
-              className={`w-full border rounded-7 py-3 text-center tnum text-[22px] font-bold tracking-[0.18em] text-warm-950 placeholder:text-warm-300 focus:outline-none focus:shadow-focus-ring ${
+              className={`w-full border rounded-12 py-3 text-center tnum text-[22px] font-bold tracking-[0.18em] text-warm-950 placeholder:text-warm-300 focus:outline-none focus:shadow-focus-ring ${
                 collectError ? 'border-error-fg' : 'border-warm-400 focus:border-brand'
               }`}
             />
@@ -913,7 +913,7 @@ export function OrderDetail({
               onKeyDown={e => e.key === 'Enter' && handlePayCodeSubmit()}
               placeholder="······"
               autoFocus
-              className={`w-full border rounded-7 py-3 text-center tnum text-[22px] font-bold tracking-[0.18em] text-warm-950 placeholder:text-warm-300 focus:outline-none focus:shadow-focus-ring ${
+              className={`w-full border rounded-12 py-3 text-center tnum text-[22px] font-bold tracking-[0.18em] text-warm-950 placeholder:text-warm-300 focus:outline-none focus:shadow-focus-ring ${
                 payCodeError ? 'border-error-fg' : 'border-warm-400 focus:border-brand'
               }`}
             />
@@ -932,7 +932,7 @@ export function OrderDetail({
         ) : (
           <div className="space-y-4">
             <p className="text-caption text-warm-600 -mt-1">{orderNumber} · Balance {formatCurrency(balance)}</p>
-            <div className="bg-[#F8F5F0] rounded-7 px-4 py-3 space-y-1.5">
+            <div className="bg-[#F8F5F0] rounded-12 px-4 py-3 space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-label text-warm-500">Total</span>
                 <span className="tnum text-ui font-medium text-warm-950">{formatCurrency(total)}</span>
@@ -946,7 +946,7 @@ export function OrderDetail({
                 <span className="tnum text-ui font-bold text-error-fg">{formatCurrency(balance)}</span>
               </div>
             </div>
-            <div className="bg-[#F8F5F0] rounded-7 px-4 py-3 flex items-center justify-between">
+            <div className="bg-[#F8F5F0] rounded-12 px-4 py-3 flex items-center justify-between">
               <span className="text-label text-warm-600">Amount due</span>
               <span className="tnum text-ui font-bold text-error-fg">{formatCurrency(balance)}</span>
             </div>
@@ -955,7 +955,7 @@ export function OrderDetail({
               <select
                 value={payMethod}
                 onChange={e => setPayMethod(e.target.value as PaymentMethod)}
-                className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                className="w-full border border-warm-400 rounded-12 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
               >
                 {PAYMENT_METHODS.map(m => (
                   <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m] ?? m}</option>
@@ -1013,7 +1013,7 @@ export function OrderDetail({
               max={refundable}
               value={refundAmount}
               onChange={e => setRefundAmount(e.target.value)}
-              className="w-full border border-warm-400 rounded-7 px-3 py-2 text-ui text-warm-950 tnum focus:outline-none focus:border-brand focus:shadow-focus-ring"
+              className="w-full border border-warm-400 rounded-12 px-3 py-2 text-ui text-warm-950 tnum focus:outline-none focus:border-brand focus:shadow-focus-ring"
             />
           </div>
           <div>
@@ -1021,7 +1021,7 @@ export function OrderDetail({
             <select
               value={refundMethod}
               onChange={e => setRefundMethod(e.target.value as PaymentMethod)}
-              className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
+              className="w-full border border-warm-400 rounded-12 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
             >
               {PAYMENT_METHODS.map(m => (
                 <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m] ?? m}</option>
@@ -1035,7 +1035,7 @@ export function OrderDetail({
               value={refundReason}
               onChange={e => setRefundReason(e.target.value)}
               placeholder="e.g. Order cancelled after payment"
-              className="w-full border border-warm-400 rounded-7 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+              className="w-full border border-warm-400 rounded-12 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
             />
           </div>
           {refundError && <p className="text-caption text-error-fg">{refundError}</p>}
@@ -1076,13 +1076,13 @@ export function OrderDetail({
                   <select
                     value={row.itemTypeId}
                     onChange={e => updatePieceRow(i, { itemTypeId: e.target.value })}
-                    className="flex-1 border border-warm-400 rounded-7 px-3 py-2 text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                    className="flex-1 border border-warm-400 rounded-12 px-3 py-2 text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
                   >
                     {itemTypes.map(t => (
                       <option key={t.id} value={t.id}>{t.name}</option>
                     ))}
                   </select>
-                  <div className="inline-flex items-center border border-warm-300 rounded-7 overflow-hidden shrink-0">
+                  <div className="inline-flex items-center border border-warm-300 rounded-12 overflow-hidden shrink-0">
                     <button
                       type="button"
                       onClick={() => updatePieceRow(i, { quantity: Math.max(1, row.quantity - 1) })}
@@ -1107,7 +1107,7 @@ export function OrderDetail({
               <button
                 type="button"
                 onClick={addPieceRow}
-                className="w-full py-2 border border-dashed border-warm-400 rounded-10 text-label font-medium text-warm-600 hover:border-brand hover:text-brand transition-colors"
+                className="w-full py-2 border border-dashed border-warm-400 rounded-12 text-label font-medium text-warm-600 hover:border-brand hover:text-brand transition-colors"
               >
                 + Add item
               </button>

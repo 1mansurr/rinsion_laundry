@@ -59,7 +59,7 @@ export function Banner({
   return (
     <div
       role="alert"
-      className={`flex gap-3 items-start rounded-9 border px-4 py-3.5 ${wrap} ${className}`}
+      className={`flex gap-3 items-start rounded-10 border px-4 py-3.5 ${wrap} ${className}`}
     >
       <span className="mt-[1px] shrink-0">{icon}</span>
       <div className="flex-1 min-w-0">

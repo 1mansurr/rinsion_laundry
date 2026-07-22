@@ -38,13 +38,13 @@ export function OrdersFilterBar({ defaultQ, defaultStatus }: Props) {
     navigate(q.trim(), newStatus)
   }
 
-  const inputStyle = 'font-sans text-ui py-[9px] px-3 border border-warm-400 rounded-[8px] bg-white text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring'
+  const inputStyle = 'font-sans text-ui py-[9px] px-3 border border-warm-400 rounded-12 bg-white text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring'
 
   return (
     <div className="flex gap-[10px] items-center flex-wrap">
       <form
         onSubmit={handleSearch}
-        className="flex items-center gap-2 bg-white border border-warm-400 rounded-[8px] px-3 py-[9px] flex-1 min-w-[240px]"
+        className="flex items-center gap-2 bg-white border border-warm-400 rounded-12 px-3 py-[9px] flex-1 min-w-[240px]"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="#9A9088" className="shrink-0">
           <path d="M10 3a7 7 0 1 0 4.2 12.6l4.1 4.1a1 1 0 0 0 1.4-1.4l-4.1-4.1A7 7 0 0 0 10 3Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z" />

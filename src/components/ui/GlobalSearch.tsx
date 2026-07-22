@@ -77,7 +77,7 @@ export function GlobalSearch({ className = '' }: { className?: string }) {
         aria-label="Search orders"
         className="
           w-full pl-9 pr-10 py-[9px] text-ui-sm
-          bg-warm-100 border border-transparent rounded-7 text-warm-950 placeholder:text-warm-600
+          bg-warm-100 border border-transparent rounded-12 text-warm-950 placeholder:text-warm-600
           focus:outline-none focus:bg-white focus:border-warm-400 focus:shadow-focus-ring
           transition-colors
         "

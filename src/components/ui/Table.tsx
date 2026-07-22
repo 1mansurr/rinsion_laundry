@@ -32,7 +32,7 @@ export function DataTable<T>({
   const alignClass = { left: 'text-left', right: 'text-right', center: 'text-center' }
 
   return (
-    <div className={`w-full rounded-10 border border-warm-300 overflow-hidden ${className}`}>
+    <div className={`w-full rounded-18 border border-warm-300 overflow-hidden ${className}`}>
       {/* Header */}
       <div
         className="grid border-b border-warm-300 bg-[#F8F5F0]"

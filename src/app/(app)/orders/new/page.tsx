@@ -52,7 +52,7 @@ export default async function NewOrderPage({ searchParams }: Props) {
         <Link
           href="/dashboard"
           aria-label="Back"
-          className="md:hidden w-11 h-11 -ml-1.5 rounded-10 bg-warm-150 border border-warm-300 flex items-center justify-center shrink-0"
+          className="md:hidden w-11 h-11 -ml-1.5 rounded-12 bg-warm-150 border border-warm-300 flex items-center justify-center shrink-0"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="#6B6259" aria-hidden>
             <path d="M15.4 5.6 8.99 12l6.41 6.4a1 1 0 0 1-1.42 1.42l-7.1-7.1a1 1 0 0 1 0-1.42l7.1-7.1a1 1 0 1 1 1.42 1.4Z" />
@@ -64,7 +64,7 @@ export default async function NewOrderPage({ searchParams }: Props) {
         <div className="bg-warning-bg border border-warning-border rounded-10 p-6 text-center">
           <p className="text-ui text-warning-fg font-medium">Set up items &amp; services first</p>
           <p className="text-caption text-warning-fg mt-1">You need at least one active item type, one active service, and a price set before creating orders.</p>
-          <a href="/items-and-services" className="mt-4 inline-block px-4 py-2 bg-warning text-white text-ui rounded-7 hover:opacity-90 transition-opacity">Go to Items &amp; Services →</a>
+          <a href="/items-and-services" className="mt-4 inline-block px-4 py-2 bg-warning text-white text-ui rounded-12 hover:opacity-90 transition-opacity">Go to Items &amp; Services →</a>
         </div>
       ) : (
         <CreateOrderForm

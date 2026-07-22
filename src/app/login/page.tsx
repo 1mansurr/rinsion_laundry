@@ -23,21 +23,21 @@ export default function LoginPage() {
           <p className="text-body text-warm-600">Sign in to your laundry account</p>
         </div>
 
-        <form action={action} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
+        <form action={action} className="bg-white rounded-18 border border-warm-300 p-6 space-y-4">
           {state.error && (
-            <div className="bg-red-50 border border-red-200 rounded-7 px-3 py-2 text-ui text-red-700">
+            <div className="bg-red-50 border border-red-200 rounded-12 px-3 py-2 text-ui text-red-700">
               {state.error}
             </div>
           )}
 
           <input type="hidden" name="identity" value={identity} />
 
-          <div className="flex rounded-7 border border-warm-300 p-1">
+          <div className="flex rounded-12 border border-warm-300 p-1">
             <button
               type="button"
               aria-pressed={identity === 'phone'}
               onClick={() => setIdentity('phone')}
-              className={`flex-1 rounded-5 py-1.5 text-ui font-medium transition-colors focus:outline-none focus:shadow-focus-ring ${
+              className={`flex-1 rounded-12 py-1.5 text-ui font-medium transition-colors focus:outline-none focus:shadow-focus-ring ${
                 identity === 'phone' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-600 hover:text-warm-800'
               }`}
             >
@@ -47,7 +47,7 @@ export default function LoginPage() {
               type="button"
               aria-pressed={identity === 'email'}
               onClick={() => setIdentity('email')}
-              className={`flex-1 rounded-5 py-1.5 text-ui font-medium transition-colors focus:outline-none focus:shadow-focus-ring ${
+              className={`flex-1 rounded-12 py-1.5 text-ui font-medium transition-colors focus:outline-none focus:shadow-focus-ring ${
                 identity === 'email' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-600 hover:text-warm-800'
               }`}
             >
@@ -67,7 +67,7 @@ export default function LoginPage() {
                 inputMode="tel"
                 autoComplete="tel"
                 required
-                className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+                className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="024 123 4567"
               />
             </div>
@@ -82,7 +82,7 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+                className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="you@example.com"
               />
             </div>
@@ -126,7 +126,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-7 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-12 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
     >
       {pending ? 'Signing in…' : 'Sign in'}
     </button>

@@ -52,7 +52,7 @@ export function CommandPalette() {
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" aria-hidden />
 
       <div
-        className="relative w-[calc(100%-2rem)] max-w-lg bg-white rounded-[12px] shadow-modal overflow-hidden"
+        className="relative w-[calc(100%-2rem)] max-w-lg bg-white rounded-22 shadow-modal overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <Command label="Command palette">

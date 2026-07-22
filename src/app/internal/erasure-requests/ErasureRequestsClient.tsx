@@ -18,7 +18,7 @@ type ErasureRequest = {
 type LaundryOption = { id: string; name: string }
 
 const inputClass =
-  'w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
+  'w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
 
 export function ErasureRequestsClient({
   requests,
@@ -80,7 +80,7 @@ export function ErasureRequestsClient({
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleCreate} className="bg-white rounded-10 border border-warm-200 p-5 space-y-4">
+      <form onSubmit={handleCreate} className="bg-white rounded-18 border border-warm-200 p-5 space-y-4">
         <h2 className="text-ui font-semibold text-warm-950">New erasure request</h2>
         {formError && <p className="text-caption text-red-600">{formError}</p>}
 
@@ -133,14 +133,14 @@ export function ErasureRequestsClient({
         <button
           type="submit"
           disabled={creating || !laundryId}
-          className="px-4 py-2 text-ui font-semibold bg-brand text-[#FAF8F5] rounded-7 hover:bg-brand-hover disabled:opacity-50"
+          className="px-4 py-2 text-ui font-semibold bg-brand text-[#FAF8F5] rounded-12 hover:bg-brand-hover disabled:opacity-50"
         >
           {creating ? 'Recording…' : 'Record request'}
         </button>
       </form>
 
       {pending.length === 0 ? (
-        <p className="text-ui text-warm-500 bg-white rounded-10 border border-warm-200 px-5 py-8 text-center">
+        <p className="text-ui text-warm-500 bg-white rounded-18 border border-warm-200 px-5 py-8 text-center">
           No pending erasure requests.
         </p>
       ) : (
@@ -148,7 +148,7 @@ export function ErasureRequestsClient({
           {pending.map(r => {
             const isFulfilling = fulfilling === r.id
             return (
-              <div key={r.id} className="bg-white rounded-10 border border-warm-200 p-5">
+              <div key={r.id} className="bg-white rounded-18 border border-warm-200 p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-ui font-semibold text-warm-950">{r.laundryName}</p>
@@ -159,7 +159,7 @@ export function ErasureRequestsClient({
                   <button
                     onClick={() => handleFulfill(r.id)}
                     disabled={isFulfilling}
-                    className="px-3 py-1.5 text-caption font-medium bg-red-50 text-red-700 rounded-7 hover:bg-red-100 disabled:opacity-50 flex-shrink-0"
+                    className="px-3 py-1.5 text-caption font-medium bg-red-50 text-red-700 rounded-12 hover:bg-red-100 disabled:opacity-50 flex-shrink-0"
                   >
                     {isFulfilling ? '...' : 'Fulfill (irreversible)'}
                   </button>

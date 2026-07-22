@@ -46,9 +46,9 @@ export function AddLaundryForm() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="bg-white rounded-18 border border-warm-300 p-6 space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-7 px-3 py-2 text-ui text-red-700">
+            <div className="bg-red-50 border border-red-200 rounded-12 px-3 py-2 text-ui text-red-700">
               {error}
             </div>
           )}
@@ -60,7 +60,7 @@ export function AddLaundryForm() {
               onChange={e => setLaundryName(e.target.value)}
               required
               placeholder="e.g. Bright Clean Laundry"
-              className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+              className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             />
           </div>
 
@@ -71,7 +71,7 @@ export function AddLaundryForm() {
               onChange={e => setLaundryCode(e.target.value)}
               required
               placeholder="BRIGHTCLEAN"
-              className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+              className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             />
             <p className="text-caption text-warm-400 mt-1">
               Uppercase letters and numbers only — a unique identifier for your business.
@@ -84,14 +84,14 @@ export function AddLaundryForm() {
               value={branchName}
               onChange={e => setBranchName(e.target.value)}
               placeholder="e.g. Main Branch"
-              className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+              className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             />
           </div>
 
           <button
             type="submit"
             disabled={isPending}
-            className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-7 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-12 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isPending ? 'Creating…' : 'Create laundry'}
           </button>

@@ -192,7 +192,7 @@ export function DashboardClient({
       </div>
 
       {/* Ready for collection hero panel */}
-      <div className="bg-white border border-warm-300 rounded-10 mb-6 overflow-hidden">
+      <div className="bg-white border border-warm-300 rounded-18 mb-6 overflow-hidden">
         <div className="flex items-center justify-between px-[22px] py-4 border-b border-warm-200">
           <div className="flex items-center gap-2.5">
             <h2 className="text-ui font-semibold text-warm-950">Ready for collection</h2>
@@ -315,7 +315,7 @@ export function DashboardClient({
           </div>
 
           {/* Activity feed */}
-          <div className="lg:col-span-2 bg-white border border-warm-300 rounded-10 overflow-hidden">
+          <div className="lg:col-span-2 bg-white border border-warm-300 rounded-18 overflow-hidden">
             <div className="px-5 py-4 border-b border-warm-200">
               <h2 className="text-ui font-semibold text-warm-950">Recent activity</h2>
             </div>
@@ -370,7 +370,7 @@ export function DashboardClient({
               onKeyDown={e => e.key === 'Enter' && handleCollect()}
               placeholder="······"
               autoFocus
-              className={`w-full border rounded-7 py-3 text-center tnum text-[22px] font-bold tracking-[0.18em] text-warm-950 placeholder:text-warm-300 focus:outline-none focus:shadow-focus-ring transition-shadow ${
+              className={`w-full border rounded-12 py-3 text-center tnum text-[22px] font-bold tracking-[0.18em] text-warm-950 placeholder:text-warm-300 focus:outline-none focus:shadow-focus-ring transition-shadow ${
                 collectError
                   ? 'border-error-fg focus:border-error-fg'
                   : 'border-warm-400 focus:border-brand'
@@ -412,7 +412,7 @@ export function DashboardClient({
               {payingOrder.orderNumber} · {payingOrder.customerName}
             </p>
             {/* Amount — read-only */}
-            <div className="bg-[#F8F5F0] rounded-7 px-4 py-3 flex items-center justify-between">
+            <div className="bg-[#F8F5F0] rounded-12 px-4 py-3 flex items-center justify-between">
               <span className="text-label text-warm-600">Amount due</span>
               <span className="tnum text-ui font-bold text-error-fg">{formatCurrency(payingOrder.balance)}</span>
             </div>
@@ -423,7 +423,7 @@ export function DashboardClient({
               <select
                 value={payMethod}
                 onChange={e => setPayMethod(e.target.value as PaymentMethod)}
-                className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                className="w-full border border-warm-400 rounded-12 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
               >
                 {PAYMENT_METHODS.map(m => (
                   <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m] ?? m}</option>

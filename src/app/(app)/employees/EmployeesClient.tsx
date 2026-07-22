@@ -196,11 +196,11 @@ export function EmployeesClient({
   return (
     <div className="space-y-4">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700">{error}</div>
+        <div className="bg-red-50 border border-red-200 rounded-10 px-3 py-2 text-sm text-red-700">{error}</div>
       )}
 
       {inviteMessage && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+        <div className="bg-green-50 border border-green-200 rounded-10 p-4">
           <p className="text-sm font-semibold text-green-800">{inviteMessage}</p>
           <button onClick={() => setInviteMessage(null)} className="mt-2 text-xs text-green-700 underline">Dismiss</button>
         </div>
@@ -208,7 +208,7 @@ export function EmployeesClient({
 
       {/* Pending join requests */}
       {requests.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-50">
+        <div className="bg-white rounded-18 border border-gray-200 divide-y divide-gray-50">
           <p className="px-5 py-3 text-sm font-semibold text-gray-900">
             Pending Requests <span className="font-normal text-gray-400">({requests.length})</span>
           </p>
@@ -225,7 +225,7 @@ export function EmployeesClient({
                 <select
                   value={roleFor(req.id)}
                   onChange={e => setApproveRole(prev => ({ ...prev, [req.id]: e.target.value as 'admin' | 'employee' }))}
-                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className="border border-gray-300 rounded-12 px-2.5 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
                 >
                   <option value="employee">Employee</option>
                   <option value="admin">Admin</option>
@@ -233,14 +233,14 @@ export function EmployeesClient({
                 <button
                   onClick={() => handleApprove(req)}
                   disabled={isPending && resolvingId === req.id}
-                  className="px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                  className="px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-12 hover:bg-gray-800 disabled:opacity-50 transition-colors"
                 >
                   Approve
                 </button>
                 <button
                   onClick={() => handleReject(req.id)}
                   disabled={isPending && resolvingId === req.id}
-                  className="px-3 py-1.5 border border-gray-300 text-xs text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                  className="px-3 py-1.5 border border-gray-300 text-xs text-gray-700 rounded-12 hover:bg-gray-50 disabled:opacity-50"
                 >
                   Reject
                 </button>
@@ -253,20 +253,20 @@ export function EmployeesClient({
       {/* Add employee button / form */}
       {!showForm ? (
         atLimit ? (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 text-sm text-amber-800">
+          <div className="bg-amber-50 border border-amber-200 rounded-10 px-5 py-4 text-sm text-amber-800">
             Employee limit reached ({employeeLimit}/{employeeLimit}).{' '}
             <a href="mailto:saymmmohamm265@gmail.com" className="font-semibold underline">Contact us</a> if you need more seats.
           </div>
         ) : (
           <button
             onClick={() => setShowForm(true)}
-            className="w-full border-2 border-dashed border-gray-200 rounded-xl py-3 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors"
+            className="w-full border-2 border-dashed border-gray-200 rounded-12 py-3 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors"
           >
             + Add Employee
           </button>
         )
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+        <div className="bg-white rounded-18 border border-gray-200 p-5 space-y-4">
           <h2 className="text-sm font-semibold text-gray-900">Invite Employee</h2>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Phone" value={phone} onChange={setPhone} placeholder="024 123 4567" />
@@ -275,7 +275,7 @@ export function EmployeesClient({
               <select
                 value={role}
                 onChange={e => setRole(e.target.value as 'admin' | 'employee')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-full border border-gray-300 rounded-12 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
               >
                 <option value="employee">Employee</option>
                 <option value="admin">Admin</option>
@@ -286,13 +286,13 @@ export function EmployeesClient({
             <button
               onClick={handleAdd}
               disabled={isPending}
-              className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
+              className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-12 hover:bg-gray-800 disabled:opacity-50 transition-colors"
             >
               {isPending ? 'Sending…' : 'Send Invite'}
             </button>
             <button
               onClick={() => { setShowForm(false); resetForm() }}
-              className="px-4 py-2 border border-gray-300 text-sm text-gray-700 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 text-sm text-gray-700 rounded-12 hover:bg-gray-50"
             >
               Cancel
             </button>
@@ -302,7 +302,7 @@ export function EmployeesClient({
 
       {/* Pending invites */}
       {invites.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-50">
+        <div className="bg-white rounded-18 border border-gray-200 divide-y divide-gray-50">
           <p className="px-5 py-3 text-sm font-semibold text-gray-900">
             Invited <span className="font-normal text-gray-400">({invites.length})</span>
           </p>
@@ -328,7 +328,7 @@ export function EmployeesClient({
       )}
 
       {/* Employee list */}
-      <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-50">
+      <div className="bg-white rounded-18 border border-gray-200 divide-y divide-gray-50">
         {employees.length === 0 && (
           <p className="text-sm text-gray-400 text-center py-8">No employees yet.</p>
         )}
@@ -415,7 +415,7 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: {
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+        className="w-full border border-gray-300 rounded-12 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
       />
     </div>
   )

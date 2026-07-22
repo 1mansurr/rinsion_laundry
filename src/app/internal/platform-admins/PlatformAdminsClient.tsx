@@ -49,10 +49,10 @@ export function PlatformAdminsClient({ admins: init, currentAdminId }: Props) {
   return (
     <div className="space-y-5">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-7 px-4 py-3 text-ui text-red-700">{error}</div>
+        <div className="bg-red-50 border border-red-200 rounded-12 px-4 py-3 text-ui text-red-700">{error}</div>
       )}
 
-      <div className="bg-white border border-warm-300 rounded-10 p-5 space-y-3">
+      <div className="bg-white border border-warm-300 rounded-18 p-5 space-y-3">
         <p className="text-label font-medium text-warm-700">Add platform admin</p>
         <p className="text-caption text-warm-500">
           They must already have a Rinsion account (as an employee or another platform admin) — this only grants access, it doesn&apos;t create one.
@@ -62,19 +62,19 @@ export function PlatformAdminsClient({ admins: init, currentAdminId }: Props) {
             value={identifier}
             onChange={e => setIdentifier(e.target.value)}
             placeholder="email or phone"
-            className="flex-1 border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand"
+            className="flex-1 border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand"
           />
           <button
             onClick={handleAdd}
             disabled={isPending}
-            className="px-4 py-2 bg-brand text-[#FAF8F5] rounded-7 text-ui font-medium hover:bg-brand-hover disabled:opacity-50 transition-colors"
+            className="px-4 py-2 bg-brand text-[#FAF8F5] rounded-12 text-ui font-medium hover:bg-brand-hover disabled:opacity-50 transition-colors"
           >
             {isPending && removingId === null ? 'Adding…' : 'Add'}
           </button>
         </div>
       </div>
 
-      <div className="bg-white border border-warm-300 rounded-10 divide-y divide-warm-200">
+      <div className="bg-white border border-warm-300 rounded-18 divide-y divide-warm-200">
         {admins.length === 0 && (
           <p className="text-ui text-warm-500 text-center py-8">No platform admins yet.</p>
         )}

@@ -84,7 +84,7 @@ export function ImportProvisionPriceListModal({ open, onClose, onImported }: Pro
               ref={fileInputRef}
               type="file"
               accept=".xlsx,.csv"
-              className="w-full text-ui text-warm-800 file:mr-3 file:px-3 file:py-1.5 file:rounded-7 file:border file:border-warm-400 file:bg-white file:text-ui file:font-medium hover:file:bg-warm-100"
+              className="w-full text-ui text-warm-800 file:mr-3 file:px-3 file:py-1.5 file:rounded-12 file:border file:border-warm-400 file:bg-white file:text-ui file:font-medium hover:file:bg-warm-100"
             />
             <p className="text-caption text-warm-400 mt-1.5">
               Columns: Service, Item Type, Unit (kg/item), Min Price, Max Price, Notes. Leave Item Type blank on a kg row.

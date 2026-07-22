@@ -78,7 +78,7 @@ export function SearchableSelect({
         type="button"
         disabled={disabled}
         onClick={() => setOpen(o => !o)}
-        className={`w-full flex items-center justify-between gap-2 border border-warm-400 rounded-7 px-3 py-[10px] text-ui bg-white text-left focus:outline-none focus:border-brand focus:shadow-focus-ring disabled:opacity-40 disabled:cursor-not-allowed transition-colors ${className}`}
+        className={`w-full flex items-center justify-between gap-2 border border-warm-400 rounded-12 px-3 py-[10px] text-ui bg-white text-left focus:outline-none focus:border-brand focus:shadow-focus-ring disabled:opacity-40 disabled:cursor-not-allowed transition-colors ${className}`}
       >
         <span className={`truncate ${selected ? 'text-warm-950' : 'text-warm-400'}`}>
           {selected ? selected.label : placeholder}
@@ -92,7 +92,7 @@ export function SearchableSelect({
       </button>
 
       {open && (
-        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-warm-300 rounded-10 shadow-modal overflow-hidden">
+        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-warm-300 rounded-18 shadow-modal overflow-hidden">
           {showSearch && (
             <input
               ref={searchRef}

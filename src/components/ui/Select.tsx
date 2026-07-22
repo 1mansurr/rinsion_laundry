@@ -22,7 +22,7 @@ export function Select({ label, helpText, error, className = '', children, id, .
           id={selectId}
           className={`
             w-full appearance-none font-sans text-ui px-[13px] py-[11px] pr-9
-            border border-warm-400 rounded-7 bg-white text-warm-950
+            border border-warm-400 rounded-12 bg-white text-warm-950
             focus:outline-none focus:border-brand focus:shadow-focus-ring
             disabled:bg-warm-200 disabled:text-warm-500 disabled:cursor-not-allowed
             ${error ? 'border-error' : ''}

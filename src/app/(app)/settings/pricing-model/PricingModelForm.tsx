@@ -65,7 +65,7 @@ export function PricingModelForm({ pricingModel: init, taxRate: taxRateInit }: {
           type="button"
           onClick={() => m !== pricingModel && setPendingModel(m)}
           disabled={isPending}
-          className={`w-full text-left px-4 py-3 rounded-10 border transition-colors disabled:opacity-60 ${
+          className={`w-full text-left px-4 py-3 rounded-18 border transition-colors disabled:opacity-60 ${
             pricingModel === m ? 'border-brand bg-brand-pale' : 'border-warm-300 hover:bg-warm-50'
           }`}
         >
@@ -90,7 +90,7 @@ export function PricingModelForm({ pricingModel: init, taxRate: taxRateInit }: {
             onBlur={saveTaxRate}
             onKeyDown={e => e.key === 'Enter' && (e.currentTarget as HTMLInputElement).blur()}
             disabled={taxSaving}
-            className="w-full border border-warm-400 rounded-7 px-3 py-2 text-ui text-warm-950 tnum text-right focus:outline-none focus:border-brand focus:shadow-focus-ring disabled:opacity-60"
+            className="w-full border border-warm-400 rounded-12 px-3 py-2 text-ui text-warm-950 tnum text-right focus:outline-none focus:border-brand focus:shadow-focus-ring disabled:opacity-60"
           />
           <span className="text-ui text-warm-600">%</span>
         </div>

@@ -42,7 +42,7 @@ export default async function SmsUsagePage() {
       </div>
 
       {subscription && (
-        <div className="bg-white border border-warm-300 rounded-10 p-5 mb-4">
+        <div className="bg-white border border-warm-300 rounded-18 p-5 mb-4">
           <p className="tnum text-ui font-bold text-warm-950 mb-1">{smsUsed} of {quota} SMS used</p>
           <p className="text-caption text-warm-600 mb-3.5">
             Cycle: {subscription.cycleStartDate} → {subscription.cycleEndDate}
@@ -62,7 +62,7 @@ export default async function SmsUsagePage() {
         </div>
       )}
 
-      <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+      <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
         <div className="px-5 py-3.5 border-b border-warm-200">
           <h2 className="text-ui font-semibold text-warm-950">Message Log</h2>
         </div>

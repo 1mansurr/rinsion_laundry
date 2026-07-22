@@ -23,9 +23,9 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40 min-[720px]:backdrop-blur-[2px]" />
 
         <Dialog.Content
-          className="fixed z-50 bottom-0 left-0 right-0 bg-white rounded-t-[20px] shadow-sheet animate-sheet-up focus:outline-none max-h-[90dvh] overflow-y-auto
+          className="fixed z-50 bottom-0 left-0 right-0 bg-white rounded-t-22 shadow-sheet animate-sheet-up focus:outline-none max-h-[90dvh] overflow-y-auto
             min-[720px]:bottom-auto min-[720px]:left-1/2 min-[720px]:top-1/2 min-[720px]:right-auto min-[720px]:-translate-x-1/2 min-[720px]:-translate-y-1/2
-            min-[720px]:w-[calc(100%-2rem)] min-[720px]:max-w-md min-[720px]:rounded-[12px] min-[720px]:shadow-modal min-[720px]:animate-none min-[720px]:max-h-[85dvh]"
+            min-[720px]:w-[calc(100%-2rem)] min-[720px]:max-w-md min-[720px]:rounded-22 min-[720px]:shadow-modal min-[720px]:animate-none min-[720px]:max-h-[85dvh]"
           aria-modal
         >
           {/* Drag handle — mobile only, meaningless on a centered desktop panel */}
@@ -40,7 +40,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
               <Dialog.Close asChild>
                 <button
                   aria-label="Close"
-                  className="w-8 h-8 flex items-center justify-center rounded-7 text-warm-600 hover:bg-warm-100 transition-colors focus:outline-none focus:shadow-focus-ring"
+                  className="w-8 h-8 flex items-center justify-center rounded-12 text-warm-600 hover:bg-warm-100 transition-colors focus:outline-none focus:shadow-focus-ring"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                     <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />

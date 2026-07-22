@@ -73,7 +73,7 @@ export function NavDrawer({ open, onClose, profile }: Props) {
                 key={item.href}
                 href={item.href}
                 onClick={onClose}
-                className={`flex items-center gap-[13px] px-3 py-[13px] rounded-10 mb-0.5 transition-colors ${active ? 'bg-brand-tint' : 'hover:bg-warm-150'}`}
+                className={`flex items-center gap-[13px] px-3 py-[13px] rounded-12 mb-0.5 transition-colors ${active ? 'bg-brand-tint' : 'hover:bg-warm-150'}`}
               >
                 <svg width="19" height="19" viewBox="0 0 24 24" fill={active ? '#0F3D2E' : '#43403B'} aria-hidden>
                   <path d={item.icon} />
@@ -97,7 +97,7 @@ export function NavDrawer({ open, onClose, profile }: Props) {
           <form action={signOut}>
             <button
               type="submit"
-              className="w-full flex items-center gap-[13px] px-3 py-3 rounded-10 text-ui font-semibold text-error hover:bg-error-bg transition-colors"
+              className="w-full flex items-center gap-[13px] px-3 py-3 rounded-12 text-ui font-semibold text-error hover:bg-error-bg transition-colors"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="#B0413A" aria-hidden>
                 <path d="M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5v-2H5V5h5V3Zm9.7 8.3-4-4a1 1 0 0 0-1.4 1.4L16.6 11H9v2h7.6l-2.3 2.3a1 1 0 0 0 1.4 1.4l4-4a1 1 0 0 0 0-1.4Z" />

@@ -26,7 +26,7 @@ export function CustomersFilterBar({ defaultQ }: Props) {
   return (
     <form
       onSubmit={handleSearch}
-      className="flex items-center gap-2 bg-white border border-warm-400 rounded-[8px] px-3 py-[9px] flex-1 min-w-[240px] max-w-[400px]"
+      className="flex items-center gap-2 bg-white border border-warm-400 rounded-12 px-3 py-[9px] flex-1 min-w-[240px] max-w-[400px]"
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="#9A9088" className="shrink-0">
         <path d="M10 3a7 7 0 1 0 4.2 12.6l4.1 4.1a1 1 0 0 0 1.4-1.4l-4.1-4.1A7 7 0 0 0 10 3Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z" />

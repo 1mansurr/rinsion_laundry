@@ -42,7 +42,7 @@ export default async function CustomersPage({ searchParams }: Props) {
         </div>
         <Link
           href="/customers/new"
-          className="inline-flex items-center gap-[7px] bg-brand text-[#FAF8F5] text-ui font-semibold px-[15px] py-[10px] rounded-7 hover:bg-brand-hover transition-colors"
+          className="inline-flex items-center gap-[7px] bg-brand text-[#FAF8F5] text-ui font-semibold px-[15px] py-[10px] rounded-12 hover:bg-brand-hover transition-colors"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="#FAF8F5">
             <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.5-8 5.5V21a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5c0-3-3.6-5.5-8-5.5Z" />
@@ -58,7 +58,7 @@ export default async function CustomersPage({ searchParams }: Props) {
 
       {/* Table / empty */}
       {rows.length === 0 ? (
-        <div className="bg-white border border-warm-300 rounded-10 py-[58px] px-[30px] flex flex-col items-center text-center">
+        <div className="bg-white border border-warm-300 rounded-18 py-[58px] px-[30px] flex flex-col items-center text-center">
           <svg viewBox="0 0 120 120" width="78" height="78" className="mb-[18px]">
             <circle cx="60" cy="60" r="48" fill="none" stroke="#E8E4DD" strokeWidth="2" />
             <circle cx="60" cy="60" r="33" fill="none" stroke="#E0DAD0" strokeWidth="2" />
@@ -73,14 +73,14 @@ export default async function CustomersPage({ searchParams }: Props) {
               : 'Add your first customer to start creating orders.'}
           </p>
           {!q && (
-            <Link href="/customers/new" className="mt-4 inline-flex items-center gap-1.5 bg-brand text-[#FAF8F5] text-ui font-semibold px-4 py-2.5 rounded-7 hover:bg-brand-hover transition-colors">
+            <Link href="/customers/new" className="mt-4 inline-flex items-center gap-1.5 bg-brand text-[#FAF8F5] text-ui font-semibold px-4 py-2.5 rounded-12 hover:bg-brand-hover transition-colors">
               Add Customer
             </Link>
           )}
         </div>
       ) : (
         <>
-          <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+          <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
             {/* Desktop header row */}
             <div
               className="hidden min-[720px]:grid px-[22px] py-3"

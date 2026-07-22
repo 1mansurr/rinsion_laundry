@@ -30,7 +30,7 @@ interface Props {
 
 function ModeToggle({ value, onChange }: { value: PricingMode; onChange: (m: PricingMode) => void }) {
   return (
-    <div className="inline-flex rounded-7 border border-warm-300 overflow-hidden text-[11px] shrink-0">
+    <div className="inline-flex rounded-12 border border-warm-300 overflow-hidden text-[11px] shrink-0">
       {(['per_item', 'per_kg'] as const).map(m => (
         <button
           key={m}
@@ -69,7 +69,7 @@ function RangeInputs({
         onKeyDown={onKeyDown}
         onBlur={onBlur}
         placeholder="Min"
-        className="w-16 border border-brand rounded-7 px-2 py-1 text-ui text-warm-950 text-right focus:outline-none focus:shadow-focus-ring"
+        className="w-16 border border-brand rounded-12 px-2 py-1 text-ui text-warm-950 text-right focus:outline-none focus:shadow-focus-ring"
       />
       <span className="text-warm-400">–</span>
       <input
@@ -78,7 +78,7 @@ function RangeInputs({
         onKeyDown={onKeyDown}
         onBlur={onBlur}
         placeholder="Max"
-        className="w-16 border border-brand rounded-7 px-2 py-1 text-ui text-warm-950 text-right focus:outline-none focus:shadow-focus-ring"
+        className="w-16 border border-brand rounded-12 px-2 py-1 text-ui text-warm-950 text-right focus:outline-none focus:shadow-focus-ring"
       />
     </div>
   )
@@ -358,7 +358,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
       </div>
 
       {error && (
-        <div className="bg-[#FDF1EF] border border-[#E0BBB6] rounded-7 px-3 py-2 text-ui text-error-fg mb-4">
+        <div className="bg-[#FDF1EF] border border-[#E0BBB6] rounded-12 px-3 py-2 text-ui text-error-fg mb-4">
           {error}
         </div>
       )}
@@ -375,7 +375,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
             />
             <Button onClick={addItem} disabled={isPending || !newItemName.trim()}>Add</Button>
           </div>
-          <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+          <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
             {items.length === 0 && (
               <EmptyState headline="No item types yet" body="Add items like Shirt, Trouser, Suit to get started." />
             )}
@@ -423,7 +423,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
               Use the toggle to choose whether each service is priced per item or by weight.
             </p>
           )}
-          <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+          <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
             {services.length === 0 && (
               <EmptyState headline="No services yet" body="Add services like Wash Only, Dry Clean to get started." />
             )}
@@ -471,7 +471,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
               {pricingModel !== 'per_item' && perKgServices.length > 0 && (
                 <section>
                   <p className="text-label font-medium text-warm-700 mb-3">Weight-based pricing</p>
-                  <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+                  <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
                     {perKgServices.map(svc => {
                       const isEditing = editingRateServiceId === svc.id
                       const exceptions = activeItems
@@ -511,7 +511,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                                   value={rateNotes}
                                   onChange={e => setRateNotes(e.target.value)}
                                   placeholder="Notes for staff (optional)"
-                                  className="w-56 border border-warm-300 rounded-7 px-2 py-1 text-caption text-warm-800 focus:outline-none focus:border-brand"
+                                  className="w-56 border border-warm-300 rounded-12 px-2 py-1 text-caption text-warm-800 focus:outline-none focus:border-brand"
                                 />
                               </div>
                             ) : svc.minKgRate !== null && svc.maxKgRate !== null ? (
@@ -593,7 +593,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                                     value={newExceptionItemTypeId}
                                     onChange={e => setNewExceptionItemTypeId(e.target.value)}
                                     autoFocus
-                                    className="flex-1 border border-warm-300 rounded-7 px-2 py-1.5 text-ui text-warm-950 bg-white focus:outline-none focus:border-brand"
+                                    className="flex-1 border border-warm-300 rounded-12 px-2 py-1.5 text-ui text-warm-950 bg-white focus:outline-none focus:border-brand"
                                   >
                                     <option value="">Select item…</option>
                                     {availableForException.map(item => (
@@ -669,7 +669,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                       </div>
 
                       {/* Desktop: list view */}
-                      <div className="hidden md:block bg-white border border-warm-300 rounded-10 overflow-hidden">
+                      <div className="hidden md:block bg-white border border-warm-300 rounded-18 overflow-hidden">
                         <div className="grid px-5 py-2.5 bg-[#F4F0EA] border-b border-warm-200" style={{ gridTemplateColumns: '1fr 260px' }}>
                           <span className="text-caption font-medium text-warm-500">Item type</span>
                           <span className="text-caption font-medium text-warm-500 text-right">Price (GHS)</span>
@@ -734,7 +734,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                                     value={cellNotes}
                                     onChange={e => setCellNotes(e.target.value)}
                                     placeholder="Notes for staff (optional)"
-                                    className="w-64 border border-warm-300 rounded-7 px-2 py-1 text-caption text-warm-800 focus:outline-none focus:border-brand"
+                                    className="w-64 border border-warm-300 rounded-12 px-2 py-1 text-caption text-warm-800 focus:outline-none focus:border-brand"
                                   />
                                 </div>
                               )}
@@ -750,7 +750,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                           const pricedCount = perItemServices.filter(svc => getPrice(item.id, svc.id)?.isActive).length
 
                           return (
-                            <div key={item.id} className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+                            <div key={item.id} className="bg-white border border-warm-300 rounded-18 overflow-hidden">
                               <button
                                 type="button"
                                 className="w-full flex items-center justify-between px-4 py-3"
@@ -825,7 +825,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
                               value={cellNotes}
                               onChange={e => setCellNotes(e.target.value)}
                               placeholder="e.g. Silk only, ask before washing"
-                              className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-800 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                              className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-800 focus:outline-none focus:border-brand focus:shadow-focus-ring"
                             />
                           </div>
                           <div className="flex gap-2.5">

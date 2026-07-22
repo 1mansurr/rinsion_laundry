@@ -24,7 +24,7 @@ export function InternalNav() {
           <Link
             key={href}
             href={href}
-            className={`block px-3 py-2 rounded-7 text-ui transition-colors ${
+            className={`block px-3 py-2 rounded-12 text-ui transition-colors ${
               active
                 ? 'bg-brand text-[#FAF8F5] font-medium'
                 : 'text-warm-700 hover:bg-warm-100 hover:text-warm-950'

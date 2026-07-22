@@ -34,7 +34,7 @@ export function PasswordInput({ className = '', ...rest }: PasswordInputProps) {
     <div className="relative">
       <input
         type={visible ? 'text' : 'password'}
-        className={`w-full border border-warm-300 rounded-7 pl-3 pr-10 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent ${className}`}
+        className={`w-full border border-warm-300 rounded-12 pl-3 pr-10 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent ${className}`}
         {...rest}
       />
       <button

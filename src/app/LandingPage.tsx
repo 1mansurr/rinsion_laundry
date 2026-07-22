@@ -163,7 +163,7 @@ export function LandingPage() {
             <button
               onClick={() => setMenuOpen(true)}
               aria-label="Open menu"
-              className="flex flex-col justify-center gap-[5px] w-11 h-11 px-2.5 bg-canvas/10 border-0 rounded-11 cursor-pointer"
+              className="flex flex-col justify-center gap-[5px] w-11 h-11 px-2.5 bg-canvas/10 border-0 rounded-12 cursor-pointer"
             >
               <span className="block h-0.5 w-full bg-canvas rounded-sm" />
               <span className="block h-0.5 w-full bg-canvas rounded-sm" />
@@ -184,7 +184,7 @@ export function LandingPage() {
             <div className="mt-[clamp(32px,4vw,44px)]">
               <Link
                 href="/signup"
-                className="inline-flex items-center gap-2.5 bg-canvas text-brand font-bold text-[17px] py-4 px-[30px] rounded-[14px] shadow-[0_18px_40px_-18px_rgba(0,0,0,.55)] hover:bg-white hover:-translate-y-0.5 transition"
+                className="inline-flex items-center gap-2.5 bg-canvas text-brand font-bold text-[17px] py-4 px-[30px] rounded-12 shadow-[0_18px_40px_-18px_rgba(0,0,0,.55)] hover:bg-white hover:-translate-y-0.5 transition"
               >
                 Start free trial
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F3D2E" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
@@ -199,39 +199,39 @@ export function LandingPage() {
           <div ref={stageWrapRef} className="flex-[1_1_380px] min-w-[min(100%,300px)] max-w-[480px] mx-auto self-end flex justify-center">
             <div ref={stageInnerRef} className="w-[380px] h-[500px] relative origin-top flex-none">
               {/* BACK: New order */}
-              <div className="absolute -right-2 top-[26px] w-[272px] bg-white text-warm-950 rounded-[22px] shadow-[0_40px_70px_-34px_rgba(0,0,0,.55)] rotate-[4.5deg] overflow-hidden">
+              <div className="absolute -right-2 top-[26px] w-[272px] bg-white text-warm-950 rounded-22 shadow-[0_40px_70px_-34px_rgba(0,0,0,.55)] rotate-[4.5deg] overflow-hidden">
                 <div className="px-[17px] pt-4 pb-[18px]">
                   <div className="text-[15px] font-extrabold tracking-[-0.02em] mb-[13px]">New order</div>
                   <div className="text-[10.5px] font-semibold tracking-[0.06em] uppercase text-warm-600 mb-1.5">Customer</div>
-                  <div className="border border-warm-300 rounded-9 px-[11px] py-[9px] text-[12.5px] font-semibold mb-[11px]">Ama Owusu</div>
+                  <div className="border border-warm-300 rounded-10 px-[11px] py-[9px] text-[12.5px] font-semibold mb-[11px]">Ama Owusu</div>
                   <div className="text-[10.5px] font-semibold tracking-[0.06em] uppercase text-warm-600 mb-1.5">Items</div>
                   <div className="flex gap-[7px] mb-1.5">
-                    <div className="flex-1 border border-warm-300 rounded-9 px-2.5 py-[9px] text-xs font-semibold">Wash &amp; iron</div>
-                    <div className="flex-1 border border-warm-300 rounded-9 px-2.5 py-[9px] text-xs text-warm-800">Shirt &times; 5</div>
+                    <div className="flex-1 border border-warm-300 rounded-10 px-2.5 py-[9px] text-xs font-semibold">Wash &amp; iron</div>
+                    <div className="flex-1 border border-warm-300 rounded-10 px-2.5 py-[9px] text-xs text-warm-800">Shirt &times; 5</div>
                   </div>
                   <div className="flex gap-[7px]">
-                    <div className="flex-1 border border-warm-300 rounded-9 px-2.5 py-[9px] text-xs font-semibold">Wash by weight</div>
-                    <div className="flex-1 border border-warm-300 rounded-9 px-2.5 py-[9px] text-xs text-warm-800">6 kg</div>
+                    <div className="flex-1 border border-warm-300 rounded-10 px-2.5 py-[9px] text-xs font-semibold">Wash by weight</div>
+                    <div className="flex-1 border border-warm-300 rounded-10 px-2.5 py-[9px] text-xs text-warm-800">6 kg</div>
                   </div>
                   <div className="flex items-center justify-between mt-[13px] pt-3 border-t border-warm-200">
                     <span className="tnum text-[16px] font-extrabold">GHS 90.00</span>
-                    <span className="bg-brand text-canvas rounded-9 px-3.5 py-[9px] text-xs font-bold">Create Order</span>
+                    <span className="bg-brand text-canvas rounded-10 px-3.5 py-[9px] text-xs font-bold">Create Order</span>
                   </div>
                 </div>
               </div>
 
               {/* FRONT: Dashboard */}
-              <div className="absolute left-0 top-[70px] w-[300px] bg-white text-warm-950 rounded-3xl shadow-[0_50px_90px_-34px_rgba(0,0,0,.62)] -rotate-3 overflow-hidden">
+              <div className="absolute left-0 top-[70px] w-[300px] bg-white text-warm-950 rounded-22 shadow-[0_50px_90px_-34px_rgba(0,0,0,.62)] -rotate-3 overflow-hidden">
                 <div className="flex items-center justify-between px-[15px] pt-[13px] pb-3 border-b border-warm-200">
                   <span className="flex items-center gap-1.5 font-extrabold text-[16px] tracking-[-0.04em]">
                     <RingLogo size={14} stroke="#0F3D2E" />
                     Rinsion
                   </span>
                   <span className="flex gap-1.5">
-                    <span className="w-[27px] h-[27px] rounded-lg bg-warm-100 flex items-center justify-center">
+                    <span className="w-[27px] h-[27px] rounded-12 bg-warm-100 flex items-center justify-center">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#57514A" strokeWidth="2.4"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" strokeLinecap="round" /></svg>
                     </span>
-                    <span className="w-[27px] h-[27px] rounded-lg bg-warm-100 flex items-center justify-center">
+                    <span className="w-[27px] h-[27px] rounded-12 bg-warm-100 flex items-center justify-center">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#57514A" strokeWidth="2.2"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8" strokeLinejoin="round" /><path d="M10.3 21a2 2 0 0 0 3.4 0" strokeLinecap="round" /></svg>
                     </span>
                   </span>
@@ -240,7 +240,7 @@ export function LandingPage() {
                   <div className="text-[18px] font-extrabold tracking-[-0.03em]">Clean Pro Laundry</div>
                   <div className="text-[11.5px] text-warm-700 mt-0.5">Friday, 17 July 2026</div>
 
-                  <div className="bg-white border border-warm-300 rounded-[13px] mt-[13px]">
+                  <div className="bg-white border border-warm-300 rounded-18 mt-[13px]">
                     <div className="flex items-center justify-between px-[13px] py-[11px] border-b border-warm-200">
                       <span className="text-[12.5px] font-bold flex items-center gap-1.5">
                         Ready for collection
@@ -261,17 +261,17 @@ export function LandingPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 mt-2.5">
-                    <div className="bg-white border border-warm-300 rounded-[13px] px-3 py-[11px]">
+                    <div className="bg-white border border-warm-300 rounded-18 px-3 py-[11px]">
                       <div className="text-[10.5px] text-warm-700 leading-[1.3]">Orders today</div>
                       <div className="tnum text-[20px] font-extrabold tracking-[-0.03em] mt-0.5">8</div>
                     </div>
-                    <div className="bg-white border border-warm-300 rounded-[13px] px-3 py-[11px]">
+                    <div className="bg-white border border-warm-300 rounded-18 px-3 py-[11px]">
                       <div className="text-[10.5px] text-warm-700 leading-[1.3]">Active customers this week</div>
                       <div className="tnum text-[20px] font-extrabold tracking-[-0.03em] mt-0.5">26</div>
                     </div>
                   </div>
 
-                  <div className="bg-white border border-warm-300 rounded-[13px] mt-2.5 px-[13px] py-[11px]">
+                  <div className="bg-white border border-warm-300 rounded-18 mt-2.5 px-[13px] py-[11px]">
                     <div className="text-[12.5px] font-bold mb-[7px]">Recent activity</div>
                     <div className="flex gap-2 text-[10.5px] leading-[1.45] py-[3px] text-warm-800"><span className="tnum text-warm-700 flex-none">16:30</span><span><b className="text-warm-950 font-semibold">Adjoa</b> marked ORD-4KP7MX2A Ready. Text sent.</span></div>
                     <div className="flex gap-2 text-[10.5px] leading-[1.45] py-[3px] text-warm-800"><span className="tnum text-warm-700 flex-none">14:02</span><span><b className="text-warm-950 font-semibold">Adjoa</b> moved ORD-4KP7MX2A to Processing.</span></div>
@@ -353,7 +353,7 @@ export function LandingPage() {
                   title: 'Take the order.',
                   body: "Pick the customer, add the items by piece or by weight, and note who's paying now or on collection. The order gets a code the moment you save it.",
                   mock: (
-                    <div className="w-full max-w-[320px] bg-white border border-warm-300 rounded-[22px] overflow-hidden shadow-[0_30px_60px_-34px_rgba(15,61,46,.4)]">
+                    <div className="w-full max-w-[320px] bg-white border border-warm-300 rounded-22 overflow-hidden shadow-[0_30px_60px_-34px_rgba(15,61,46,.4)]">
                       <div className="px-[18px] pt-[18px] pb-4">
                         <div className="text-[11px] font-bold tracking-[0.06em] uppercase text-warm-700 mb-3">New order</div>
                         <div className="border border-warm-300 rounded-10 px-[13px] py-[11px] text-[13px] font-semibold mb-2.5">Ama Owusu &middot; 0244 567 890</div>
@@ -378,7 +378,7 @@ export function LandingPage() {
                   title: 'Move it along.',
                   body: "Received, Processing, Ready, Collected. One tap moves the order forward, and every move is saved under the name of whoever tapped it. Mark it Ready and the customer gets a text.",
                   mock: (
-                    <div className="w-full max-w-[320px] bg-white border border-warm-300 rounded-[22px] overflow-hidden shadow-[0_30px_60px_-34px_rgba(15,61,46,.4)]">
+                    <div className="w-full max-w-[320px] bg-white border border-warm-300 rounded-22 overflow-hidden shadow-[0_30px_60px_-34px_rgba(15,61,46,.4)]">
                       <div className="bg-[linear-gradient(160deg,#17604A,#0F3D2E)] text-canvas px-[18px] pt-4 pb-[18px]">
                         <div className="flex justify-end">
                           <span className="inline-flex items-center gap-1.5 bg-clay/25 text-[#E8B88A] rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.04em]"><span className="w-1.5 h-1.5 rounded-full bg-clay" />RECEIVED</span>
@@ -417,8 +417,8 @@ export function LandingPage() {
                         </div>
                       </div>
                       <div className="flex gap-2 px-4 pb-4">
-                        <span className="flex-1 bg-brand text-canvas rounded-9 px-3 py-2.5 text-xs font-bold text-center">Mark Processing</span>
-                        <span className="flex-1 bg-clay text-white rounded-9 px-3 py-2.5 text-xs font-bold text-center">Record Payment</span>
+                        <span className="flex-1 bg-brand text-canvas rounded-10 px-3 py-2.5 text-xs font-bold text-center">Mark Processing</span>
+                        <span className="flex-1 bg-clay text-white rounded-10 px-3 py-2.5 text-xs font-bold text-center">Record Payment</span>
                       </div>
                     </div>
                   ),
@@ -428,7 +428,7 @@ export function LandingPage() {
                   title: 'See everything at once.',
                   body: "Every order in one list, searchable by name or code. What's ready and what's still in the wash. Nothing lives in one person's head.",
                   mock: (
-                    <div className="w-full max-w-[320px] bg-white border border-warm-300 rounded-[22px] overflow-hidden shadow-[0_30px_60px_-34px_rgba(15,61,46,.4)]">
+                    <div className="w-full max-w-[320px] bg-white border border-warm-300 rounded-22 overflow-hidden shadow-[0_30px_60px_-34px_rgba(15,61,46,.4)]">
                       <div className="px-[18px] pt-[18px] pb-1.5">
                         <div className="text-[11px] font-bold tracking-[0.06em] uppercase text-warm-700 mb-2">Orders</div>
                         <div className="border border-warm-300 rounded-10 px-3 py-2.5 text-[12.5px] text-warm-600 mb-0.5">Search by name or code</div>
@@ -482,7 +482,7 @@ export function LandingPage() {
             <div className="text-xs font-bold tracking-eyebrow-lg uppercase text-clay mb-3">The record</div>
             <h2 className="m-0 text-[clamp(25px,4.4vw,40px)] font-extrabold tracking-[-0.03em] leading-[1.1]">Every action carries a name.</h2>
           </div>
-          <div className="bg-[linear-gradient(160deg,#232323,#141414)] text-canvas rounded-2xl p-[clamp(22px,3vw,32px)] max-w-[640px] shadow-[0_30px_60px_-40px_rgba(0,0,0,.6)]">
+          <div className="bg-[linear-gradient(160deg,#232323,#141414)] text-canvas rounded-18 p-[clamp(22px,3vw,32px)] max-w-[640px] shadow-[0_30px_60px_-40px_rgba(0,0,0,.6)]">
             <div className="text-[18px] font-bold mb-4">Who did what, when</div>
             <div className="flex gap-3 py-2.5 border-b border-canvas/10 text-sm leading-[1.45]"><span className="tnum text-[12.5px] text-warm-600 w-[42px] flex-none">09:14</span><span><b className="font-semibold">Kwesi Appiah</b> created order ORD-4KP7MX2A</span></div>
             <div className="flex gap-3 py-2.5 border-b border-canvas/10 text-sm leading-[1.45]"><span className="tnum text-[12.5px] text-warm-600 w-[42px] flex-none">09:16</span><span><b className="font-semibold">Kwesi Appiah</b> recorded <span className="tnum">GHS 100.00</span></span></div>
@@ -500,7 +500,7 @@ export function LandingPage() {
             <div className="text-xs font-bold tracking-eyebrow-lg uppercase text-clay mb-3">Your morning</div>
             <h2 className="m-0 text-[clamp(25px,4.4vw,40px)] font-extrabold tracking-[-0.03em] leading-[1.1]">Open one screen and see the whole shop.</h2>
           </div>
-          <div className="border border-warm-300 rounded-2xl overflow-hidden bg-white">
+          <div className="border border-warm-300 rounded-18 overflow-hidden bg-white">
             <div className="flex items-center justify-between gap-3 flex-wrap px-[22px] py-4 border-b border-warm-300">
               <div className="text-[15.5px] font-bold">Today</div>
               <div className="flex gap-[26px]">
@@ -537,9 +537,9 @@ export function LandingPage() {
             </ul>
           </div>
           <div className="flex-[1_1_320px] min-w-[min(100%,280px)]">
-            <div className="bg-[linear-gradient(150deg,#17604A,#0F3D2E)] rounded-[18px] p-[clamp(22px,3vw,30px)] text-canvas shadow-[0_32px_60px_-34px_rgba(15,61,46,.55)]">
+            <div className="bg-[linear-gradient(150deg,#17604A,#0F3D2E)] rounded-18 p-[clamp(22px,3vw,30px)] text-canvas shadow-[0_32px_60px_-34px_rgba(15,61,46,.55)]">
               <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#8FB6A5] mb-3">What Ama receives</div>
-              <div className="bg-canvas text-warm-950 rounded-xl px-[15px] py-[13px] text-sm leading-[1.5]">Clean Pro Laundry: Hi Ama, your order is ready for pickup. See you soon.</div>
+              <div className="bg-canvas text-warm-950 rounded-12 px-[15px] py-[13px] text-sm leading-[1.5]">Clean Pro Laundry: Hi Ama, your order is ready for pickup. See you soon.</div>
               <div className="flex justify-between mt-2.5 text-[11.5px] text-[#A8C3B6]"><span>Today 16:30</span><span>via mNotify</span></div>
             </div>
           </div>
@@ -580,7 +580,7 @@ export function LandingPage() {
             <h2 className="m-0 text-[clamp(25px,4.4vw,40px)] font-extrabold tracking-[-0.03em] leading-[1.1]">One plan. That&apos;s the whole menu.</h2>
           </div>
           <div className="max-w-[480px] mx-auto">
-            <div className="bg-white border border-warm-300 rounded-[20px] p-[clamp(26px,4vw,36px)] shadow-[0_30px_64px_-40px_rgba(26,26,26,.32)]">
+            <div className="bg-white border border-warm-300 rounded-18 p-[clamp(26px,4vw,36px)] shadow-[0_30px_64px_-40px_rgba(26,26,26,.32)]">
               <div className="flex items-baseline gap-2 justify-center"><span className="tnum text-[clamp(36px,7vw,48px)] font-extrabold tracking-[-0.03em]">GHS 120</span><span className="text-[15px] text-warm-800 font-medium">/ month</span></div>
               <div className="mt-2.5 text-center text-[15px] font-bold">Fourteen days free first.</div>
               <ul className="list-none mt-[26px] p-0 flex flex-col gap-[13px]">
@@ -589,11 +589,11 @@ export function LandingPage() {
                 <li className="flex gap-2.5 items-start text-[15.5px] leading-[1.45]"><CheckIcon /><span>Unlimited orders, customers and payments</span></li>
                 <li className="flex gap-2.5 items-start text-[15.5px] leading-[1.45]"><CheckIcon /><span>Every action logged. Export any time.</span></li>
               </ul>
-              <Link href="/signup" className="flex items-center justify-center w-full mt-[26px] bg-brand text-canvas font-bold text-[16px] py-[15px] px-6 rounded-[12px] shadow-[0_14px_30px_-16px_rgba(15,61,46,.6)] hover:bg-brand-hover transition">
+              <Link href="/signup" className="flex items-center justify-center w-full mt-[26px] bg-brand text-canvas font-bold text-[16px] py-[15px] px-6 rounded-12 shadow-[0_14px_30px_-16px_rgba(15,61,46,.6)] hover:bg-brand-hover transition">
                 Start free trial
               </Link>
             </div>
-            <div className="max-w-[480px] mx-auto mt-4 text-center text-sm text-warm-800 border border-dashed border-warm-400 rounded-[12px] px-[18px] py-3.5">
+            <div className="max-w-[480px] mx-auto mt-4 text-center text-sm text-warm-800 border border-dashed border-warm-400 rounded-12 px-[18px] py-3.5">
               More than 5 staff? <a href="https://wa.me/233257528042" target="_blank" rel="noopener" className="font-semibold border-b border-brand/30">Message us on WhatsApp</a>.
             </div>
           </div>
@@ -611,7 +611,7 @@ export function LandingPage() {
             <h2 className="m-0 text-[clamp(25px,4.4vw,40px)] font-extrabold tracking-[-0.03em] leading-[1.1]">We&apos;re new, and we pick up the phone.</h2>
             <p className="mt-4 text-[clamp(16px,2vw,18px)] leading-[1.55] text-warm-800 max-w-[54ch]">Rinsion is built in Kumasi by Mansur Alidu. We&apos;re taking on our first laundries now and working with each one directly. When something breaks, you message a person, and that person is us.</p>
             <p className="mt-3.5 text-[clamp(16px,2vw,18px)] leading-[1.55] text-warm-800 max-w-[54ch]">We&apos;d rather say that plainly than pretend to be a big company.</p>
-            <a href="https://wa.me/233257528042" target="_blank" rel="noopener" className="inline-flex items-center gap-2.5 mt-5 bg-white border border-warm-300 rounded-11 px-[18px] py-3 font-semibold text-[14.5px] text-brand hover:border-brand transition">
+            <a href="https://wa.me/233257528042" target="_blank" rel="noopener" className="inline-flex items-center gap-2.5 mt-5 bg-white border border-warm-300 rounded-12 px-[18px] py-3 font-semibold text-[14.5px] text-brand hover:border-brand transition">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="#0F3D2E" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.05L2 22l5.1-1.34A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.03.8.81-2.95-.2-.31A8.2 8.2 0 1 1 12 20.2Zm4.5-6.13c-.25-.13-1.46-.72-1.68-.8-.23-.08-.39-.12-.55.13-.17.24-.64.8-.78.96-.14.17-.29.19-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.22-1.46-1.37-1.7-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.44.13-.14.17-.24.25-.41.09-.16.04-.31-.02-.44-.06-.12-.55-1.34-.76-1.83-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.42.06-.64.31-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.17 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.1.16 1.52.1.46-.07 1.46-.6 1.66-1.18.21-.58.21-1.07.15-1.18-.06-.1-.22-.16-.47-.29Z" /></svg>
               Message us on WhatsApp
             </a>
@@ -626,7 +626,7 @@ export function LandingPage() {
           <p className="mt-3.5 mx-auto max-w-[40ch] text-[16px] text-[#A8C3B6]">Set up your laundry, add your staff, and take your first tracked order before the day ends.</p>
           <Link
             href="/signup"
-            className="inline-flex items-center gap-2.5 mt-7 bg-canvas text-brand font-bold text-[17px] py-4 px-[30px] rounded-[14px] shadow-[0_18px_40px_-18px_rgba(0,0,0,.4)] hover:bg-white hover:-translate-y-0.5 transition"
+            className="inline-flex items-center gap-2.5 mt-7 bg-canvas text-brand font-bold text-[17px] py-4 px-[30px] rounded-12 shadow-[0_18px_40px_-18px_rgba(0,0,0,.4)] hover:bg-white hover:-translate-y-0.5 transition"
           >
             Start free trial
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F3D2E" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
@@ -663,7 +663,7 @@ export function LandingPage() {
             <button
               onClick={() => setMenuOpen(false)}
               aria-label="Close menu"
-              className="w-11 h-11 bg-canvas/10 border-0 rounded-11 cursor-pointer flex items-center justify-center"
+              className="w-11 h-11 bg-canvas/10 border-0 rounded-12 cursor-pointer flex items-center justify-center"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="#FAF8F5"><path d="M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5Z" /></svg>
             </button>

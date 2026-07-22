@@ -33,7 +33,7 @@ export default async function WorkflowSettingsPage() {
         <h1 className="text-sm font-semibold text-gray-900">Workflow</h1>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
+      <div className="bg-white rounded-18 border border-gray-200 p-5">
         <h2 className="text-sm font-semibold text-gray-900 mb-1">Workflow Settings</h2>
         <p className="text-xs text-gray-400 mb-5">Changes apply immediately to all staff.</p>
         <WorkflowToggles settings={settings} />

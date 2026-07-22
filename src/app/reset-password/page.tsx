@@ -20,9 +20,9 @@ export default function ResetPasswordPage() {
           <p className="text-body text-warm-600">Choose a new password</p>
         </div>
 
-        <form action={action} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
+        <form action={action} className="bg-white rounded-18 border border-warm-300 p-6 space-y-4">
           {state.error && (
-            <div className="bg-red-50 border border-red-200 rounded-7 px-3 py-2 text-ui text-red-700">
+            <div className="bg-red-50 border border-red-200 rounded-12 px-3 py-2 text-ui text-red-700">
               {state.error}
             </div>
           )}
@@ -68,7 +68,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-7 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-12 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
     >
       {pending ? 'Saving…' : 'Save new password'}
     </button>

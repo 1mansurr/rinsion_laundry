@@ -35,10 +35,10 @@ export function LaundryDetailClient({ laundry }: { laundry: LaundryDetail }) {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-7 px-4 py-3 text-ui text-red-700">{error}</div>
+        <div className="bg-red-50 border border-red-200 rounded-12 px-4 py-3 text-ui text-red-700">{error}</div>
       )}
 
-      <section className="bg-white border border-warm-300 rounded-10 p-5 space-y-3">
+      <section className="bg-white border border-warm-300 rounded-18 p-5 space-y-3">
         <p className="text-label font-medium text-warm-700">Subscription</p>
         {sub ? (
           <>
@@ -50,7 +50,7 @@ export function LaundryDetailClient({ laundry }: { laundry: LaundryDetail }) {
                   <button
                     onClick={() => run(() => convertTrial(laundry.id, 'starter'))}
                     disabled={isPending}
-                    className="px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                    className="px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-12 hover:bg-gray-800 disabled:opacity-50"
                   >
                     Convert to paid
                   </button>
@@ -59,12 +59,12 @@ export function LaundryDetailClient({ laundry }: { laundry: LaundryDetail }) {
                     min={1}
                     value={extendDays}
                     onChange={e => setExtendDays(e.target.value)}
-                    className="w-16 border border-gray-300 rounded-lg px-2 py-1.5 text-xs"
+                    className="w-16 border border-gray-300 rounded-12 px-2 py-1.5 text-xs"
                   />
                   <button
                     onClick={() => run(() => extendTrial(laundry.id, parseInt(extendDays, 10) || 0))}
                     disabled={isPending}
-                    className="px-3 py-1.5 border border-gray-300 text-xs text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                    className="px-3 py-1.5 border border-gray-300 text-xs text-gray-700 rounded-12 hover:bg-gray-50 disabled:opacity-50"
                   >
                     Extend trial (days)
                   </button>
@@ -74,7 +74,7 @@ export function LaundryDetailClient({ laundry }: { laundry: LaundryDetail }) {
                 <button
                   onClick={() => run(() => reactivateLaundry(laundry.id))}
                   disabled={isPending}
-                  className="px-3 py-1.5 bg-green-700 text-white text-xs font-medium rounded-lg hover:bg-green-800 disabled:opacity-50"
+                  className="px-3 py-1.5 bg-green-700 text-white text-xs font-medium rounded-12 hover:bg-green-800 disabled:opacity-50"
                 >
                   Reactivate
                 </button>
@@ -82,7 +82,7 @@ export function LaundryDetailClient({ laundry }: { laundry: LaundryDetail }) {
                 <button
                   onClick={() => run(() => suspendLaundry(laundry.id))}
                   disabled={isPending}
-                  className="px-3 py-1.5 border border-red-300 text-xs text-red-700 rounded-lg hover:bg-red-50 disabled:opacity-50"
+                  className="px-3 py-1.5 border border-red-300 text-xs text-red-700 rounded-12 hover:bg-red-50 disabled:opacity-50"
                 >
                   Suspend
                 </button>
@@ -94,7 +94,7 @@ export function LaundryDetailClient({ laundry }: { laundry: LaundryDetail }) {
         )}
       </section>
 
-      <section className="bg-white border border-warm-300 rounded-10 p-5 space-y-2">
+      <section className="bg-white border border-warm-300 rounded-18 p-5 space-y-2">
         <p className="text-label font-medium text-warm-700">Admins</p>
         {laundry.admins.length === 0 && <p className="text-ui text-warm-500">None yet.</p>}
         {laundry.admins.map(a => (
@@ -105,7 +105,7 @@ export function LaundryDetailClient({ laundry }: { laundry: LaundryDetail }) {
       </section>
 
       {laundry.pendingInvites.length > 0 && (
-        <section className="bg-white border border-warm-300 rounded-10 p-5 space-y-2">
+        <section className="bg-white border border-warm-300 rounded-18 p-5 space-y-2">
           <p className="text-label font-medium text-warm-700">Pending Invites</p>
           {laundry.pendingInvites.map(inv => (
             <div key={inv.id} className="flex items-center justify-between">

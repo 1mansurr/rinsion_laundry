@@ -164,7 +164,7 @@ export default function SettingsPage() {
         <p className="text-ui text-warm-800 mt-1">Manage your business, branches, messaging and plan.</p>
       </div>
 
-      <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+      <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
         {ACCORDION_ITEMS.map(({ key, label, desc }) => (
           <div key={key} className="border-b border-warm-100 last:border-0">
             <button

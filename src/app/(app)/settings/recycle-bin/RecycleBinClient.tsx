@@ -127,7 +127,7 @@ export function RecycleBinClient({
         ))}
       </div>
 
-      <div className="bg-white border border-warm-300 rounded-10 divide-y divide-warm-100">
+      <div className="bg-white border border-warm-300 rounded-18 divide-y divide-warm-100">
         {tab === 'customers' && (
           customers.length === 0 ? (
             <p className="text-ui text-warm-500 text-center py-8">Nothing here.</p>

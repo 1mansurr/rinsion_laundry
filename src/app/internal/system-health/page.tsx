@@ -127,7 +127,7 @@ export default async function SystemHealthPage() {
 
 function Card({ label, value, warn }: { label: string; value: number | string; warn?: boolean }) {
   return (
-    <div className="bg-white rounded-10 border border-warm-200 p-4">
+    <div className="bg-white rounded-18 border border-warm-200 p-4">
       <p className="text-caption text-warm-600 mb-1">{label}</p>
       <p className={`tnum text-xl font-bold ${warn ? 'text-amber-600' : 'text-warm-950'}`}>{value}</p>
     </div>
@@ -136,7 +136,7 @@ function Card({ label, value, warn }: { label: string; value: number | string; w
 
 function Section({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-10 border border-warm-200">
+    <div className="bg-white rounded-18 border border-warm-200">
       <div className="px-5 py-3.5 border-b border-warm-100 flex items-center justify-between">
         <h2 className="text-ui font-semibold text-warm-950">{title}</h2>
         {action}

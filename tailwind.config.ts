@@ -115,12 +115,10 @@ const config: Config = {
         },
       },
       borderRadius: {
-        '5': '5px',
-        '6': '6px',
-        '7': '7px',
-        '9': '9px',
         '10': '10px',
-        '11': '11px',
+        '12': '12px',
+        '18': '18px',
+        '22': '22px',
       },
       boxShadow: {
         'sticky-top': '0 -4px 16px rgba(0, 0, 0, 0.06)',

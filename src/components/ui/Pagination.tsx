@@ -44,7 +44,7 @@ export function Pagination({
               key={p}
               onClick={() => onPageChange(p as number)}
               className={`
-                min-w-[36px] h-9 px-2 rounded-7 text-ui font-medium transition-colors
+                min-w-[36px] h-9 px-2 rounded-12 text-ui font-medium transition-colors
                 ${(p as number) === page
                   ? 'bg-brand text-[#FAF8F5]'
                   : 'text-warm-950 hover:bg-warm-100'}
@@ -94,7 +94,7 @@ function NavBtn({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className="w-9 h-9 flex items-center justify-center rounded-7 text-warm-800 hover:bg-warm-100 disabled:text-warm-400 disabled:cursor-not-allowed transition-colors"
+      className="w-9 h-9 flex items-center justify-center rounded-12 text-warm-800 hover:bg-warm-100 disabled:text-warm-400 disabled:cursor-not-allowed transition-colors"
     >
       {children}
     </button>

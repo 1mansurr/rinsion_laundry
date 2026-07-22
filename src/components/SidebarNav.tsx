@@ -41,7 +41,7 @@ export function SidebarNav({ role }: { role: EmployeeRole }) {
           <Link
             key={href}
             href={href}
-            className={`flex items-center px-3 py-2 rounded-7 text-ui-sm font-medium transition-colors ${
+            className={`flex items-center px-3 py-2 rounded-12 text-ui-sm font-medium transition-colors ${
               active
                 ? 'bg-brand text-[#FAF8F5]'
                 : 'text-warm-800 hover:bg-warm-100 hover:text-warm-950'

@@ -1,4 +1,4 @@
-// White surface card. border-radius:10px per prototypes (overrides the 12px spec in SKILL.md).
+// White surface card. border-radius: 18px per rinsion_design_system/Rinsion Design System.dc.html.
 
 interface CardProps {
   header?: React.ReactNode
@@ -9,7 +9,7 @@ interface CardProps {
 
 export function Card({ header, footer, className = '', children }: CardProps) {
   return (
-    <div className={`bg-white border border-warm-300 rounded-10 overflow-hidden ${className}`}>
+    <div className={`bg-white border border-warm-300 rounded-18 overflow-hidden ${className}`}>
       {header && (
         <div className="px-5 py-4 border-b border-warm-300">
           {header}

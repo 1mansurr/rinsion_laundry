@@ -88,7 +88,7 @@ export function ProvisionForm({ templates }: Props) {
   return (
     <div className="space-y-5">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-7 px-4 py-3 text-ui text-red-700">{error}</div>
+        <div className="bg-red-50 border border-red-200 rounded-12 px-4 py-3 text-ui text-red-700">{error}</div>
       )}
 
       <div className="grid grid-cols-2 gap-4">
@@ -98,7 +98,7 @@ export function ProvisionForm({ templates }: Props) {
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="Sunrise Laundry"
-            className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+            className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
           />
         </div>
         <div>
@@ -107,7 +107,7 @@ export function ProvisionForm({ templates }: Props) {
             value={ownerPhone}
             onChange={e => setOwnerPhone(e.target.value)}
             placeholder="024 123 4567"
-            className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+            className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
           />
         </div>
       </div>
@@ -119,7 +119,7 @@ export function ProvisionForm({ templates }: Props) {
             value={templateKey}
             onChange={e => handleTemplateChange(e.target.value as TemplateKey)}
             disabled={source === 'upload'}
-            className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 bg-white focus:outline-none focus:ring-2 focus:ring-brand disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 bg-white focus:outline-none focus:ring-2 focus:ring-brand disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {Object.values(templates).map(t => (
               <option key={t.key} value={t.key}>{t.label}</option>
@@ -129,14 +129,14 @@ export function ProvisionForm({ templates }: Props) {
         <button
           type="button"
           onClick={() => setImportOpen(true)}
-          className="border border-warm-300 rounded-7 px-4 py-2 text-ui font-medium text-warm-800 bg-white hover:bg-warm-100 focus:outline-none focus:shadow-focus-ring transition-colors"
+          className="border border-warm-300 rounded-12 px-4 py-2 text-ui font-medium text-warm-800 bg-white hover:bg-warm-100 focus:outline-none focus:shadow-focus-ring transition-colors"
         >
           Import price list…
         </button>
       </div>
 
       {source === 'upload' && importSummary && (
-        <div className="flex items-center justify-between bg-brand-pale border border-brand/30 rounded-7 px-4 py-2.5">
+        <div className="flex items-center justify-between bg-brand-pale border border-brand/30 rounded-12 px-4 py-2.5">
           <p className="text-ui text-warm-800">
             Using uploaded list — {importSummary.itemTypes} item type{importSummary.itemTypes === 1 ? '' : 's'}, {importSummary.services} service{importSummary.services === 1 ? '' : 's'}, pricing mode <span className="font-medium">{PRICING_MODEL_LABEL[inferPricingModel(services)]}</span>.
           </p>
@@ -159,7 +159,7 @@ export function ProvisionForm({ templates }: Props) {
       {services.some(s => s.pricingMode === 'per_kg') && (
         <div>
           <p className="text-label font-medium text-warm-700 mb-2">Weight-based rates (GHS/kg)</p>
-          <div className="bg-white border border-warm-300 rounded-10 divide-y divide-warm-200">
+          <div className="bg-white border border-warm-300 rounded-18 divide-y divide-warm-200">
             {services.filter(s => s.pricingMode === 'per_kg').map(s => (
               <div key={s.name} className="flex items-center justify-between px-4 py-2.5 gap-3">
                 <span className="text-ui text-warm-800 flex-1">{s.name}</span>
@@ -169,7 +169,7 @@ export function ProvisionForm({ templates }: Props) {
                     step="0.01"
                     value={s.kgRate?.min ?? 0}
                     onChange={e => setServices(prev => prev.map(x => x.name === s.name ? { ...x, kgRate: { min: parseFloat(e.target.value) || 0, max: x.kgRate?.max ?? 0 } } : x))}
-                    className="w-20 border border-warm-300 rounded-6 px-2 py-1 text-ui text-warm-950 text-right tnum focus:outline-none focus:border-brand"
+                    className="w-20 border border-warm-300 rounded-12 px-2 py-1 text-ui text-warm-950 text-right tnum focus:outline-none focus:border-brand"
                   />
                   <span className="text-warm-400">–</span>
                   <input
@@ -177,7 +177,7 @@ export function ProvisionForm({ templates }: Props) {
                     step="0.01"
                     value={s.kgRate?.max ?? 0}
                     onChange={e => setServices(prev => prev.map(x => x.name === s.name ? { ...x, kgRate: { min: x.kgRate?.min ?? 0, max: parseFloat(e.target.value) || 0 } } : x))}
-                    className="w-20 border border-warm-300 rounded-6 px-2 py-1 text-ui text-warm-950 text-right tnum focus:outline-none focus:border-brand"
+                    className="w-20 border border-warm-300 rounded-12 px-2 py-1 text-ui text-warm-950 text-right tnum focus:outline-none focus:border-brand"
                   />
                 </div>
               </div>
@@ -188,7 +188,7 @@ export function ProvisionForm({ templates }: Props) {
 
       <div>
         <p className="text-label font-medium text-warm-700 mb-2">Pricing (GHS) — edit to this laundry&apos;s real prices</p>
-        <div className="bg-white border border-warm-300 rounded-10 divide-y divide-warm-200 max-h-[420px] overflow-y-auto">
+        <div className="bg-white border border-warm-300 rounded-18 divide-y divide-warm-200 max-h-[420px] overflow-y-auto">
           {prices.length === 0 && (
             <p className="px-4 py-3 text-caption text-warm-500">No per-item prices — every service is weight-based.</p>
           )}
@@ -201,7 +201,7 @@ export function ProvisionForm({ templates }: Props) {
                   step="0.01"
                   value={p.min}
                   onChange={e => updatePrice(i, { min: parseFloat(e.target.value) || 0 })}
-                  className="w-20 border border-warm-300 rounded-6 px-2 py-1 text-ui text-warm-950 text-right tnum focus:outline-none focus:border-brand"
+                  className="w-20 border border-warm-300 rounded-12 px-2 py-1 text-ui text-warm-950 text-right tnum focus:outline-none focus:border-brand"
                 />
                 <span className="text-warm-400">–</span>
                 <input
@@ -209,7 +209,7 @@ export function ProvisionForm({ templates }: Props) {
                   step="0.01"
                   value={p.max}
                   onChange={e => updatePrice(i, { max: parseFloat(e.target.value) || 0 })}
-                  className="w-20 border border-warm-300 rounded-6 px-2 py-1 text-ui text-warm-950 text-right tnum focus:outline-none focus:border-brand"
+                  className="w-20 border border-warm-300 rounded-12 px-2 py-1 text-ui text-warm-950 text-right tnum focus:outline-none focus:border-brand"
                 />
               </div>
             </div>
@@ -220,7 +220,7 @@ export function ProvisionForm({ templates }: Props) {
       <button
         onClick={handleSubmit}
         disabled={isPending}
-        className="bg-brand text-[#FAF8F5] px-5 py-2.5 rounded-7 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="bg-brand text-[#FAF8F5] px-5 py-2.5 rounded-12 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {isPending ? 'Provisioning…' : 'Provision Laundry'}
       </button>

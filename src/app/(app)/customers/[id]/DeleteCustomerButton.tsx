@@ -25,7 +25,7 @@ export function DeleteCustomerButton({ customerId, customerName }: { customerId:
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center bg-white text-error-fg border border-[#E0BBB6] text-ui font-semibold px-[15px] py-[10px] rounded-7 hover:bg-[#F8ECEA] transition-colors"
+        className="inline-flex items-center bg-white text-error-fg border border-[#E0BBB6] text-ui font-semibold px-[15px] py-[10px] rounded-12 hover:bg-[#F8ECEA] transition-colors"
       >
         Delete
       </button>

@@ -33,7 +33,7 @@ export default function ManualPaymentsClient({ payments }: { payments: PendingPa
 
   if (pending.length === 0) {
     return (
-      <p className="text-ui text-warm-500 bg-white rounded-10 border border-warm-200 px-5 py-8 text-center">
+      <p className="text-ui text-warm-500 bg-white rounded-18 border border-warm-200 px-5 py-8 text-center">
         No pending payments — queue is clear.
       </p>
     )
@@ -45,7 +45,7 @@ export default function ManualPaymentsClient({ payments }: { payments: PendingPa
         const hoursAgo = Math.floor((Date.now() - new Date(p.claimed_at).getTime()) / 3600000)
         const isLoading = loading === p.id
         return (
-          <div key={p.id} className="bg-white rounded-10 border border-warm-200 p-5">
+          <div key={p.id} className="bg-white rounded-18 border border-warm-200 p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-ui font-semibold text-warm-950">{p.laundry_name}</p>
@@ -58,14 +58,14 @@ export default function ManualPaymentsClient({ payments }: { payments: PendingPa
                 <button
                   onClick={() => handle(p.id, 'paid')}
                   disabled={isLoading}
-                  className="px-3 py-1.5 text-caption font-medium bg-green-50 text-green-700 rounded-7 hover:bg-green-100 disabled:opacity-50"
+                  className="px-3 py-1.5 text-caption font-medium bg-green-50 text-green-700 rounded-12 hover:bg-green-100 disabled:opacity-50"
                 >
                   {isLoading ? '...' : 'Mark Paid'}
                 </button>
                 <button
                   onClick={() => handle(p.id, 'rejected')}
                   disabled={isLoading}
-                  className="px-3 py-1.5 text-caption font-medium bg-red-50 text-red-700 rounded-7 hover:bg-red-100 disabled:opacity-50"
+                  className="px-3 py-1.5 text-caption font-medium bg-red-50 text-red-700 rounded-12 hover:bg-red-100 disabled:opacity-50"
                 >
                   {isLoading ? '...' : 'Reject'}
                 </button>

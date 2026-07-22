@@ -38,7 +38,7 @@ export function DangerZoneClient({ laundryName }: { laundryName: string }) {
       </div>
       <button
         onClick={() => setOpen(true)}
-        className="w-full min-h-[48px] bg-error text-[#FFF6F1] text-ui font-semibold rounded-10 hover:bg-[#9A3730] transition-colors"
+        className="w-full min-h-[48px] bg-error text-[#FFF6F1] text-ui font-semibold rounded-12 hover:bg-[#9A3730] transition-colors"
       >
         Delete laundry account
       </button>

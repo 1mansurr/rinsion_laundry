@@ -19,7 +19,7 @@ const DELTA_COLORS = {
 
 export function StatCard({ label, value, delta, className = '' }: StatCardProps) {
   return (
-    <div className={`bg-white border border-warm-300 rounded-10 px-5 py-4 ${className}`}>
+    <div className={`bg-white border border-warm-300 rounded-18 px-5 py-4 ${className}`}>
       <p className="text-label font-medium text-warm-700 mb-1.5">{label}</p>
       <p className="tnum text-[28px] font-semibold text-warm-950 leading-none">
         {value}

@@ -70,7 +70,7 @@ export default async function ReportsPage() {
       {/* Revenue cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         {revCards.map(c => (
-          <div key={c.label} className="bg-white border border-warm-300 rounded-10 px-5 py-[18px]">
+          <div key={c.label} className="bg-white border border-warm-300 rounded-18 px-5 py-[18px]">
             <p className="text-caption text-warm-800 font-medium">{c.label}</p>
             <p className={`tnum text-[24px] font-bold tracking-[-0.01em] mt-1.5 ${c.warn ? 'text-error' : 'text-warm-950'}`}>
               {c.value}
@@ -82,7 +82,7 @@ export default async function ReportsPage() {
       {/* Orders by status + Employee activity */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-4 mb-4">
         {/* Orders by status — CSS bar chart */}
-        <div className="bg-white border border-warm-300 rounded-10 px-[22px] py-5">
+        <div className="bg-white border border-warm-300 rounded-18 px-[22px] py-5">
           <h2 className="text-h2 font-semibold text-warm-950 mb-[18px]">Orders by status</h2>
           <div className="space-y-3.5">
             {statusBarData.map(s => (
@@ -104,7 +104,7 @@ export default async function ReportsPage() {
         </div>
 
         {/* Employee activity */}
-        <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+        <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
           <div className="px-5 py-4 border-b border-warm-200">
             <h2 className="text-h2 font-semibold text-warm-950">Employee activity</h2>
             <p className="text-caption text-warm-600 mt-0.5">{thisMonthLabel}</p>

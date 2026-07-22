@@ -34,7 +34,7 @@ export default async function CustomerDetailPage({ params }: Props) {
       </Link>
 
       {/* Customer header card */}
-      <div className="bg-white border border-warm-300 rounded-10 px-[26px] py-6 mt-2 mb-4 flex items-center gap-5 flex-wrap">
+      <div className="bg-white border border-warm-300 rounded-18 px-[26px] py-6 mt-2 mb-4 flex items-center gap-5 flex-wrap">
         <span className="w-16 h-16 shrink-0 rounded-full bg-brand text-[#FAF8F5] flex items-center justify-center text-[22px] font-semibold">
           {initials}
         </span>
@@ -49,13 +49,13 @@ export default async function CustomerDetailPage({ params }: Props) {
         <div className="flex gap-[9px]">
           <Link
             href={`/orders/new?customerId=${data.id}`}
-            className="inline-flex items-center gap-[7px] bg-brand text-[#FAF8F5] text-ui font-semibold px-[15px] py-[10px] rounded-7 hover:bg-brand-hover transition-colors"
+            className="inline-flex items-center gap-[7px] bg-brand text-[#FAF8F5] text-ui font-semibold px-[15px] py-[10px] rounded-12 hover:bg-brand-hover transition-colors"
           >
             New order
           </Link>
           <Link
             href={`/customers/${data.id}/edit`}
-            className="inline-flex items-center bg-white text-warm-950 border border-warm-400 text-ui font-semibold px-[15px] py-[10px] rounded-7 hover:bg-warm-50 transition-colors"
+            className="inline-flex items-center bg-white text-warm-950 border border-warm-400 text-ui font-semibold px-[15px] py-[10px] rounded-12 hover:bg-warm-50 transition-colors"
           >
             Edit
           </Link>
@@ -65,15 +65,15 @@ export default async function CustomerDetailPage({ params }: Props) {
 
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-        <div className="bg-white border border-warm-300 rounded-10 px-5 py-[18px]">
+        <div className="bg-white border border-warm-300 rounded-18 px-5 py-[18px]">
           <p className="text-label text-warm-800 font-medium">Total orders</p>
           <p className="tnum text-[28px] font-bold text-warm-950 mt-1.5">{nonCancelledOrders.length}</p>
         </div>
-        <div className="bg-white border border-warm-300 rounded-10 px-5 py-[18px]">
+        <div className="bg-white border border-warm-300 rounded-18 px-5 py-[18px]">
           <p className="text-label text-warm-800 font-medium">Total spent</p>
           <p className="tnum text-[28px] font-bold text-warm-950 mt-1.5">{formatCurrency(totalSpent)}</p>
         </div>
-        <div className="bg-white border border-warm-300 rounded-10 px-5 py-[18px]">
+        <div className="bg-white border border-warm-300 rounded-18 px-5 py-[18px]">
           <p className="text-label text-warm-800 font-medium">Last order</p>
           <p className="text-[20px] font-bold text-warm-950 mt-1.5">
             {data.last_visit_date ? formatDate(data.last_visit_date) : '—'}
@@ -84,7 +84,7 @@ export default async function CustomerDetailPage({ params }: Props) {
       {/* Two-column: order history + contact */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-4">
         {/* Order history */}
-        <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+        <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
           <div className="px-5 py-4 border-b border-warm-200">
             <h2 className="text-h2 font-semibold text-warm-950">Order history</h2>
           </div>
@@ -148,7 +148,7 @@ export default async function CustomerDetailPage({ params }: Props) {
 
         {/* Right sidebar: contact info */}
         <div className="flex flex-col gap-4">
-          <div className="bg-white border border-warm-300 rounded-10 px-[22px] py-5">
+          <div className="bg-white border border-warm-300 rounded-18 px-[22px] py-5">
             <h3 className="text-h2 font-semibold text-warm-950 mb-3.5">Contact</h3>
             <p className="text-micro font-semibold text-warm-600 uppercase tracking-[0.06em] mb-1">Phone</p>
             <p className="tnum text-ui-sm text-warm-950 mb-3.5">{data.phone}</p>

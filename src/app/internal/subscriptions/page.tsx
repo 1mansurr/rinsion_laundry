@@ -56,7 +56,7 @@ export default async function InternalSubscriptionsPage() {
         <StatBadge label="Locked"     value={counts.locked}     color="red" />
       </div>
 
-      <div className="bg-white rounded-10 border border-warm-200">
+      <div className="bg-white rounded-18 border border-warm-200">
         <div className="px-5 py-3.5 border-b border-warm-100">
           <h2 className="text-ui font-semibold text-warm-950">By Plan</h2>
         </div>
@@ -70,7 +70,7 @@ export default async function InternalSubscriptionsPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-10 border border-warm-200">
+      <div className="bg-white rounded-18 border border-warm-200">
         <div className="px-5 py-3.5 border-b border-warm-100">
           <h2 className="text-ui font-semibold text-warm-950">
             Trials Expiring Soon ({(expiringTrials ?? []).length})

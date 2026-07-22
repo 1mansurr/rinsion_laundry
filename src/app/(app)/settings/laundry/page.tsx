@@ -33,7 +33,7 @@ export default async function LaundrySettingsPage() {
         <h1 className="text-sm font-semibold text-gray-900">Laundry</h1>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
+      <div className="bg-white rounded-18 border border-gray-200 p-5">
         <h2 className="text-sm font-semibold text-gray-900 mb-4">Laundry Details</h2>
         <LaundryForm currentName={laundry.name} laundryCode={laundry.laundryCode} joinPin={laundry.joinPin} />
       </div>

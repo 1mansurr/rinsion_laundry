@@ -51,7 +51,7 @@ export default async function AlertsPage() {
       </div>
 
       {totalAlerts === 0 && (
-        <p className="text-ui text-warm-500 bg-white rounded-10 border border-warm-200 px-5 py-8 text-center">
+        <p className="text-ui text-warm-500 bg-white rounded-18 border border-warm-200 px-5 py-8 text-center">
           No alerts — all clear.
         </p>
       )}
@@ -114,7 +114,7 @@ export default async function AlertsPage() {
 
 function AlertSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-10 border border-warm-200">
+    <div className="bg-white rounded-18 border border-warm-200">
       <div className="px-5 py-3.5 border-b border-warm-100">
         <h2 className="text-ui font-semibold text-warm-950">{title}</h2>
       </div>

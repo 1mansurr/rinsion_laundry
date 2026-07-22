@@ -13,7 +13,7 @@ export default function NotFound() {
       </div>
       <Link
         href="/dashboard"
-        className="inline-flex items-center bg-brand text-[#FAF8F5] text-ui font-semibold px-4 py-2.5 rounded-7 hover:bg-brand-hover transition-colors"
+        className="inline-flex items-center bg-brand text-[#FAF8F5] text-ui font-semibold px-4 py-2.5 rounded-12 hover:bg-brand-hover transition-colors"
       >
         Go to Dashboard
       </Link>

@@ -67,7 +67,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
 
       {/* ── Plan status card ── */}
       {subscription && (
-        <div className="bg-white rounded-10 border border-warm-300 p-5 mb-3.5">
+        <div className="bg-white rounded-18 border border-warm-300 p-5 mb-3.5">
           <div className="flex items-center justify-between mb-3.5">
             <span className="text-[18px] font-bold text-warm-950">{subscription.plan === 'trial' ? 'Trial' : 'Your plan'}</span>
             <span className={`text-micro font-bold px-2.5 py-1 rounded-full tracking-[0.04em] uppercase ${STATUS_COLORS[subscription.status] ?? 'text-warm-600 bg-warm-150'}`}>
@@ -98,7 +98,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
 
       {/* ── No subscription ── */}
       {!subscription && (
-        <div className="bg-white border border-warm-300 rounded-10 p-6 mb-4 text-center">
+        <div className="bg-white border border-warm-300 rounded-18 p-6 mb-4 text-center">
           <p className="text-ui font-semibold text-warm-950 mb-1.5">No subscription yet</p>
           <p className="text-caption text-warm-600 mb-4">Start a free trial to unlock orders, customers, and SMS notifications.</p>
           <StartTrialButton />
@@ -107,7 +107,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
 
       {/* ── Claimed confirmation ── */}
       {action === 'claimed' && (
-        <div className="bg-white border border-warm-300 rounded-10 p-6 mb-4 text-center">
+        <div className="bg-white border border-warm-300 rounded-18 p-6 mb-4 text-center">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="#2E7D5B" className="mx-auto mb-3.5" aria-hidden>
             <path d="M9 16.17 5.53 12.7a1 1 0 0 0-1.42 1.42l4.18 4.17a1 1 0 0 0 1.42 0L20.3 7.88a1 1 0 1 0-1.42-1.42L9 16.17Z" />
           </svg>
@@ -123,12 +123,12 @@ export default async function SubscriptionPage({ searchParams }: Props) {
 
       {/* ── Existing pending claim (unresolved) ── */}
       {existingClaim && action !== 'claimed' && (
-        <div className="bg-white border border-warm-300 rounded-10 p-5 mb-4">
+        <div className="bg-white border border-warm-300 rounded-18 p-5 mb-4">
           <p className="text-ui font-semibold text-warm-950 mb-1.5">Payment pending review</p>
           <p className="text-caption text-warm-600 leading-relaxed">
             We&apos;re confirming your Mobile Money transfer — this usually takes under an hour.
           </p>
-          <div className="bg-[#FAF8F5] rounded-9 px-4 py-3 mt-3 space-y-2">
+          <div className="bg-[#FAF8F5] rounded-10 px-4 py-3 mt-3 space-y-2">
             <div className="flex justify-between text-ui-sm">
               <span className="text-warm-600">Reference</span>
               <span className="tnum font-semibold text-warm-950">{existingClaim.reference_code}</span>
@@ -144,7 +144,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
 
       {/* ── Payment instructions ── */}
       {subscription && paymentType && targetPlan && !existingClaim && action !== 'claimed' && (
-        <div className="bg-white border border-warm-300 rounded-10 p-5 mb-4">
+        <div className="bg-white border border-warm-300 rounded-18 p-5 mb-4">
           <Link href="/settings/subscription" className="inline-block mb-3 text-caption font-semibold text-warm-600 hover:text-warm-900">
             ← Back
           </Link>
@@ -155,7 +155,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
               : `Renew — GHS ${paymentAmount}`}
           </p>
 
-          <div className="bg-[#FAF8F5] rounded-9 px-4 py-3.5 mb-4 space-y-2">
+          <div className="bg-[#FAF8F5] rounded-10 px-4 py-3.5 mb-4 space-y-2">
             <div className="flex justify-between text-ui-sm">
               <span className="text-warm-600">MoMo number</span>
               <span className="tnum font-bold text-warm-950">{momoNumber}</span>
@@ -184,7 +184,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
             <input type="hidden" name="target_plan" value={targetPlan} />
             <button
               type="submit"
-              className="w-full min-h-[48px] bg-brand text-[#FAF8F5] text-ui font-semibold py-3.5 rounded-10 hover:bg-brand-hover transition-colors"
+              className="w-full min-h-[48px] bg-brand text-[#FAF8F5] text-ui font-semibold py-3.5 rounded-12 hover:bg-brand-hover transition-colors"
             >
               I have sent GHS {paymentAmount} →
             </button>
@@ -199,7 +199,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
           {subscription.plan !== 'trial' && (
             <Link
               href="/settings/subscription?action=renew"
-              className="w-full min-h-[48px] flex items-center justify-center text-center border border-warm-400 text-warm-950 bg-white text-ui font-semibold py-3.5 rounded-10 hover:bg-warm-100 transition-colors"
+              className="w-full min-h-[48px] flex items-center justify-center text-center border border-warm-400 text-warm-950 bg-white text-ui font-semibold py-3.5 rounded-12 hover:bg-warm-100 transition-colors"
             >
               Renew — GHS {PLANS[subscription.plan as 'starter' | 'growth']?.price}
             </Link>
@@ -208,7 +208,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
           {subscription.plan === 'trial' && (
             <Link
               href="/settings/subscription?action=convert&plan=starter"
-              className="w-full min-h-[48px] flex items-center justify-center text-center bg-brand text-[#FAF8F5] text-ui font-semibold py-3.5 rounded-10 hover:bg-brand-hover transition-colors"
+              className="w-full min-h-[48px] flex items-center justify-center text-center bg-brand text-[#FAF8F5] text-ui font-semibold py-3.5 rounded-12 hover:bg-brand-hover transition-colors"
             >
               Continue — GHS {PLANS.starter.price} / month
             </Link>
@@ -225,7 +225,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
 
       {/* ── What's included — Rinsion is a single plan, so this is a feature
           list rather than a comparison table ── */}
-      <div className="bg-white border border-warm-300 rounded-10 p-5 mb-4">
+      <div className="bg-white border border-warm-300 rounded-18 p-5 mb-4">
         <p className="text-[18px] font-bold text-warm-950">
           GHS {PLANS.starter.price} <span className="text-ui-sm font-normal text-warm-600">/ month</span>
         </p>
@@ -240,7 +240,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
 
       {/* ── Recent payments ── */}
       {recentPayments.length > 0 && (
-        <div className="bg-white border border-warm-300 rounded-10 overflow-hidden">
+        <div className="bg-white border border-warm-300 rounded-18 overflow-hidden">
           <div className="px-5 py-3.5 border-b border-warm-200">
             <h2 className="text-ui font-semibold text-warm-950">Recent payments</h2>
           </div>

@@ -20,9 +20,9 @@ export function AcceptInviteForm({ token }: { token: string }) {
           <p className="text-body text-warm-600">Set up your account</p>
         </div>
 
-        <form action={action} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
+        <form action={action} className="bg-white rounded-18 border border-warm-300 p-6 space-y-4">
           {state.error && (
-            <div className="bg-red-50 border border-red-200 rounded-7 px-3 py-2 text-ui text-red-700">
+            <div className="bg-red-50 border border-red-200 rounded-12 px-3 py-2 text-ui text-red-700">
               {state.error}
             </div>
           )}
@@ -39,7 +39,7 @@ export function AcceptInviteForm({ token }: { token: string }) {
               type="text"
               autoComplete="given-name"
               required
-              className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+              className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
               placeholder="Kwame"
             />
           </div>
@@ -54,7 +54,7 @@ export function AcceptInviteForm({ token }: { token: string }) {
               type="text"
               autoComplete="family-name"
               required
-              className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+              className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
               placeholder="Asante"
             />
           </div>
@@ -100,7 +100,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-7 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-12 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
     >
       {pending ? 'Setting up…' : 'Set up account'}
     </button>

@@ -25,12 +25,12 @@ export default function ForgotPasswordPage() {
           <p className="text-body text-warm-600">Reset your password</p>
         </div>
 
-        <div className="flex rounded-7 border border-warm-300 p-1 mb-4">
+        <div className="flex rounded-12 border border-warm-300 p-1 mb-4">
           <button
             type="button"
             aria-pressed={method === 'email'}
             onClick={() => setMethod('email')}
-            className={`flex-1 rounded-5 py-1.5 text-ui font-medium transition-colors focus:outline-none focus:shadow-focus-ring ${
+            className={`flex-1 rounded-12 py-1.5 text-ui font-medium transition-colors focus:outline-none focus:shadow-focus-ring ${
               method === 'email' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-600 hover:text-warm-800'
             }`}
           >
@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
             type="button"
             aria-pressed={method === 'phone'}
             onClick={() => setMethod('phone')}
-            className={`flex-1 rounded-5 py-1.5 text-ui font-medium transition-colors focus:outline-none focus:shadow-focus-ring ${
+            className={`flex-1 rounded-12 py-1.5 text-ui font-medium transition-colors focus:outline-none focus:shadow-focus-ring ${
               method === 'phone' ? 'bg-brand text-[#FAF8F5]' : 'text-warm-600 hover:text-warm-800'
             }`}
           >
@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
 
         {method === 'email' ? (
           state.sent ? (
-            <div className="bg-white rounded-10 border border-warm-300 p-6 space-y-3 text-center">
+            <div className="bg-white rounded-18 border border-warm-300 p-6 space-y-3 text-center">
               <p className="text-ui font-semibold text-warm-950">Check your email</p>
               <p className="text-body text-warm-600">
                 If an account exists for that address, we&apos;ve sent a link to reset your password.
@@ -58,7 +58,7 @@ export default function ForgotPasswordPage() {
               <BackToSignIn />
             </div>
           ) : (
-            <form action={action} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
+            <form action={action} className="bg-white rounded-18 border border-warm-300 p-6 space-y-4">
               {state.error && <ErrorBanner message={state.error} />}
 
               <div>
@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
                   type="email"
                   autoComplete="email"
                   required
-                  className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+                  className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                   placeholder="you@example.com"
                 />
               </div>
@@ -143,7 +143,7 @@ function PhoneResetFlow() {
 
   if (step === 'password') {
     return (
-      <form onSubmit={handleSetPassword} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
+      <form onSubmit={handleSetPassword} className="bg-white rounded-18 border border-warm-300 p-6 space-y-4">
         <p className="text-body text-warm-600">Code verified. Choose a new password.</p>
         {error && <ErrorBanner message={error} />}
 
@@ -182,7 +182,7 @@ function PhoneResetFlow() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-7 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-12 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isPending ? 'Saving…' : 'Save new password'}
         </button>
@@ -192,7 +192,7 @@ function PhoneResetFlow() {
 
   if (step === 'code') {
     return (
-      <form onSubmit={handleCheckCode} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
+      <form onSubmit={handleCheckCode} className="bg-white rounded-18 border border-warm-300 p-6 space-y-4">
         <p className="text-body text-warm-600">
           If an account exists for that number, we&apos;ve texted a 6-digit code to {phone}.
         </p>
@@ -213,7 +213,7 @@ function PhoneResetFlow() {
             required
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 tracking-[0.3em] text-center focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+            className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 tracking-[0.3em] text-center focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             placeholder="123456"
           />
         </div>
@@ -221,7 +221,7 @@ function PhoneResetFlow() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-7 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-12 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isPending ? 'Verifying…' : 'Verify code'}
         </button>
@@ -237,7 +237,7 @@ function PhoneResetFlow() {
   }
 
   return (
-    <form onSubmit={handleRequestCode} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
+    <form onSubmit={handleRequestCode} className="bg-white rounded-18 border border-warm-300 p-6 space-y-4">
       {error && <ErrorBanner message={error} />}
 
       <div>
@@ -253,7 +253,7 @@ function PhoneResetFlow() {
           required
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+          className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
           placeholder="024 123 4567"
         />
       </div>
@@ -261,7 +261,7 @@ function PhoneResetFlow() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-7 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-12 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {isPending ? 'Sending…' : 'Send reset code'}
       </button>
@@ -272,7 +272,7 @@ function PhoneResetFlow() {
 
 function ErrorBanner({ message }: { message: string }) {
   return (
-    <div className="bg-red-50 border border-red-200 rounded-7 px-3 py-2 text-ui text-red-700">
+    <div className="bg-red-50 border border-red-200 rounded-12 px-3 py-2 text-ui text-red-700">
       {message}
     </div>
   )
@@ -294,7 +294,7 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
     <button
       type="submit"
       disabled={pending}
-      className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-7 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-12 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
     >
       {pending ? pendingLabel : label}
     </button>

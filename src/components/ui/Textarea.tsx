@@ -18,7 +18,7 @@ export function Textarea({ label, helpText, error, className = '', id, ...rest }
         id={textareaId}
         className={`
           w-full min-h-[70px] resize-y font-sans text-ui px-[13px] py-[11px]
-          border border-warm-400 rounded-7 bg-white text-warm-950
+          border border-warm-400 rounded-12 bg-white text-warm-950
           placeholder:text-warm-600
           focus:outline-none focus:border-brand focus:shadow-focus-ring
           disabled:bg-warm-200 disabled:text-warm-500 disabled:cursor-not-allowed

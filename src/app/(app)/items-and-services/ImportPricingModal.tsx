@@ -120,7 +120,7 @@ export function ImportPricingModal({ open, onClose, onImported }: Props) {
               ref={fileInputRef}
               type="file"
               accept=".xlsx,.csv"
-              className="w-full text-ui text-warm-800 file:mr-3 file:px-3 file:py-1.5 file:rounded-7 file:border file:border-warm-400 file:bg-white file:text-ui file:font-medium hover:file:bg-warm-100"
+              className="w-full text-ui text-warm-800 file:mr-3 file:px-3 file:py-1.5 file:rounded-12 file:border file:border-warm-400 file:bg-white file:text-ui file:font-medium hover:file:bg-warm-100"
             />
           </div>
 

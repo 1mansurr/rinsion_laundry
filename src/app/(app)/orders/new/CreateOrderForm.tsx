@@ -270,7 +270,7 @@ export function CreateOrderForm({
   return (
     <div className="relative">
       {error && (
-        <div className="mb-4 bg-[#FDF1EF] border border-[#E0BBB6] rounded-7 px-4 py-3 text-ui text-error-fg">
+        <div className="mb-4 bg-[#FDF1EF] border border-[#E0BBB6] rounded-12 px-4 py-3 text-ui text-error-fg">
           {error}
         </div>
       )}
@@ -280,7 +280,7 @@ export function CreateOrderForm({
         <section>
           <p className="text-label font-medium text-warm-700 mb-2">Customer</p>
           {selectedCustomer ? (
-            <div className="flex items-center justify-between bg-white border border-warm-300 rounded-10 px-4 py-3">
+            <div className="flex items-center justify-between bg-white border border-warm-300 rounded-18 px-4 py-3">
               <div className="flex items-center gap-3">
                 <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-brand text-[#FAF8F5] text-[14px] font-semibold shrink-0">
                   {selectedCustomer.firstName[0] ?? ''}{selectedCustomer.lastName[0] ?? ''}
@@ -313,7 +313,7 @@ export function CreateOrderForm({
                 <button
                   type="button"
                   onClick={openInlineCreate}
-                  className="md:hidden mt-2.5 w-full flex items-center justify-center gap-2 border border-dashed border-warm-400 rounded-10 py-3.5 text-ui font-semibold text-brand"
+                  className="md:hidden mt-2.5 w-full flex items-center justify-center gap-2 border border-dashed border-warm-400 rounded-12 py-3.5 text-ui font-semibold text-brand"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="#0F3D2E" aria-hidden>
                     <path d="M11 5a1 1 0 1 1 2 0v6h6a1 1 0 1 1 0 2h-6v6a1 1 0 1 1-2 0v-6H5a1 1 0 1 1 0-2h6V5Z" />
@@ -322,7 +322,7 @@ export function CreateOrderForm({
                 </button>
               )}
               {showDropdown && !showInlineCreate && (
-                <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-warm-300 rounded-10 shadow-modal overflow-hidden">
+                <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-warm-300 rounded-18 shadow-modal overflow-hidden">
                   {filteredCustomers.length === 0 ? (
                     <div className="px-4 py-3 text-body text-warm-500">No customers found</div>
                   ) : (
@@ -363,7 +363,7 @@ export function CreateOrderForm({
 
               {/* Inline customer creation */}
               {showInlineCreate && (
-                <div className="mt-2 bg-white border border-warm-300 rounded-10 p-4 space-y-3">
+                <div className="mt-2 bg-white border border-warm-300 rounded-18 p-4 space-y-3">
                   <p className="text-label font-semibold text-warm-800">New customer</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -376,7 +376,7 @@ export function CreateOrderForm({
                         onChange={e => setInlineFirst(e.target.value)}
                         placeholder="Kwame"
                         autoFocus
-                        className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                        className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
                       />
                     </div>
                     <div>
@@ -388,7 +388,7 @@ export function CreateOrderForm({
                         value={inlineLast}
                         onChange={e => setInlineLast(e.target.value)}
                         placeholder="Asante"
-                        className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                        className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
                       />
                     </div>
                   </div>
@@ -402,7 +402,7 @@ export function CreateOrderForm({
                       onChange={e => setInlinePhone(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handleInlineCreate()}
                       placeholder="024 123 4567"
-                      className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                      className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
                     />
                   </div>
                   {inlineError && (
@@ -436,13 +436,13 @@ export function CreateOrderForm({
         {allowExpressOrders && (
           <div>
             <p className="text-label font-medium text-warm-700 mb-2">Priority</p>
-            <div className="flex rounded-[8px] p-1" style={{ background: '#F1ECE4' }}>
+            <div className="flex rounded-12 p-1" style={{ background: '#F1ECE4' }}>
               {(['normal', 'express', 'urgent'] as const).map(p => (
                 <button
                   key={p}
                   type="button"
                   onClick={() => setPriority(p)}
-                  className={`flex-1 py-1.5 rounded-[6px] text-[14px] capitalize transition-colors ${
+                  className={`flex-1 py-1.5 rounded-12 text-[14px] capitalize transition-colors ${
                     priority === p
                       ? 'bg-white font-semibold text-warm-950 shadow-sm'
                       : 'font-medium text-[#6B6259] hover:text-warm-800'
@@ -520,12 +520,12 @@ export function CreateOrderForm({
                           min="0.1"
                           value={line.quantity}
                           onChange={e => updateLine(i, { quantity: parseFloat(e.target.value) || 0 })}
-                          className="w-16 border border-warm-300 rounded-7 px-2 py-2 text-ui text-warm-950 text-right tnum focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                          className="w-16 border border-warm-300 rounded-12 px-2 py-2 text-ui text-warm-950 text-right tnum focus:outline-none focus:border-brand focus:shadow-focus-ring"
                         />
                         <span className="text-caption text-warm-500">kg</span>
                       </div>
                     ) : (
-                      <div className="inline-flex items-center border border-warm-300 rounded-7 overflow-hidden">
+                      <div className="inline-flex items-center border border-warm-300 rounded-12 overflow-hidden">
                         <button
                           type="button"
                           onClick={() => updateLine(i, { quantity: Math.max(1, line.quantity - 1) })}
@@ -560,7 +560,7 @@ export function CreateOrderForm({
                             updateLine(i, { unitPrice: v === '' || isNaN(parsed) ? null : parsed })
                           }}
                           placeholder={`${line.priceMin.toFixed(2)}–${line.priceMax.toFixed(2)}`}
-                          className={`w-full border rounded-7 px-2.5 py-2 text-ui text-warm-950 text-right tnum focus:outline-none focus:shadow-focus-ring ${
+                          className={`w-full border rounded-12 px-2.5 py-2 text-ui text-warm-950 text-right tnum focus:outline-none focus:shadow-focus-ring ${
                             line.unitPrice !== null && (line.unitPrice < line.priceMin || line.unitPrice > line.priceMax)
                               ? 'border-error-fg' : 'border-warm-400 focus:border-brand'
                           }`}
@@ -578,7 +578,7 @@ export function CreateOrderForm({
                       type="button"
                       onClick={() => removeLine(i)}
                       disabled={lines.length === 1}
-                      className="w-8 h-8 flex items-center justify-center text-warm-400 hover:text-error-fg disabled:opacity-0 rounded-6 hover:bg-[#FDF1EF] transition-colors"
+                      className="w-8 h-8 flex items-center justify-center text-warm-400 hover:text-error-fg disabled:opacity-0 rounded-12 hover:bg-[#FDF1EF] transition-colors"
                       aria-label="Remove line"
                     >
                       ×
@@ -591,7 +591,7 @@ export function CreateOrderForm({
                   )}
 
                   {/* Mobile card */}
-                  <div className="md:hidden bg-white border border-warm-300 rounded-10 p-4 space-y-3">
+                  <div className="md:hidden bg-white border border-warm-300 rounded-18 p-4 space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <p className="text-caption text-warm-500 mb-1">Service</p>
@@ -627,12 +627,12 @@ export function CreateOrderForm({
                             min="0.1"
                             value={line.quantity}
                             onChange={e => updateLine(i, { quantity: parseFloat(e.target.value) || 0 })}
-                            className="w-16 border border-warm-300 rounded-7 px-2 py-1.5 text-ui text-warm-950 text-right tnum focus:outline-none focus:border-brand"
+                            className="w-16 border border-warm-300 rounded-12 px-2 py-1.5 text-ui text-warm-950 text-right tnum focus:outline-none focus:border-brand"
                           />
                           <span className="text-caption text-warm-500">kg</span>
                         </div>
                       ) : (
-                        <div className="inline-flex items-center border border-warm-300 rounded-10 overflow-hidden">
+                        <div className="inline-flex items-center border border-warm-300 rounded-12 overflow-hidden">
                           <button
                             type="button"
                             onClick={() => updateLine(i, { quantity: Math.max(1, line.quantity - 1) })}
@@ -674,7 +674,7 @@ export function CreateOrderForm({
                             updateLine(i, { unitPrice: v === '' || isNaN(parsed) ? null : parsed })
                           }}
                           placeholder={`${line.priceMin.toFixed(2)}–${line.priceMax.toFixed(2)}`}
-                          className={`w-full border rounded-7 px-3 py-2 text-ui text-warm-950 text-right tnum focus:outline-none ${
+                          className={`w-full border rounded-12 px-3 py-2 text-ui text-warm-950 text-right tnum focus:outline-none ${
                             line.unitPrice !== null && (line.unitPrice < line.priceMin || line.unitPrice > line.priceMax)
                               ? 'border-error-fg' : 'border-warm-400 focus:border-brand'
                           }`}
@@ -701,7 +701,7 @@ export function CreateOrderForm({
           <button
             type="button"
             onClick={addLine}
-            className="mt-3 w-full py-2.5 border border-dashed border-warm-400 rounded-10 text-label font-medium text-warm-600 hover:border-brand hover:text-brand transition-colors"
+            className="mt-3 w-full py-2.5 border border-dashed border-warm-400 rounded-12 text-label font-medium text-warm-600 hover:border-brand hover:text-brand transition-colors"
           >
             + Add another item
           </button>
@@ -718,7 +718,7 @@ export function CreateOrderForm({
       </div>
 
       {/* Pay in advance */}
-      <section className="bg-white border border-warm-300 rounded-10 px-5 py-4">
+      <section className="bg-white border border-warm-300 rounded-18 px-5 py-4">
         <label className="flex items-center justify-between cursor-pointer">
           <div>
             <p className="text-ui font-medium text-warm-950">Customer is paying now</p>
@@ -743,7 +743,7 @@ export function CreateOrderForm({
             <select
               value={advanceMethod}
               onChange={e => setAdvanceMethod(e.target.value as PaymentMethod)}
-              className="w-full border border-warm-400 rounded-7 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
+              className="w-full border border-warm-400 rounded-12 px-3 py-[10px] text-ui text-warm-950 bg-white focus:outline-none focus:border-brand focus:shadow-focus-ring"
             >
               {PAYMENT_METHODS.map(m => (
                 <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m] ?? m}</option>
@@ -757,7 +757,7 @@ export function CreateOrderForm({
           to the viewport), so it doesn't fight the on-screen keyboard on
           mobile the way a position:fixed bar does. */}
       <div
-        className="mt-6 bg-white border border-[#E8E4DD] rounded-10 px-[22px] py-[14px]"
+        className="mt-6 bg-white border border-[#E8E4DD] rounded-18 px-[22px] py-[14px]"
         style={{ boxShadow: '0 8px 28px rgba(15,61,46,0.10)' }}
       >
         <div className="flex items-center gap-4">

@@ -100,13 +100,13 @@ export function PickupFlow() {
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="Order number, pickup code, or customer phone…"
-          className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900"
+          className="flex-1 border border-gray-300 rounded-12 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900"
           autoFocus
         />
         <button
           type="submit"
           disabled={isPending || !query.trim()}
-          className="px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
+          className="px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-12 hover:bg-gray-800 disabled:opacity-50 transition-colors"
         >
           {isPending && !selected ? 'Searching…' : 'Search'}
         </button>
@@ -118,7 +118,7 @@ export function PickupFlow() {
       )}
 
       {results !== null && results.length > 0 && !selected && (
-        <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-50">
+        <div className="bg-white rounded-18 border border-gray-200 divide-y divide-gray-50">
           {results.map(order => (
             <button
               key={order.id}
@@ -142,7 +142,7 @@ export function PickupFlow() {
 
       {/* Verify panel */}
       {selected && (
-        <div className="bg-white rounded-xl border border-gray-200">
+        <div className="bg-white rounded-18 border border-gray-200">
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-gray-900 font-mono">{selected.orderNumber}</span>
@@ -192,7 +192,7 @@ export function PickupFlow() {
               !showPaymentForm ? (
                 <button
                   onClick={() => setShowPaymentForm(true)}
-                  className="w-full border border-red-200 text-red-600 py-2 rounded-lg text-sm hover:bg-red-50 transition-colors"
+                  className="w-full border border-red-200 text-red-600 py-2 rounded-12 text-sm hover:bg-red-50 transition-colors"
                 >
                   Record Payment ({formatCurrency(owing)})
                 </button>
@@ -202,7 +202,7 @@ export function PickupFlow() {
                   <select
                     value={paymentMethod}
                     onChange={e => setPaymentMethod(e.target.value as PaymentMethod)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full border border-gray-300 rounded-12 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
                   >
                     {PAYMENT_METHODS.map(m => (
                       <option key={m} value={m}>
@@ -214,13 +214,13 @@ export function PickupFlow() {
                     <button
                       onClick={handleRecordPayment}
                       disabled={isPending}
-                      className="flex-1 bg-gray-900 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                      className="flex-1 bg-gray-900 text-white py-2 rounded-12 text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
                     >
                       {isPending ? 'Saving…' : `Confirm ${formatCurrency(owing)}`}
                     </button>
                     <button
                       onClick={() => setShowPaymentForm(false)}
-                      className="px-3 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+                      className="px-3 border border-gray-300 rounded-12 text-sm text-gray-600 hover:bg-gray-50"
                     >
                       Cancel
                     </button>
@@ -242,7 +242,7 @@ export function PickupFlow() {
                     onChange={e => setPickupCode(e.target.value.toUpperCase())}
                     placeholder="e.g. A1B2"
                     maxLength={8}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm font-mono uppercase text-gray-900 tracking-widest focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full border border-gray-300 rounded-12 px-3 py-2.5 text-sm font-mono uppercase text-gray-900 tracking-widest focus:outline-none focus:ring-2 focus:ring-gray-900"
                     autoFocus
                   />
                 </div>
@@ -252,7 +252,7 @@ export function PickupFlow() {
                 <button
                   onClick={handleCollect}
                   disabled={isPending || !pickupCode.trim()}
-                  className="w-full bg-emerald-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                  className="w-full bg-emerald-600 text-white py-2.5 rounded-12 text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 transition-colors"
                 >
                   {isPending ? 'Verifying…' : 'Mark Collected'}
                 </button>
@@ -270,7 +270,7 @@ export function PickupFlow() {
 
             {/* Success */}
             {collectSuccess && (
-              <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-4 text-center">
+              <div className="bg-green-50 border border-green-200 rounded-10 px-4 py-4 text-center">
                 <p className="text-sm font-semibold text-green-800">Order collected successfully</p>
                 <button
                   onClick={() => { setSelected(null); setResults(null); setQuery('') }}

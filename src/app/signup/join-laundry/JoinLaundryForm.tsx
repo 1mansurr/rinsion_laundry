@@ -56,7 +56,7 @@ export function JoinLaundryForm() {
             Wrong account?{' '}
             <SignOutButton className="text-brand hover:text-brand-hover underline underline-offset-2" />
           </p>
-          <div className="bg-white rounded-10 border border-warm-300 p-6 mt-6 space-y-3">
+          <div className="bg-white rounded-18 border border-warm-300 p-6 mt-6 space-y-3">
             {status.status === 'pending' && (
               <>
                 <p className="text-ui font-semibold text-warm-950">Request sent to {status.laundryName}</p>
@@ -71,7 +71,7 @@ export function JoinLaundryForm() {
                 <p className="text-body text-warm-600">{status.laundryName} approved your request.</p>
                 <button
                   onClick={() => { window.location.href = '/dashboard' }}
-                  className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-7 text-ui font-semibold hover:bg-brand-hover transition-colors mt-2"
+                  className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-12 text-ui font-semibold hover:bg-brand-hover transition-colors mt-2"
                 >
                   Go to dashboard
                 </button>
@@ -85,7 +85,7 @@ export function JoinLaundryForm() {
                 </p>
                 <button
                   onClick={() => { setSubmitted(false); setStatus(null); setPin('') }}
-                  className="w-full border border-warm-300 rounded-7 py-2.5 px-4 text-ui font-semibold text-warm-800 hover:bg-warm-50 transition-colors mt-2"
+                  className="w-full border border-warm-300 rounded-12 py-2.5 px-4 text-ui font-semibold text-warm-800 hover:bg-warm-50 transition-colors mt-2"
                 >
                   Try again
                 </button>
@@ -111,9 +111,9 @@ export function JoinLaundryForm() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-10 border border-warm-300 p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="bg-white rounded-18 border border-warm-300 p-6 space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-7 px-3 py-2 text-ui text-red-700">
+            <div className="bg-red-50 border border-red-200 rounded-12 px-3 py-2 text-ui text-red-700">
               {error}
             </div>
           )}
@@ -126,7 +126,7 @@ export function JoinLaundryForm() {
               inputMode="numeric"
               maxLength={6}
               placeholder="123456"
-              className="w-full border border-warm-300 rounded-7 px-3 py-2 text-ui text-warm-950 text-center tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+              className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 text-center tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             />
             <p className="text-caption text-warm-400 mt-1">
               Ask your laundry admin for this — it&apos;s in their Settings.
@@ -136,7 +136,7 @@ export function JoinLaundryForm() {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-7 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-12 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isPending ? 'Sending…' : 'Request to join'}
           </button>
