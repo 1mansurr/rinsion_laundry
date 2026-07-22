@@ -9,6 +9,8 @@ import { suspendLaundry } from '@/services/platform/suspendLaundry'
 import { reactivateLaundry } from '@/services/platform/reactivateLaundry'
 import type { LaundryDetail } from '@/services/platform/getLaundryDetail'
 import type { ServiceResult } from '@/types/serviceResult'
+import { Button } from '@/components/ui/Button'
+import { Banner } from '@/components/ui/Banner'
 
 export function LaundryDetailClient({ laundry }: { laundry: LaundryDetail }) {
   const router = useRouter()
@@ -34,9 +36,7 @@ export function LaundryDetailClient({ laundry }: { laundry: LaundryDetail }) {
         <p className="text-caption text-warm-500 mt-1">{laundry.laundryCode}</p>
       </div>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-12 px-4 py-3 text-ui text-red-700">{error}</div>
-      )}
+      {error && <Banner variant="destructive">{error}</Banner>}
 
       <section className="bg-white border border-warm-300 rounded-18 p-5 space-y-3">
         <p className="text-label font-medium text-warm-700">Subscription</p>
@@ -47,45 +47,29 @@ export function LaundryDetailClient({ laundry }: { laundry: LaundryDetail }) {
             <div className="flex flex-wrap items-center gap-2 pt-2">
               {sub.status === 'trialing' && (
                 <>
-                  <button
-                    onClick={() => run(() => convertTrial(laundry.id, 'starter'))}
-                    disabled={isPending}
-                    className="px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-12 hover:bg-gray-800 disabled:opacity-50"
-                  >
+                  <Button size="sm" onClick={() => run(() => convertTrial(laundry.id, 'starter'))} isPending={isPending}>
                     Convert to paid
-                  </button>
+                  </Button>
                   <input
                     type="number"
                     min={1}
                     value={extendDays}
                     onChange={e => setExtendDays(e.target.value)}
-                    className="w-16 border border-gray-300 rounded-12 px-2 py-1.5 text-xs"
+                    className="w-16 border border-warm-400 rounded-12 px-2 py-1.5 text-xs text-warm-950 focus:outline-none focus:border-brand focus:shadow-focus-ring"
                   />
-                  <button
-                    onClick={() => run(() => extendTrial(laundry.id, parseInt(extendDays, 10) || 0))}
-                    disabled={isPending}
-                    className="px-3 py-1.5 border border-gray-300 text-xs text-gray-700 rounded-12 hover:bg-gray-50 disabled:opacity-50"
-                  >
+                  <Button size="sm" variant="secondary" onClick={() => run(() => extendTrial(laundry.id, parseInt(extendDays, 10) || 0))} disabled={isPending}>
                     Extend trial (days)
-                  </button>
+                  </Button>
                 </>
               )}
               {sub.status === 'locked' ? (
-                <button
-                  onClick={() => run(() => reactivateLaundry(laundry.id))}
-                  disabled={isPending}
-                  className="px-3 py-1.5 bg-green-700 text-white text-xs font-medium rounded-12 hover:bg-green-800 disabled:opacity-50"
-                >
+                <Button size="sm" onClick={() => run(() => reactivateLaundry(laundry.id))} isPending={isPending}>
                   Reactivate
-                </button>
+                </Button>
               ) : (
-                <button
-                  onClick={() => run(() => suspendLaundry(laundry.id))}
-                  disabled={isPending}
-                  className="px-3 py-1.5 border border-red-300 text-xs text-red-700 rounded-12 hover:bg-red-50 disabled:opacity-50"
-                >
+                <Button size="sm" variant="destructive" onClick={() => run(() => suspendLaundry(laundry.id))} disabled={isPending}>
                   Suspend
-                </button>
+                </Button>
               )}
             </div>
           </>

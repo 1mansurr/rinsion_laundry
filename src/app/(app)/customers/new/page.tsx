@@ -4,6 +4,10 @@ import { useFormState, useFormStatus } from 'react-dom'
 import { createCustomer } from '@/services/customers/createCustomer'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
+import { Button } from '@/components/ui/Button'
+import { Banner } from '@/components/ui/Banner'
 
 const initialState = { error: null as string | null, customerId: null as string | null }
 
@@ -30,50 +34,30 @@ export default function NewCustomerPage() {
 
   return (
     <div className="p-6 max-w-lg mx-auto">
-      <h1 className="text-xl font-bold text-gray-900 mb-6">New Customer</h1>
+      <h1 className="text-xl font-bold text-warm-950 mb-6">New Customer</h1>
 
-      <form action={action} className="bg-white rounded-18 border border-gray-200 p-6 space-y-4">
-        {state.error && (
-          <div className="bg-red-50 border border-red-200 rounded-10 px-3 py-2 text-sm text-red-700">
-            {state.error}
+      <Card>
+        <form action={action} className="space-y-4">
+          {state.error && <Banner variant="destructive">{state.error}</Banner>}
+
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="First Name" name="firstName" placeholder="Kwame" required />
+            <Input label="Last Name" name="lastName" placeholder="Asante" required />
           </div>
-        )}
+          <Input label="Phone Number" name="phone" placeholder="024 123 4567" required />
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="First Name" name="firstName" placeholder="Kwame" required />
-          <Field label="Last Name" name="lastName" placeholder="Asante" required />
-        </div>
-        <Field label="Phone Number" name="phone" placeholder="024 123 4567" required />
+          <div className="flex gap-3 pt-2">
+            <SubmitButton />
+            <Button type="button" variant="secondary" className="flex-1" onClick={() => router.back()}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </Card>
 
-        <div className="flex gap-3 pt-2">
-          <SubmitButton />
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-12 text-sm hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
-
-      <p className="text-xs text-gray-400 mt-3 text-center">
+      <p className="text-xs text-warm-600 mt-3 text-center">
         If this phone number already exists, the existing customer will be returned.
       </p>
-    </div>
-  )
-}
-
-function Field({ label, name, placeholder, required }: {
-  label: string; name: string; placeholder?: string; required?: boolean
-}) {
-  return (
-    <div>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-      <input
-        id={name} name={name} placeholder={placeholder} required={required}
-        className="w-full border border-gray-300 rounded-12 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
-      />
     </div>
   )
 }
@@ -81,11 +65,8 @@ function Field({ label, name, placeholder, required }: {
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <button
-      type="submit" disabled={pending}
-      className="flex-1 bg-gray-900 text-white py-2.5 rounded-12 text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
-    >
-      {pending ? 'Saving…' : 'Save Customer'}
-    </button>
+    <Button type="submit" isPending={pending} className="flex-1">
+      Save Customer
+    </Button>
   )
 }
