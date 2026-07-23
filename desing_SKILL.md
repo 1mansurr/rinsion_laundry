@@ -128,7 +128,19 @@ The app also has **three parallel radius mechanisms** in play: the custom pixel 
 
 </details>
 
-## Phase 3 — Pattern gaps
+## Phase 3 — Pattern gaps — DONE
+
+**Completed.** `npm run build` and `npm run lint` are clean. No new dependency added.
+
+3.1: The SMS preview already existed in `OnboardingClient.tsx` but was inline, onboarding-only, and had two bugs: the amber threshold used a hardcoded clay hex instead of a token, and the preview text invented a "(branch)" mention the real `sendOrderReadySms.ts` template never sends. Extracted into `src/components/app/SmsPreview.tsx` + `src/utils/smsPreview.ts` (`buildOrderReadySmsPreview`), fixed both bugs, and wired it into `settings/laundry/LaundryForm.tsx` too, since that's the other place an admin edits the laundry name post-onboarding.
+
+3.2: Every `ConfirmDialog` now has a specific `confirmLabel` ("Delete customer", "Delete item type", "Delete service", "Delete order") instead of falling back to the component's generic "Delete" default — matches the verb-repeating pattern `DangerZoneClient`/`EmployeesClient` already used. Also caught `DeleteCustomerButton` hand-rolling a trigger button that duplicated `Button`'s `destructive` variant exactly — swapped to the primitive.
+
+3.3: `Toast.tsx` (a thin sonner wrapper) already supports an `action` option with zero code changes needed — wired real "Undo" actions into the delete-order, delete-customer, delete-item-type, delete-service, and remove-employee flows, all backed by `restore*` services that already existed for the Recycle Bin. Also fixed real token drift found in `Toast.tsx` itself while in there: hardcoded inline `borderRadius: '9px'` (the exact pre-Phase-1 wrong value), plus raw hex border/text colors, are now `rounded-10 border-warm-300 text-warm-950` Tailwind classes via sonner's `classNames.toast`.
+
+3.4: Spot-check found two real outline-vs-filled violations — `GlobalSearch` and `CommandPalette`'s search icons were stroke-based while `TopAppBar` and the three `*FilterBar` components already established a filled search-icon path; and `PasswordInput`'s eye/eye-off icons were stroke-based. All four now use filled icons matching the established convention. Left small compositional glyphs alone (stepper checkmarks, accordion chevrons, the brand-ring illustrations in empty states) — those are line-based by convention even in filled icon systems and aren't the primary/functional icon type the doc's rule targets.
+
+<details><summary>Original Phase 3 spec (for reference)</summary>
 
 **Goal:** A short list of things the new design system doc specifies that the app doesn't have a primitive or convention for yet. Confirmed gaps only — don't go looking for more without checking against the existing primitives list first, since most of what the doc shows already has a home in `src/components/ui/` or `src/components/app/`.
 
@@ -143,6 +155,8 @@ The app also has **three parallel radius mechanisms** in play: the custom pixel 
 **Phase 3 verification gate:**
 - Each gap above is either confirmed already covered (no work needed, note where) or closed
 - No new dependency added without a one-line justification
+
+</details>
 
 ## Phase 4 — Forward-looking: keep new features on-system
 
