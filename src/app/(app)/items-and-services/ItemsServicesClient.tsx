@@ -4,10 +4,12 @@ import { useEffect, useState, useTransition } from 'react'
 import { createItemType } from '@/services/items/createItemType'
 import { toggleItemType } from '@/services/items/toggleItemType'
 import { deleteItemType } from '@/services/items/deleteItemType'
+import { restoreItemType } from '@/services/items/restoreItemType'
 import type { ItemType } from '@/services/items/getItemTypes'
 import { createService } from '@/services/services/createService'
 import { toggleService } from '@/services/services/toggleService'
 import { deleteService } from '@/services/services/deleteService'
+import { restoreService } from '@/services/services/restoreService'
 import { setServicePricing } from '@/services/services/setServicePricing'
 import type { LaundryService } from '@/services/services/getServices'
 import { upsertPrice } from '@/services/pricing/upsertPrice'
@@ -20,6 +22,7 @@ import { Input } from '@/components/ui/Input'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Sheet } from '@/components/ui/Sheet'
+import { toast } from '@/components/ui/Toast'
 
 interface Props {
   itemTypes: ItemType[]
@@ -165,6 +168,15 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
       if (res.success) {
         setItems(prev => prev.filter(i => i.id !== target.id))
         setDeleteItemTarget(null)
+        toast.success('Item type deleted', {
+          action: {
+            label: 'Undo',
+            onClick: async () => {
+              const restoreRes = await restoreItemType(target.id)
+              if (restoreRes.success) setItems(prev => [...prev, target])
+            },
+          },
+        })
       } else {
         setDeleteError(res.error)
       }
@@ -180,6 +192,15 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
       if (res.success) {
         setServices(prev => prev.filter(s => s.id !== target.id))
         setDeleteServiceTarget(null)
+        toast.success('Service deleted', {
+          action: {
+            label: 'Undo',
+            onClick: async () => {
+              const restoreRes = await restoreService(target.id)
+              if (restoreRes.success) setServices(prev => [...prev, target])
+            },
+          },
+        })
       } else {
         setDeleteError(res.error)
       }
@@ -854,6 +875,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
         onClose={() => { setDeleteItemTarget(null); setDeleteError(null) }}
         title="Delete item type"
         message={`Delete "${deleteItemTarget?.name}"? This can be undone from Settings → Recycle Bin.`}
+        confirmLabel="Delete item type"
         isPending={isPending}
         error={deleteError}
         onConfirm={handleDeleteItem}
@@ -864,6 +886,7 @@ export function ItemsServicesClient({ itemTypes: initItems, services: initServic
         onClose={() => { setDeleteServiceTarget(null); setDeleteError(null) }}
         title="Delete service"
         message={`Delete "${deleteServiceTarget?.name}"? This can be undone from Settings → Recycle Bin.`}
+        confirmLabel="Delete service"
         isPending={isPending}
         error={deleteError}
         onConfirm={handleDeleteService}

@@ -4,6 +4,10 @@
 // Usage: import { toast } from '@/components/ui/Toast'
 //        toast.success('Order created')
 // Mount <ToastProvider /> once in layout or a root client component.
+//
+// Undo pattern ("Order deleted. [Undo]"): sonner's toast() already accepts
+// an `action` option, e.g. toast.success('Order deleted', { action: { label:
+// 'Undo', onClick: () => restoreOrder(id) } }) — no extension needed here.
 
 import { Toaster } from 'sonner'
 export { toast } from 'sonner'
@@ -16,12 +20,10 @@ export function ToastProvider() {
         style: {
           fontFamily: 'var(--font-public-sans), system-ui, sans-serif',
           fontSize: '14.5px',
-          borderRadius: '9px',
-          border: '1px solid #E8E4DD',
-          background: '#fff',
-          color: '#1A1A1A',
         },
         classNames: {
+          toast: 'rounded-10 border border-warm-300 bg-white text-warm-950',
+          actionButton: '!bg-brand !text-[#FAF8F5]',
           success: 'border-success-border',
           error: 'border-error-border',
           warning: 'border-warning-border',

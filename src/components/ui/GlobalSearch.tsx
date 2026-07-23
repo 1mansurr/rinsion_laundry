@@ -57,15 +57,11 @@ export function GlobalSearch({ className = '' }: { className?: string }) {
         width="15"
         height="15"
         viewBox="0 0 24 24"
-        fill="none"
-        stroke="#9A9088"
-        strokeWidth="2"
-        strokeLinecap="round"
+        fill="#9A9088"
         className="absolute left-3 pointer-events-none"
         aria-hidden
       >
-        <circle cx="11" cy="11" r="7" />
-        <path d="m21 21-4.35-4.35" />
+        <path d="M10 3a7 7 0 1 0 4.2 12.6l4.1 4.1a1 1 0 0 0 1.4-1.4l-4.1-4.1A7 7 0 0 0 10 3Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z" />
       </svg>
       <input
         ref={inputRef}

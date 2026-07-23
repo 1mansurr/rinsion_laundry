@@ -5,6 +5,8 @@ import { updateLaundryName } from '@/services/settings/updateLaundryName'
 import { regenerateJoinPin } from '@/services/settings/regenerateJoinPin'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { SmsPreview } from '@/components/app/SmsPreview'
+import { buildOrderReadySmsPreview } from '@/utils/smsPreview'
 
 export function LaundryForm({ currentName, laundryCode, joinPin: initJoinPin }: { currentName: string; laundryCode: string; joinPin: string }) {
   const [name, setName] = useState(currentName)
@@ -50,6 +52,11 @@ export function LaundryForm({ currentName, laundryCode, joinPin: initJoinPin }: 
         label="Laundry Name"
         value={name}
         onChange={e => { setName(e.target.value); setSuccess(false) }}
+      />
+
+      <SmsPreview
+        message={buildOrderReadySmsPreview(name)}
+        helpText="Sent to customers when their order is ready for collection."
       />
 
       {error && <p className="text-sm text-error">{error}</p>}

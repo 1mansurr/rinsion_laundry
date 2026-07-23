@@ -6,6 +6,7 @@ import { inviteEmployee } from '@/services/employees/inviteEmployee'
 import { resendInvite } from '@/services/employees/resendInvite'
 import { toggleEmployee } from '@/services/employees/toggleEmployee'
 import { removeEmployee } from '@/services/employees/removeEmployee'
+import { restoreEmployee } from '@/services/employees/restoreEmployee'
 import { deleteMyAccount } from '@/services/employees/deleteMyAccount'
 import type { Employee } from '@/services/employees/getEmployees'
 import type { PendingInvite } from '@/services/employees/getPendingInvites'
@@ -18,6 +19,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { Banner } from '@/components/ui/Banner'
+import { toast } from '@/components/ui/Toast'
 
 interface Props {
   employees: Employee[]
@@ -177,6 +179,18 @@ export function EmployeesClient({
         setEmployees(prev => prev.filter(e => e.id !== target.id))
         if (target.isActive) setActiveCount(c => c - 1)
         setRemoveTarget(null)
+        toast.success('Employee removed', {
+          action: {
+            label: 'Undo',
+            onClick: async () => {
+              const restoreRes = await restoreEmployee(target.id)
+              if (restoreRes.success) {
+                setEmployees(prev => [...prev, target])
+                if (target.isActive) setActiveCount(c => c + 1)
+              }
+            },
+          },
+        })
       } else {
         setRemoveError(res.error)
       }

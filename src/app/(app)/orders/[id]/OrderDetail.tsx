@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { updateOrderStatus } from '@/services/orders/updateOrderStatus'
 import { deleteOrder } from '@/services/orders/deleteOrder'
+import { restoreOrder } from '@/services/orders/restoreOrder'
 import { verifyAndCollect } from '@/services/orders/verifyAndCollect'
 import { recordPayment } from '@/services/payments/recordPayment'
 import { recordRefund } from '@/services/payments/recordRefund'
@@ -274,6 +275,9 @@ export function OrderDetail({
       const res = await deleteOrder(orderId)
       if (res.success) {
         router.push('/orders')
+        toast.success('Order deleted', {
+          action: { label: 'Undo', onClick: () => restoreOrder(orderId) },
+        })
       } else {
         setDeleteError(res.error)
       }
@@ -1054,6 +1058,7 @@ export function OrderDetail({
         onClose={() => { setDeleteOpen(false); setDeleteError(null) }}
         title="Delete order"
         message={`Delete ${orderNumber}? This can be undone from Settings → Recycle Bin.`}
+        confirmLabel="Delete order"
         isPending={isPending}
         error={deleteError}
         onConfirm={handleDelete}

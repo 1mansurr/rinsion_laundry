@@ -3,7 +3,10 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { deleteCustomer } from '@/services/customers/deleteCustomer'
+import { restoreCustomer } from '@/services/customers/restoreCustomer'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Button } from '@/components/ui/Button'
+import { toast } from '@/components/ui/Toast'
 
 export function DeleteCustomerButton({ customerId, customerName }: { customerId: string; customerName: string }) {
   const router = useRouter()
@@ -17,23 +20,23 @@ export function DeleteCustomerButton({ customerId, customerName }: { customerId:
       const res = await deleteCustomer(customerId)
       if (!res.success) { setError(res.error); return }
       router.push('/customers')
+      toast.success('Customer deleted', {
+        action: { label: 'Undo', onClick: () => restoreCustomer(customerId) },
+      })
     })
   }
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="inline-flex items-center bg-white text-error-fg border border-[#E0BBB6] text-ui font-semibold px-[15px] py-[10px] rounded-12 hover:bg-[#F8ECEA] transition-colors"
-      >
+      <Button variant="destructive" onClick={() => setOpen(true)}>
         Delete
-      </button>
+      </Button>
       <ConfirmDialog
         open={open}
         onClose={() => { setOpen(false); setError(null) }}
         title="Delete customer"
         message={`Delete ${customerName}? This can be undone from Settings → Recycle Bin.`}
+        confirmLabel="Delete customer"
         isPending={isPending}
         error={error}
         onConfirm={handleConfirm}

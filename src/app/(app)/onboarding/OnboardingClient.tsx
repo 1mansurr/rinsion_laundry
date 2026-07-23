@@ -14,6 +14,8 @@ import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Wordmark } from '@/components/ui/Wordmark'
 import { SignOutButton } from '@/components/ui/SignOutButton'
+import { SmsPreview } from '@/components/app/SmsPreview'
+import { buildOrderReadySmsPreview } from '@/utils/smsPreview'
 import { ImportPricingModal } from '../items-and-services/ImportPricingModal'
 
 const PRICING_MODEL_LABELS: Record<PricingModel, { label: string; description: string }> = {
@@ -32,18 +34,6 @@ interface Props {
    * it doesn't double up on the default catalog. */
   itemTypes: { id: string; name: string }[]
   services: { id: string; name: string }[]
-}
-
-function smsCharColor(len: number) {
-  if (len > 160) return 'text-error-fg'
-  if (len > 140) return 'text-[#C25A3C]'
-  return 'text-warm-500'
-}
-
-function buildSmsPreview(laundryName: string, branchName: string) {
-  const name = laundryName.trim() || '[Laundry Name]'
-  const branch = branchName.trim() || '[Branch]'
-  return `Hi [Customer]! Your laundry from ${name} (${branch}) is ready for pickup. Your code is 12345. Reply STOP to opt out.`
 }
 
 export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchId, defaultBranchName, itemTypes, services }: Props) {
@@ -84,8 +74,7 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
   const [startingTrial, startTrialTransition] = useTransition()
   const [trialError, setTrialError] = useState('')
 
-  const smsPreview = buildSmsPreview(laundryName, branchName)
-  const smsLen = smsPreview.length
+  const smsPreview = buildOrderReadySmsPreview(laundryName)
 
   async function saveStep1() {
     if (!laundryName.trim()) { setError('Laundry name is required.'); return }
@@ -262,24 +251,10 @@ export function OnboardingClient({ laundryId, defaultLaundryName, defaultBranchI
                 />
               </div>
 
-              {/* SMS preview */}
-              <div>
-                <p className="text-micro font-semibold text-warm-500 uppercase tracking-eyebrow mb-2.5">SMS preview</p>
-                <div className="bg-white border border-warm-300 rounded-18 p-3.5">
-                  <p className="bg-[#E7EEF4] text-[#1A2A33] rounded-[14px_14px_14px_4px] px-3.5 py-3 text-body leading-relaxed">
-                    {smsPreview}
-                  </p>
-                  <div className="flex items-center justify-between mt-2.5">
-                    <span className={`tnum text-caption font-medium ${smsCharColor(smsLen)}`}>
-                      {smsLen} / 160 chars · {smsLen <= 160 ? 'Fits comfortably' : 'Too long'}
-                    </span>
-                    <span className="text-caption text-warm-400">{smsLen <= 160 ? '1 SMS segment' : '2 SMS segments'}</span>
-                  </div>
-                </div>
-                <p className="text-caption text-warm-400 mt-2">
-                  Sent to customers when their order is ready for collection.
-                </p>
-              </div>
+              <SmsPreview
+                message={smsPreview}
+                helpText="Sent to customers when their order is ready for collection."
+              />
 
               <div className="flex justify-end">
                 <Button onClick={saveStep1} isPending={isPending} size="lg">
