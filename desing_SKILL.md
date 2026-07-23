@@ -98,7 +98,19 @@ The app also has **three parallel radius mechanisms** in play: the custom pixel 
 
 </details>
 
-## Phase 2 — Landing ↔ app token unification
+## Phase 2 — Landing ↔ app token unification — DONE
+
+**Completed.** `npm run build` and `npm run lint` are clean.
+
+2.0: All 8 flagged raw-gray-palette pages (`customers/new`, `settings/laundry` page + form, `settings/subscription/StartTrialButton`, `settings/workflow`, `settings/branches/BranchesClient`, `pickup/PickupFlow`, `employees/EmployeesClient`, `internal/laundries/[laundryId]/LaundryDetailClient`) are remapped onto `warm-*`/`brand`/`error`/`success`/`warning` tokens. Where a page hand-rolled markup that duplicated an existing primitive (`Button`, `Input`, `Select`, `Card`, `Banner`, `StatusBadge`), swapped to the primitive rather than just recoloring — this also fixed focus-ring/disabled/error-state drift and removed `PickupFlow`'s stale 5-state status-color map (the app is 4-state per Resolved decision #1).
+
+2.1: Audited `LandingPage.tsx` for one-off values duplicating existing tokens. Fixed the genuine duplicates: the "Your morning" and "how it works" step-3 mockups were hand-copying `status.*` hex values with slightly-off foreground colors — now reference the real `status-*` Tailwind classes. Left as deliberately bespoke (not fixed, per this phase's own "real reason to differ" carve-out): the hero/CTA gradients and drop-shadows (no token equivalent exists for multi-stop gradients), the torn-notebook illustration colors (already an established exception from Phase 1), and literal brand-color hex in inline SVG `fill`/`stroke` attributes (functionally correct value, just not expressible as a Tailwind class on an SVG attribute — low-value to refactor via `currentColor` wrapping for no visual change). `src/app/(legal)/*` was already clean — `MarkdownDoc.tsx` deliberately uses Tailwind's `prose-neutral` typography preset with brand/warm-950 overrides on headings/links/strong, not raw hex.
+
+2.2: `Wordmark` is now used everywhere, including the landing page. It was the one surface hand-rolling a `RingLogo` icon + plain "Rinsion" text lockup instead of the shared component — fixed in the desktop nav, mobile nav, mobile menu overlay, and footer (all `variant="reversed"` since they sit on dark backgrounds). Legal pages already used it correctly via `(legal)/layout.tsx`.
+
+2.3: Voice/tone spot-check against §15 — no exclamation marks or marketing-hype language found in landing page copy. Already matches "plain, warm, short." No changes needed.
+
+<details><summary>Original Phase 2 spec (for reference)</summary>
 
 **Goal:** Beyond radius, make sure the landing page and the app aren't independently reinventing the same values.
 
@@ -113,6 +125,8 @@ The app also has **three parallel radius mechanisms** in play: the custom pixel 
 **Phase 2 verification gate:**
 - Grep for raw hex values and arbitrary shadow/spacing values in `LandingPage.tsx` and the legal pages; each surviving one should have a one-line reason it can't be a token
 - Wordmark renders from the shared component everywhere
+
+</details>
 
 ## Phase 3 — Pattern gaps
 
