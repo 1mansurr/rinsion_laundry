@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { Wordmark } from '@/components/ui/Wordmark'
 
 const FAQS = [
   {
@@ -39,11 +40,25 @@ const FAQS = [
 ]
 
 const TODAY_ORDERS = [
-  { name: 'Ama Owusu', order: 'ORD-4KP7MX2A', status: 'Ready', pillBg: '#E3EDE8', pillFg: '#0F3D2E', dot: '#0F3D2E', ready: 'Ready by 28 Jun', readyColor: '#57514A', bg: '#FFFFFF' },
-  { name: 'Kwabena Mensah', order: 'ORD-3J8LTRNX', status: 'Processing', pillBg: '#F7EFD9', pillFg: '#6B4A10', dot: '#B8801F', ready: 'Ready by 29 Jun', readyColor: '#57514A', bg: '#FFFFFF' },
-  { name: 'Akosua Boateng', order: 'ORD-M6YJT9ZK', status: 'Received', pillBg: '#EEEAE3', pillFg: '#4A443C', dot: '#8C857B', ready: 'Overdue', readyColor: '#A8382F', bg: '#FBF6F4' },
-  { name: 'Yaw Darko', order: 'ORD-LE97YSNY', status: 'Collected', pillBg: '#EAEDE9', pillFg: '#455749', dot: '#5E7A6B', ready: 'Ready by 27 Jun', readyColor: '#57514A', bg: '#FFFFFF' },
+  { name: 'Ama Owusu', order: 'ORD-4KP7MX2A', status: 'ready' as const, label: 'Ready', ready: 'Ready by 28 Jun', overdue: false },
+  { name: 'Kwabena Mensah', order: 'ORD-3J8LTRNX', status: 'processing' as const, label: 'Processing', ready: 'Ready by 29 Jun', overdue: false },
+  { name: 'Akosua Boateng', order: 'ORD-M6YJT9ZK', status: 'received' as const, label: 'Received', ready: 'Overdue', overdue: true },
+  { name: 'Yaw Darko', order: 'ORD-LE97YSNY', status: 'collected' as const, label: 'Collected', ready: 'Ready by 27 Jun', overdue: false },
 ]
+
+const STATUS_PILL_CLASSES: Record<(typeof TODAY_ORDERS)[number]['status'], string> = {
+  ready: 'bg-status-ready-bg text-status-ready-fg',
+  processing: 'bg-status-processing-bg text-status-processing-fg',
+  received: 'bg-status-received-bg text-status-received-fg',
+  collected: 'bg-status-collected-bg text-status-collected-fg',
+}
+
+const STATUS_DOT_CLASSES: Record<(typeof TODAY_ORDERS)[number]['status'], string> = {
+  ready: 'bg-status-ready-dot',
+  processing: 'bg-status-processing-dot',
+  received: 'bg-status-received-dot',
+  collected: 'bg-status-collected-dot',
+}
 
 const CheckIcon = ({ className = '', fill = '#0F3D2E' }: { className?: string; fill?: string }) => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill={fill} className={`flex-none mt-[5px] ${className}`} aria-hidden="true">
@@ -145,9 +160,8 @@ export function LandingPage() {
 
         <div className="relative z-20 mx-auto max-w-[1160px] px-[clamp(20px,5vw,40px)] pt-[22px]">
           <nav className="hidden md:flex items-center gap-7">
-            <a href="#top" className="flex items-center gap-2 text-canvas font-extrabold text-[22px] tracking-[-0.04em]">
-              <RingLogo size={20} />
-              Rinsion
+            <a href="#top" className="flex items-center">
+              <Wordmark size="sm" variant="reversed" />
             </a>
             <a href="#top" className="text-canvas font-bold text-[15px] py-1.5 px-0.5 border-b-2 border-clay">Home</a>
             <a href="#how" className="text-canvas/70 font-medium text-[15px] py-1.5 px-0.5">How it works</a>
@@ -156,9 +170,8 @@ export function LandingPage() {
           </nav>
 
           <nav className="flex md:hidden items-center justify-between">
-            <a href="#top" className="flex items-center gap-2 text-canvas font-extrabold text-[21px] tracking-[-0.04em]">
-              <RingLogo size={19} />
-              Rinsion
+            <a href="#top" className="flex items-center">
+              <Wordmark size="sm" variant="reversed" />
             </a>
             <button
               onClick={() => setMenuOpen(true)}
@@ -436,7 +449,7 @@ export function LandingPage() {
                       <div className="px-4 pb-4">
                         <div className="flex justify-between items-center py-2.5 border-b border-warm-200">
                           <span><span className="text-[13px] font-bold">Kwame</span><br /><span className="tnum text-[10.5px] text-warm-700">ORD-LE97YSNY</span></span>
-                          <span className="text-right"><span className="inline-flex items-center gap-1 bg-[#EAEDE9] text-[#455749] rounded-full text-[10.5px] font-bold px-2.5 py-[3px]"><span className="w-1.5 h-1.5 rounded-full bg-[#5E7A6B]" />Collected</span><br /><span className="tnum text-xs font-bold">GHS 60.00</span></span>
+                          <span className="text-right"><span className="inline-flex items-center gap-1 bg-status-collected-bg text-status-collected-fg rounded-full text-[10.5px] font-bold px-2.5 py-[3px]"><span className="w-1.5 h-1.5 rounded-full bg-status-collected-dot" />Collected</span><br /><span className="tnum text-xs font-bold">GHS 60.00</span></span>
                         </div>
                         <div className="flex justify-between items-center py-2.5 border-b border-warm-200">
                           <span><span className="text-[13px] font-bold">Ama Owusu</span><br /><span className="tnum text-[10.5px] text-warm-700">ORD-3J8LTRNX</span></span>
@@ -444,7 +457,7 @@ export function LandingPage() {
                         </div>
                         <div className="flex justify-between items-center py-2.5">
                           <span><span className="text-[13px] font-bold">Zoya</span><br /><span className="tnum text-[10.5px] text-warm-700">ORD-M6YJT9ZK</span></span>
-                          <span className="text-right"><span className="inline-flex items-center gap-1 bg-[#F7EFD9] text-[#6B4A10] rounded-full text-[10.5px] font-bold px-2.5 py-[3px]"><span className="w-1.5 h-1.5 rounded-full bg-[#B8801F]" />Processing</span><br /><span className="tnum text-xs font-bold">GHS 30.00</span></span>
+                          <span className="text-right"><span className="inline-flex items-center gap-1 bg-status-processing-bg text-status-processing-fg rounded-full text-[10.5px] font-bold px-2.5 py-[3px]"><span className="w-1.5 h-1.5 rounded-full bg-status-processing-dot" />Processing</span><br /><span className="tnum text-xs font-bold">GHS 30.00</span></span>
                         </div>
                       </div>
                     </div>
@@ -509,14 +522,14 @@ export function LandingPage() {
               </div>
             </div>
             {TODAY_ORDERS.map((o) => (
-              <div key={o.order} className="flex items-center justify-between gap-3 px-[22px] py-[15px] border-b border-warm-200 last:border-b-0" style={{ background: o.bg }}>
+              <div key={o.order} className={`flex items-center justify-between gap-3 px-[22px] py-[15px] border-b border-warm-200 last:border-b-0 ${o.overdue ? 'bg-warm-50' : 'bg-white'}`}>
                 <div className="min-w-0"><div className="text-[14.5px] font-semibold">{o.name}</div><div className="tnum text-xs text-warm-800">{o.order}</div></div>
                 <div className="text-right flex-none">
-                  <span className="inline-flex items-center gap-1.5 rounded-full px-[11px] py-1 text-xs font-bold" style={{ background: o.pillBg, color: o.pillFg }}>
-                    <span className="w-[7px] h-[7px] rounded-full" style={{ background: o.dot }} />
-                    {o.status}
+                  <span className={`inline-flex items-center gap-1.5 rounded-full px-[11px] py-1 text-xs font-bold ${STATUS_PILL_CLASSES[o.status]}`}>
+                    <span className={`w-[7px] h-[7px] rounded-full ${STATUS_DOT_CLASSES[o.status]}`} />
+                    {o.label}
                   </span>
-                  <div className="tnum text-xs mt-[3px]" style={{ color: o.readyColor }}>{o.ready}</div>
+                  <div className={`tnum text-xs mt-[3px] ${o.overdue ? 'text-error' : 'text-warm-800'}`}>{o.ready}</div>
                 </div>
               </div>
             ))}
@@ -637,9 +650,8 @@ export function LandingPage() {
       {/* ============ FOOTER ============ */}
       <footer className="bg-warm-950 text-[#A8A29A]">
         <div className="max-w-[1120px] mx-auto px-[clamp(20px,5vw,40px)] py-[30px] flex items-center justify-between gap-4 flex-wrap">
-          <a href="#top" className="flex items-center gap-2 text-canvas font-extrabold text-[21px] tracking-[-0.04em]">
-            <RingLogo size={19} />
-            Rinsion
+          <a href="#top" className="flex items-center">
+            <Wordmark size="sm" variant="reversed" />
           </a>
           <div className="flex gap-[22px] flex-wrap">
             <Link href="/privacy" className="text-[13px] text-[#A8A29A] hover:text-canvas transition">Privacy policy</Link>
@@ -656,9 +668,8 @@ export function LandingPage() {
       {menuOpen && (
         <div className="fixed inset-0 z-[100] bg-[linear-gradient(168deg,#124a38,#0F3D2E)] text-canvas flex flex-col px-[clamp(20px,6vw,32px)] py-[22px]">
           <div className="flex items-center justify-between">
-            <span className="flex items-center gap-2 font-extrabold text-[21px] tracking-[-0.04em]">
-              <RingLogo size={19} />
-              Rinsion
+            <span className="flex items-center">
+              <Wordmark size="sm" variant="reversed" />
             </span>
             <button
               onClick={() => setMenuOpen(false)}
