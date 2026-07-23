@@ -158,13 +158,13 @@ The app also has **three parallel radius mechanisms** in play: the custom pixel 
 
 </details>
 
-## Phase 4 — Forward-looking: keep new features on-system
+## Phase 4 — Forward-looking: keep new features on-system — DONE
 
-**Goal:** Since more features are coming, make it cheap to stay aligned instead of drifting again.
+**Completed.**
 
-4.1 Add a short "component checklist" note to `src/components/ui/README.md` (which already exists and documents the primitives): before adding new inline styling to a screen, check whether `Button`/`Card`/`Modal`/`Sheet`/`Banner`/`EmptyState`/`StatusBadge` already covers it. This file is the fastest way for future-session-Claude (or Mansur) to avoid reinventing a primitive that already exists — it should stay current as primitives are touched in Phases 1–3.
+4.1: `src/components/ui/README.md` now opens with the component-checklist note, and was brought current with everything touched across Phases 1–3 — added the previously-undocumented `ConfirmDialog`, `PasswordInput`, `SearchableSelect`, `UrlPagination`, `PageSkeleton`/`CardSkeleton`, `SignOutButton`, and the new `SmsPreview`/`RestrictedCard`/`UnauthorizedNotice`/`CreateOrderFab` app components; fixed two stale entries (`Card`'s radius was documented as 10px, it's 18px; `StatusBadge`'s status list still included the retired `confirmed` state).
 
-4.2 No new radius, color, or shadow values get introduced outside `tailwind.config.ts`'s theme going forward — arbitrary-value classes (`rounded-[Npx]`, inline hex) are the thing this whole pass is cleaning up; reintroducing them defeats it.
+4.2: No action needed — this is a standing rule, not a task. It held throughout Phases 1–3: every fix in this pass consumed an existing token or added one to `tailwind.config.ts`/a shared util rather than introducing a new arbitrary value.
 
 ## Verification, overall
 
