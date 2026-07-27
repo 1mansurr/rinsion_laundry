@@ -10,17 +10,17 @@ export const PLANS = {
   trial: {
     price: 0,
     dailyRate: 0,
-    employeeLimit: 6,   // owner + up to 5 staff
+    employeeLimit: 5,   // owner + up to 4 staff
     branchLimit: 1,
-    smsQuota: 400,
+    smsQuota: 350,
     durationDays: 14,
   },
   starter: {
-    price: 120,          // GHS 120/month
-    dailyRate: 4,        // 120 / 30
-    employeeLimit: 6,    // owner + up to 5 staff
+    price: 90,           // GHS 90/month
+    dailyRate: 3,        // 90 / 30
+    employeeLimit: 5,    // owner + up to 4 staff
     branchLimit: 1,
-    smsQuota: 400,
+    smsQuota: 350,
   },
   // Retired — Rinsion is a single-plan product now (never sold to a real
   // laundry). Kept only because the DB enum (subscription_plan) and

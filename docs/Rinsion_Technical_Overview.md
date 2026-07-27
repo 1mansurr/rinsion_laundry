@@ -860,7 +860,7 @@ prorate_amount = days_remaining × (new_plan_daily_rate - current_plan_daily_rat
 
 Where:
 
-* Starter daily rate: GHS 4 (= GHS 120 / 30)
+* Starter daily rate: GHS 3 (= GHS 90 / 30)
 * Growth daily rate: GHS 6 (= GHS 180 / 30)
 
 Flow:
@@ -1205,11 +1205,11 @@ Gated by a hardcoded email allowlist in `lib/internal-admins.ts`. Only Rinsion t
 
 # **23. Trial Restrictions**
 
-Trial accounts receive Starter-tier access for 14 days (5 employees, 1 branch, 400 SMS) — this keeps the post-trial transition to a paid plan a lateral move rather than a downgrade. The subscription record is created with:
+Trial accounts receive Starter-tier access for 14 days (4 employees, 1 branch, 350 SMS) — this keeps the post-trial transition to a paid plan a lateral move rather than a downgrade. The subscription record is created with:
 
 * `plan = trial`
 * `status = trialing`
-* `sms_quota = 300`
+* `sms_quota = 350`
 * `cycle_start_date = signup_date`
 * `cycle_end_date = signup_date + 14 days`
 

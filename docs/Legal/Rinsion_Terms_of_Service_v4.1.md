@@ -39,8 +39,8 @@ Rinsion is offered on the plan below at signup. Current pricing and allowances a
 
 | Plan | Price | Billing cycle | Staff accounts | SMS included per cycle |
 |---|---|---|---|---|
-| Trial | Free | 14 days, one time | 5 | 400 |
-| Starter | GHS 120 per month | 30 days | 5 | 400 |
+| Trial | Free | 14 days, one time | 4 | 350 |
+| Starter | GHS 90 per month | 30 days | 4 | 350 |
 
 **Growth** (GHS 180 per month, 30-day cycle, 9 staff accounts, 800 SMS per cycle) is a higher-limit plan for laundries that outgrow Starter. It is not available as a self-serve signup or upgrade — contact us directly and we will move your subscription onto it manually.
 
