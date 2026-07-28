@@ -34,12 +34,16 @@ export async function searchOrders(laundryId: string, query: string): Promise<Or
     }
   }
 
-  // Search by order number and pickup code
+  // Search by order number and pickup code. Draft orders (Product B customer
+  // submissions awaiting pickup approval) are excluded — this powers the
+  // staff walk-in collection search (searchForPickup.ts), and a draft order
+  // hasn't even been received by the laundry yet.
   const { data: byOrder } = await supabase
     .from('orders')
     .select(orderSelect)
     .eq('laundry_id', laundryId)
     .is('deleted_at', null)
+    .neq('status', 'draft')
     .or(`order_number.ilike.*${q}*,pickup_code.ilike.*${q}*`)
     .order('created_at', { ascending: false })
     .limit(20)
@@ -74,6 +78,7 @@ export async function searchOrders(laundryId: string, query: string): Promise<Or
       .select(orderSelect)
       .eq('laundry_id', laundryId)
       .is('deleted_at', null)
+      .neq('status', 'draft')
       .in('customer_id', customerIds)
       .order('created_at', { ascending: false })
       .limit(20)

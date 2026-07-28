@@ -4,7 +4,7 @@ import { GlobalSearch } from './ui/GlobalSearch'
 import { signOut } from '@/app/login/actions'
 import type { MyProfile } from '@/services/employees/getMyProfile'
 
-export function Sidebar({ profile }: { profile: MyProfile }) {
+export function Sidebar({ profile, showPickupRequests = false }: { profile: MyProfile; showPickupRequests?: boolean }) {
   const initials = `${profile.firstName[0] ?? ''}${profile.lastName[0] ?? ''}`.toUpperCase()
 
   return (
@@ -18,7 +18,7 @@ export function Sidebar({ profile }: { profile: MyProfile }) {
         <GlobalSearch />
       </div>
 
-      <SidebarNav role={profile.role} />
+      <SidebarNav role={profile.role} showPickupRequests={showPickupRequests} />
 
       <div className="px-4 py-4 border-t border-warm-200">
         <div className="flex items-center gap-2.5 mb-3">

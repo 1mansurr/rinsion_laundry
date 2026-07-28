@@ -6,28 +6,43 @@ import type { EmployeeRole } from '@/constants/statuses'
 
 type NavItem = { href: string; label: string } | null
 
-const ADMIN_NAV: NavItem[] = [
-  { href: '/dashboard',          label: 'Dashboard' },
-  { href: '/orders',             label: 'Orders' },
-  { href: '/customers',          label: 'Customers' },
-  { href: '/payments',           label: 'Payments' },
-  null,
-  { href: '/employees',          label: 'Team' },
-  { href: '/items-and-services', label: 'Items & Services' },
-  { href: '/reports',            label: 'Reports' },
-  { href: '/settings',           label: 'Settings' },
-]
+// Pickup Requests (Product B — docs/customer-portal+rider.md) only shows up
+// for laundries with settings.allow_customer_submissions on. Hidden by
+// default, deliberately not tied to the existing /pickup route (staff walk-in
+// collection verification, unrelated) — see the naming note in
+// 20240037000000_customer_accounts_and_logistics.sql.
+function buildAdminNav(showPickupRequests: boolean): NavItem[] {
+  const nav: NavItem[] = [
+    { href: '/dashboard',          label: 'Dashboard' },
+    { href: '/orders',             label: 'Orders' },
+    { href: '/customers',          label: 'Customers' },
+    { href: '/payments',           label: 'Payments' },
+  ]
+  if (showPickupRequests) nav.push({ href: '/pickup-requests', label: 'Pickup Requests' })
+  nav.push(
+    null,
+    { href: '/employees',          label: 'Team' },
+    { href: '/items-and-services', label: 'Items & Services' },
+    { href: '/reports',            label: 'Reports' },
+    { href: '/settings',           label: 'Settings' },
+  )
+  return nav
+}
 
-const EMPLOYEE_NAV: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/orders',    label: 'Orders' },
-  { href: '/customers', label: 'Customers' },
-  { href: '/payments',  label: 'Payments' },
-]
+function buildEmployeeNav(showPickupRequests: boolean): NavItem[] {
+  const nav: NavItem[] = [
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/orders',    label: 'Orders' },
+    { href: '/customers', label: 'Customers' },
+    { href: '/payments',  label: 'Payments' },
+  ]
+  if (showPickupRequests) nav.push({ href: '/pickup-requests', label: 'Pickup Requests' })
+  return nav
+}
 
-export function SidebarNav({ role }: { role: EmployeeRole }) {
+export function SidebarNav({ role, showPickupRequests = false }: { role: EmployeeRole; showPickupRequests?: boolean }) {
   const pathname = usePathname()
-  const nav = role === 'admin' ? ADMIN_NAV : EMPLOYEE_NAV
+  const nav = role === 'admin' ? buildAdminNav(showPickupRequests) : buildEmployeeNav(showPickupRequests)
 
   return (
     <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">

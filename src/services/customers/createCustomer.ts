@@ -13,6 +13,7 @@ export async function createCustomer(input: {
   firstName: string
   lastName: string
   phone: string
+  location?: string
 }): Promise<ServiceResult<Customer>> {
   const supabase = createClient()
   const profile = await getMyProfile()
@@ -61,6 +62,7 @@ export async function createCustomer(input: {
       last_name: encryptField(input.lastName.trim()),
       phone: encryptField(normalizedPhone),
       phone_bidx: phoneBidx,
+      location: input.location?.trim() ? encryptField(input.location.trim()) : null,
     })
     .select('id, customer_code, first_name, last_name, phone, location, last_visit_date, created_at')
     .single()

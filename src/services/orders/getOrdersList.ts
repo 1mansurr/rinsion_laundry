@@ -71,7 +71,11 @@ export async function getOrdersList(
     .order('created_at', { ascending: false })
     .range(from, to)
 
+  // Draft orders (Product B customer submissions awaiting pickup approval)
+  // stay out of the main Orders list — they only surface in
+  // (app)/pickup-requests until approved and moved to 'received'.
   if (status && status !== 'all') query = query.eq('status', status)
+  else query = query.neq('status', 'draft')
 
   if (q) {
     const custIds = matchedCustomerIds ?? []

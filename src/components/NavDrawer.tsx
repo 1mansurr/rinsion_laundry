@@ -21,37 +21,49 @@ const ICONS = {
   itemsServices: 'M12.4 2.4 21 11l-9.6 9.6a2 2 0 0 1-2.8 0L3 15V3h12l-.6-.6ZM7 8a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z',
   reports: 'M5 21V10h3v11H5Zm6 0V3h3v18h-3Zm6 0v-7h3v7h-3Z',
   settings: 'M19.14 12.94a7.14 7.14 0 0 0 .06-.94 7.14 7.14 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.7 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.62-.06.94s.02.63.06.94L2.82 14.5a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.4.32.61.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.23.09.47 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.56ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z',
+  pickupRequests: 'M12 2 2 7v10l10 5 10-5V7l-10-5zm0 2.2 6.9 3.4L12 11l-6.9-3.4L12 4.2zM4 8.9l7 3.5v7.4l-7-3.5V8.9zm9 10.9v-7.4l7-3.5v7.4l-7 3.5z',
 }
 
-const ADMIN_ITEMS: NavItem[] = [
+// Pickup Requests (Product B) is inserted conditionally — see SidebarNav.tsx's
+// note on why this is gated behind settings.allow_customer_submissions and
+// kept distinct from the existing (unrelated) /pickup route.
+const ADMIN_BASE_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: ICONS.dashboard },
   { href: '/orders', label: 'Orders', icon: ICONS.orders },
   { href: '/customers', label: 'Customers', icon: ICONS.customers },
   { href: '/payments', label: 'Payments', icon: ICONS.payments },
+]
+
+const ADMIN_TAIL_ITEMS: NavItem[] = [
   { href: '/employees', label: 'Team', icon: ICONS.team },
   { href: '/items-and-services', label: 'Items & Services', icon: ICONS.itemsServices },
   { href: '/reports', label: 'Reports', icon: ICONS.reports },
   { href: '/settings', label: 'Settings', icon: ICONS.settings },
 ]
 
-const EMPLOYEE_ITEMS: NavItem[] = [
+const EMPLOYEE_BASE_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: ICONS.dashboard },
   { href: '/orders', label: 'Orders', icon: ICONS.orders },
   { href: '/customers', label: 'Customers', icon: ICONS.customers },
   { href: '/payments', label: 'Payments', icon: ICONS.payments },
 ]
 
+const PICKUP_REQUESTS_ITEM: NavItem = { href: '/pickup-requests', label: 'Pickup Requests', icon: ICONS.pickupRequests }
+
 interface Props {
   open: boolean
   onClose: () => void
   profile: MyProfile
+  showPickupRequests?: boolean
 }
 
-export function NavDrawer({ open, onClose, profile }: Props) {
+export function NavDrawer({ open, onClose, profile, showPickupRequests = false }: Props) {
   const pathname = usePathname()
   if (!open) return null
 
-  const items = profile.role === 'admin' ? ADMIN_ITEMS : EMPLOYEE_ITEMS
+  const items = profile.role === 'admin'
+    ? (showPickupRequests ? [...ADMIN_BASE_ITEMS, PICKUP_REQUESTS_ITEM, ...ADMIN_TAIL_ITEMS] : [...ADMIN_BASE_ITEMS, ...ADMIN_TAIL_ITEMS])
+    : (showPickupRequests ? [...EMPLOYEE_BASE_ITEMS, PICKUP_REQUESTS_ITEM] : EMPLOYEE_BASE_ITEMS)
   const initials = `${profile.firstName[0] ?? ''}${profile.lastName[0] ?? ''}`.toUpperCase()
 
   return (

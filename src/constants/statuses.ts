@@ -3,19 +3,26 @@
  *
  * Order and payment status constants.
  *
- * Note: 'draft' and 'confirmed' exist in the database enum but are NOT
- * included here. Draft is reserved for future Product B customer
- * submissions. 'confirmed' was retired (see
+ * Note: 'confirmed' exists in the database enum but is NOT included here —
+ * it was retired (see
  * supabase/migrations/20240032000000_retire_confirmed_order_status.sql) —
  * it never gated any behavior (no SMS, no payment check, nothing) and
  * createOrder.ts already locks items/pricing before an order row exists, so
  * the event 'confirmed' was meant to capture had already happened by
  * definition. Product A orders always start at 'received'.
  *
+ * 'draft' (Product B customer submissions, docs/customer-portal+rider.md) IS
+ * included: a draft order only ever reaches 'received' via the dedicated
+ * pickup-completion service (confirmPickupArrival.ts), never through the
+ * generic staff "Advance" action — OrderDetail.tsx's own STATUS_NEXT map
+ * (independent of ORDER_STATUS_TRANSITIONS) has no 'draft' entry, so no
+ * manual dropdown ever offers it. Don't add one there.
+ *
  * Spec reference: Rinsion_Business_Overview.md → Order Lifecycle
  */
 
 export const ORDER_STATUSES = [
+  'draft',
   'received',
   'processing',
   'ready',
@@ -27,6 +34,7 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number]
 
 /** Valid forward transitions (Cancelled is always available as an alternative) */
 export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  draft:      ['received', 'cancelled'],
   received:   ['processing', 'cancelled'],
   processing: ['ready', 'cancelled'],
   ready:      ['collected', 'cancelled'],

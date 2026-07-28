@@ -6,6 +6,7 @@ import { getSoleBranchId } from '@/services/branches/getSoleBranchId'
 import { requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { generatePickupCode } from '@/utils/generatePickupCode'
+import { validatePriceRanges } from '@/services/pricing/validatePriceRanges'
 import { encryptField } from '@/lib/crypto'
 import type { OrderPriority, PricingMode } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
@@ -43,57 +44,8 @@ export async function createOrder(input: CreateOrderInput): Promise<ServiceResul
   // client completely with no check at all — this closes that gap for both
   // range and fixed-price rows (a fixed row collapses to an exact-match
   // check since min === max, which the current UI can never violate anyway).
-  const perItemItems = input.items.filter(i => i.pricingMode !== 'per_kg')
-  const perKgServiceIds = Array.from(new Set(input.items.filter(i => i.pricingMode === 'per_kg').map(i => i.serviceId)))
-  const itemTypeIds = Array.from(new Set(perItemItems.map(i => i.itemTypeId).filter((id): id is string => !!id)))
-  const perItemServiceIds = Array.from(new Set(perItemItems.map(i => i.serviceId)))
-
-  const [{ data: priceRows }, { data: kgRows }] = await Promise.all([
-    itemTypeIds.length > 0
-      ? supabase
-          .from('item_service_prices')
-          .select('item_type_id, service_id, min_price, max_price')
-          .eq('laundry_id', emp.laundry_id)
-          .eq('is_active', true)
-          .in('item_type_id', itemTypeIds)
-          .in('service_id', perItemServiceIds)
-      : Promise.resolve({ data: [] as { item_type_id: string; service_id: string; min_price: number; max_price: number }[] }),
-    perKgServiceIds.length > 0
-      ? supabase
-          .from('services')
-          .select('id, min_kg_rate, max_kg_rate')
-          .eq('laundry_id', emp.laundry_id)
-          .in('id', perKgServiceIds)
-      : Promise.resolve({ data: [] as { id: string; min_kg_rate: number | null; max_kg_rate: number | null }[] }),
-  ])
-
-  const priceByKey = new Map(
-    (priceRows ?? []).map(r => [`${r.item_type_id}:${r.service_id}`, { min: Number(r.min_price), max: Number(r.max_price) }])
-  )
-  const kgRateById = new Map(
-    (kgRows ?? []).map(r => [r.id, { min: r.min_kg_rate !== null ? Number(r.min_kg_rate) : null, max: r.max_kg_rate !== null ? Number(r.max_kg_rate) : null }])
-  )
-
-  for (const item of input.items) {
-    if (item.pricingMode === 'per_kg') {
-      const rate = kgRateById.get(item.serviceId)
-      if (!rate || rate.min === null || rate.max === null) {
-        return { success: false, error: 'Price not found for the selected service. Refresh and try again.' }
-      }
-      if (!priceWithinRange(item.unitPrice, rate.min, rate.max)) {
-        return { success: false, error: `Price must be between GHS ${rate.min.toFixed(2)} and GHS ${rate.max.toFixed(2)} (submitted GHS ${item.unitPrice.toFixed(2)}).` }
-      }
-    } else {
-      if (!item.itemTypeId) return { success: false, error: 'Missing item type for a per-item line.' }
-      const range = priceByKey.get(`${item.itemTypeId}:${item.serviceId}`)
-      if (!range) {
-        return { success: false, error: 'Price not found for the selected item. Refresh and try again.' }
-      }
-      if (!priceWithinRange(item.unitPrice, range.min, range.max)) {
-        return { success: false, error: `Price must be between GHS ${range.min.toFixed(2)} and GHS ${range.max.toFixed(2)} (submitted GHS ${item.unitPrice.toFixed(2)}).` }
-      }
-    }
-  }
+  const priceError = await validatePriceRanges(supabase, emp.laundry_id, input.items)
+  if (priceError) return { success: false, error: priceError.error }
 
   const { data: settingsRow } = await supabase
     .from('settings')
@@ -168,13 +120,8 @@ export async function createOrder(input: CreateOrderInput): Promise<ServiceResul
   }
 }
 
-// Integer-cents comparison avoids float rounding false-positives against DECIMAL(10,2) columns.
-function priceWithinRange(value: number, min: number, max: number): boolean {
-  const cents = Math.round(value * 100)
-  return cents >= Math.round(min * 100) && cents <= Math.round(max * 100)
-}
-
-function generateOrderNumber(): string {
+// Exported so submitCustomerOrder.ts can reuse it rather than duplicating.
+export function generateOrderNumber(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   let code = 'ORD-'
   for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)]

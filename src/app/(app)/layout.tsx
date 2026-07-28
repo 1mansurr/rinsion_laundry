@@ -10,6 +10,7 @@ import { UnauthorizedNotice } from '@/components/app/UnauthorizedNotice'
 import { ProfileProvider } from '@/contexts/ProfileContext'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
+import { getSettings } from '@/services/settings/getSettings'
 
 type BannerVariant = 'info' | 'warning' | 'destructive'
 
@@ -25,6 +26,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   const subscription = await getActiveSubscription(profile.laundryId)
+  const settings = await getSettings()
+  const showPickupRequests = settings?.allowCustomerSubmissions ?? false
 
   const bannerConfig: { text: string; variant: BannerVariant } | null = (() => {
     if (!subscription) return { text: 'No active subscription. Contact Rinsion to activate your trial.', variant: 'warning' }
@@ -40,9 +43,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <ProfileProvider profile={profile}>
       <div className="flex h-dvh bg-canvas">
-        <Sidebar profile={profile} />
+        <Sidebar profile={profile} showPickupRequests={showPickupRequests} />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <MobileChrome profile={profile} subscriptionLocked={subscriptionLocked} />
+          <MobileChrome profile={profile} subscriptionLocked={subscriptionLocked} showPickupRequests={showPickupRequests} />
           <Suspense fallback={null}>
             <UnauthorizedNotice />
           </Suspense>
@@ -53,7 +56,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           )}
           <MainScrollArea>{children}</MainScrollArea>
         </div>
-        <BottomTabBar role={profile.role} />
+        <BottomTabBar role={profile.role} showPickupRequests={showPickupRequests} />
         <CommandPalette />
       </div>
     </ProfileProvider>

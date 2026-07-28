@@ -89,6 +89,18 @@ export const ACTIVITY_ACTION_TYPES = {
   CUSTOMER_ANONYMIZED:              'CUSTOMER_ANONYMIZED',
   EMPLOYEE_ANONYMIZED:              'EMPLOYEE_ANONYMIZED',
   PASSWORD_RESET_COMPLETED:         'PASSWORD_RESET_COMPLETED',
+  // Product B — docs/customer-portal+rider.md. PICKUP_REQUESTED is also
+  // inserted directly (as a literal string) inside create_pickup_request_tx
+  // (20240039000000) since that's plpgsql, not TS — listed here too so the
+  // full set of action types is documented in one place.
+  PICKUP_REQUESTED:                 'PICKUP_REQUESTED',
+  PICKUP_APPROVED:                  'PICKUP_APPROVED',
+  PICKUP_DELAYED:                   'PICKUP_DELAYED',
+  PICKUP_REJECTED:                  'PICKUP_REJECTED',
+  PICKUP_COMPLETED:                 'PICKUP_COMPLETED',
+  RIDER_ASSIGNED:                   'RIDER_ASSIGNED',
+  DELIVERY_REQUESTED:               'DELIVERY_REQUESTED',
+  DELIVERY_COMPLETED:               'DELIVERY_COMPLETED',
 } as const
 
 export type ActivityActionType = (typeof ACTIVITY_ACTION_TYPES)[keyof typeof ACTIVITY_ACTION_TYPES]

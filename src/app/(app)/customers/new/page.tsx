@@ -19,6 +19,7 @@ async function createCustomerAction(
     firstName: formData.get('firstName') as string,
     lastName: formData.get('lastName') as string,
     phone: formData.get('phone') as string,
+    location: (formData.get('location') as string) || undefined,
   })
   if (result.success) return { error: null, customerId: result.data.id }
   return { error: result.error, customerId: null }
@@ -45,6 +46,7 @@ export default function NewCustomerPage() {
             <Input label="Last Name" name="lastName" placeholder="Asante" required />
           </div>
           <Input label="Phone Number" name="phone" placeholder="024 123 4567" required />
+          <Input label="Location (optional)" name="location" placeholder="e.g. Hall 7, KNUST" />
 
           <div className="flex gap-3 pt-2">
             <SubmitButton />

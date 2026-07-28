@@ -13,9 +13,10 @@ interface Props {
   profile: MyProfile
   /** Dashboard's own lockout screen replaces order-taking entirely — the FAB shouldn't offer it either. */
   subscriptionLocked: boolean
+  showPickupRequests?: boolean
 }
 
-export function MobileChrome({ profile, subscriptionLocked }: Props) {
+export function MobileChrome({ profile, subscriptionLocked, showPickupRequests = false }: Props) {
   const pathname = usePathname()
   const [drawerOpen, setDrawerOpen] = useState(false)
 
@@ -25,7 +26,7 @@ export function MobileChrome({ profile, subscriptionLocked }: Props) {
   return (
     <>
       {showTopBar && <TopAppBar onOpenDrawer={() => setDrawerOpen(true)} />}
-      <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} profile={profile} />
+      <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} profile={profile} showPickupRequests={showPickupRequests} />
       {showFab && <CreateOrderFab />}
     </>
   )

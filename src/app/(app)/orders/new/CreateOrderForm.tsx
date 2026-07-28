@@ -78,6 +78,7 @@ export function CreateOrderForm({
   const [inlineFirst, setInlineFirst] = useState('')
   const [inlineLast, setInlineLast] = useState('')
   const [inlinePhone, setInlinePhone] = useState('')
+  const [inlineLocation, setInlineLocation] = useState('')
   const [inlineError, setInlineError] = useState('')
   const [inlineIsPending, startInlineTransition] = useTransition()
 
@@ -215,6 +216,7 @@ export function CreateOrderForm({
     setInlineFirst(parts[0] ?? '')
     setInlineLast(parts.slice(1).join(' '))
     setInlinePhone('')
+    setInlineLocation('')
     setInlineError('')
     setShowInlineCreate(true)
     setShowDropdown(false)
@@ -229,10 +231,12 @@ export function CreateOrderForm({
         firstName: inlineFirst.trim(),
         lastName: inlineLast.trim(),
         phone: inlinePhone.trim(),
+        location: inlineLocation.trim() || undefined,
       })
       if (res.success) {
         setSelectedCustomer(res.data)
         setCustomerSearch(`${res.data.firstName} ${res.data.lastName}`)
+        setLocation(res.data.location ?? '')
         setShowInlineCreate(false)
       } else {
         setInlineError(res.error)
@@ -405,6 +409,19 @@ export function CreateOrderForm({
                       onChange={e => setInlinePhone(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handleInlineCreate()}
                       placeholder="024 123 4567"
+                      className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-caption font-medium text-warm-700 mb-1 block">
+                      Location <span className="text-warm-400">(optional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={inlineLocation}
+                      onChange={e => setInlineLocation(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleInlineCreate()}
+                      placeholder="e.g. Hall 7, KNUST"
                       className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 placeholder:text-warm-400 focus:outline-none focus:border-brand focus:shadow-focus-ring"
                     />
                   </div>

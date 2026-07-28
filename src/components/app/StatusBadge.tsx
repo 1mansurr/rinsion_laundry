@@ -1,10 +1,11 @@
 // Order status pill using the status.* color tokens from tailwind.config.ts.
-// All status strings match the DB enum, minus 'draft' and the retired
-// 'confirmed' (see constants/statuses.ts): received | processing | ready | collected | cancelled
+// All status strings match the DB enum, minus the retired 'confirmed' (see
+// constants/statuses.ts): draft | received | processing | ready | collected | cancelled
 
-type OrderStatus = 'received' | 'processing' | 'ready' | 'collected' | 'cancelled'
+type OrderStatus = 'draft' | 'received' | 'processing' | 'ready' | 'collected' | 'cancelled'
 
 const LABEL: Record<OrderStatus, string> = {
+  draft: 'Draft',
   received: 'Received',
   processing: 'Processing',
   ready: 'Ready',
@@ -12,7 +13,12 @@ const LABEL: Record<OrderStatus, string> = {
   cancelled: 'Cancelled',
 }
 
+// 'draft' reuses the status-confirmed-* tokens — left over, unused, from the
+// retired 'confirmed' status (20240032000000_retire_confirmed_order_status.sql)
+// — rather than adding new tailwind tokens for a status that (per
+// constants/statuses.ts) isn't meant to surface outside pickup-requests.
 const TOKEN: Record<OrderStatus, { bg: string; fg: string; dot: string }> = {
+  draft:      { bg: 'bg-status-confirmed-bg',  fg: 'text-status-confirmed-fg',  dot: 'bg-status-confirmed-dot' },
   received:   { bg: 'bg-status-received-bg',   fg: 'text-status-received-fg',   dot: 'bg-status-received-dot' },
   processing: { bg: 'bg-status-processing-bg', fg: 'text-status-processing-fg', dot: 'bg-status-processing-dot' },
   ready:      { bg: 'bg-status-ready-bg',      fg: 'text-status-ready-fg',      dot: 'bg-status-ready-dot' },

@@ -91,6 +91,28 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse
   }
 
+  // Customer portal: a separate auth surface from staff /login (see
+  // services/customerAuth/). An authenticated employee session still counts
+  // as "a session" here — the actual employee-vs-customer distinction is
+  // checked in (portal)/portal/layout.tsx via getMyCustomerProfile(), not
+  // here. Must come before the generic !user redirect below, or a
+  // signed-out portal visitor would be bounced to the staff /login page.
+  if (pathname.startsWith('/portal/login')) {
+    if (user) {
+      return NextResponse.redirect(new URL('/portal', request.url))
+    }
+    return supabaseResponse
+  }
+
+  if (pathname.startsWith('/portal')) {
+    if (!user) {
+      const redirectUrl = new URL('/portal/login', request.url)
+      redirectUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(redirectUrl)
+    }
+    return withUserId(supabaseResponse, request, user.id)
+  }
+
   if (!user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
