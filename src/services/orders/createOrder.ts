@@ -6,6 +6,7 @@ import { getSoleBranchId } from '@/services/branches/getSoleBranchId'
 import { requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { generatePickupCode } from '@/utils/generatePickupCode'
+import { generateOrderNumber } from '@/utils/generateOrderNumber'
 import { validatePriceRanges } from '@/services/pricing/validatePriceRanges'
 import { encryptField } from '@/lib/crypto'
 import type { OrderPriority, PricingMode } from '@/constants/statuses'
@@ -118,12 +119,4 @@ export async function createOrder(input: CreateOrderInput): Promise<ServiceResul
     success: true,
     data: { orderId: order.order_id, orderNumber: order.order_number, pickupCode: order.pickup_code },
   }
-}
-
-// Exported so submitCustomerOrder.ts can reuse it rather than duplicating.
-export function generateOrderNumber(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  let code = 'ORD-'
-  for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)]
-  return code
 }

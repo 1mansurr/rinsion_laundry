@@ -4,7 +4,7 @@ import { createClient, createAdminClient } from '@/lib/supabase'
 import { getMyCustomerProfile } from '@/services/customerAuth/getMyCustomerProfile'
 import { validatePriceRanges } from '@/services/pricing/validatePriceRanges'
 import { generatePickupCode } from '@/utils/generatePickupCode'
-import { generateOrderNumber } from './createOrder'
+import { generateOrderNumber } from '@/utils/generateOrderNumber'
 import type { PricingMode } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
