@@ -85,6 +85,7 @@ export function CreateOrderForm({
   const [priority, setPriority] = useState<OrderPriority>('normal')
   const [pickupDate, setPickupDate] = useState('')
   const [notes, setNotes] = useState('')
+  const [location, setLocation] = useState(preselectedCustomer?.location ?? '')
   const [lines, setLines] = useState<LineItem[]>([{ ...EMPTY_LINE }])
 
   // Pay in advance
@@ -247,6 +248,7 @@ export function CreateOrderForm({
       priority,
       pickupDate: pickupDate || undefined,
       notes: notes || undefined,
+      location: location || undefined,
       items: validLines.map(l => ({
         itemTypeId: l.itemTypeId || undefined,
         serviceId: l.serviceId,
@@ -294,7 +296,7 @@ export function CreateOrderForm({
               </div>
               <button
                 type="button"
-                onClick={() => { setSelectedCustomer(null); setCustomerSearch('') }}
+                onClick={() => { setSelectedCustomer(null); setCustomerSearch(''); setLocation('') }}
                 className="text-caption text-brand hover:text-brand-hover underline underline-offset-2"
               >
                 Change
@@ -334,6 +336,7 @@ export function CreateOrderForm({
                         onClick={() => {
                           setSelectedCustomer(c)
                           setCustomerSearch(`${c.firstName} ${c.lastName}`)
+                          setLocation(c.location ?? '')
                           setShowDropdown(false)
                         }}
                       >
@@ -461,6 +464,15 @@ export function CreateOrderForm({
           label="Pickup date (optional)"
           value={pickupDate}
           onChange={e => setPickupDate(e.target.value)}
+        />
+
+        {/* Location */}
+        <Input
+          label="Location (optional)"
+          placeholder="e.g. Hall 7, KNUST"
+          value={location}
+          onChange={e => setLocation(e.target.value)}
+          helpText={selectedCustomer ? 'Pre-filled from the customer — edit for this order only.' : undefined}
         />
 
         {/* Line items */}

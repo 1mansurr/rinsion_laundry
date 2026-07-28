@@ -79,6 +79,7 @@ interface Props {
   priority: string
   pickupCode: string
   pickupDate: string | null
+  location: string | null
   subtotal: number
   taxAmount: number
   total: number
@@ -112,7 +113,7 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 }
 
 export function OrderDetail({
-  orderId, orderNumber, status, priority, pickupCode, pickupDate, subtotal, taxAmount, total, amountPaid,
+  orderId, orderNumber, status, priority, pickupCode, pickupDate, location, subtotal, taxAmount, total, amountPaid,
   customerName, customerId, customerPhone, branchName, createdAt, cancelledAt,
   previousStatusOnCancel, items: initItems, itemTypes, payments, refunds: initRefunds, notes: initNotes, activities,
 }: Props) {
@@ -568,6 +569,9 @@ export function OrderDetail({
                 <p className="text-caption text-warm-500">{customerPhone}</p>
               </div>
             </Link>
+            {location && (
+              <p className="text-caption text-warm-600 mt-2">Location: {location}</p>
+            )}
             {branchName && (
               <p className="text-caption text-warm-400 mt-2">Branch: {branchName}</p>
             )}

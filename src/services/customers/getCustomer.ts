@@ -8,7 +8,7 @@ export async function getCustomer(id: string) {
   const { data } = await supabase
     .from('customers')
     .select(`
-      id, customer_code, first_name, last_name, phone, first_visit_date, last_visit_date, created_at,
+      id, customer_code, first_name, last_name, phone, location, first_visit_date, last_visit_date, created_at,
       orders(id, order_number, status, total, created_at, pickup_date)
     `)
     .eq('id', id)
@@ -21,5 +21,6 @@ export async function getCustomer(id: string) {
     first_name: decryptField(data.first_name) ?? '',
     last_name: decryptField(data.last_name) ?? '',
     phone: decryptField(data.phone) ?? '',
+    location: decryptField(data.location),
   }
 }

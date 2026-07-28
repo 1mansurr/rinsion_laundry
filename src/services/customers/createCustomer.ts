@@ -28,7 +28,7 @@ export async function createCustomer(input: {
   // Phone uniqueness check — return existing if found
   const { data: existing } = await supabase
     .from('customers')
-    .select('id, customer_code, first_name, last_name, phone, last_visit_date, created_at')
+    .select('id, customer_code, first_name, last_name, phone, location, last_visit_date, created_at')
     .eq('laundry_id', emp.laundry_id)
     .eq('phone_bidx', phoneBidx)
     .is('deleted_at', null)
@@ -43,6 +43,7 @@ export async function createCustomer(input: {
         firstName: decryptField(existing.first_name) ?? '',
         lastName: decryptField(existing.last_name) ?? '',
         phone: decryptField(existing.phone) ?? '',
+        location: decryptField(existing.location),
         lastVisitDate: existing.last_visit_date,
         createdAt: existing.created_at,
       },
@@ -61,7 +62,7 @@ export async function createCustomer(input: {
       phone: encryptField(normalizedPhone),
       phone_bidx: phoneBidx,
     })
-    .select('id, customer_code, first_name, last_name, phone, last_visit_date, created_at')
+    .select('id, customer_code, first_name, last_name, phone, location, last_visit_date, created_at')
     .single()
 
   if (error) return { success: false, error: error.message }
@@ -75,6 +76,7 @@ export async function createCustomer(input: {
       firstName: decryptField(data.first_name) ?? '',
       lastName: decryptField(data.last_name) ?? '',
       phone: decryptField(data.phone) ?? '',
+      location: decryptField(data.location),
       lastVisitDate: data.last_visit_date,
       createdAt: data.created_at,
     },

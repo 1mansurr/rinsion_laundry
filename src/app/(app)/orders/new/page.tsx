@@ -38,6 +38,7 @@ export default async function NewOrderPage({ searchParams }: Props) {
         firstName: d.first_name,
         lastName: d.last_name,
         phone: d.phone,
+        location: d.location,
         lastVisitDate: d.last_visit_date,
         createdAt: d.created_at,
       }

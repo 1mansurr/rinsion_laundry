@@ -8,7 +8,7 @@ export async function getOrder(id: string) {
   const { data } = await supabase
     .from('orders')
     .select(`
-      id, order_number, pickup_code, status, priority, pickup_date, subtotal, tax_amount, total, created_at,
+      id, order_number, pickup_code, status, priority, pickup_date, subtotal, tax_amount, total, created_at, location,
       customers(id, first_name, last_name, phone),
       branches(name),
       order_items(
@@ -34,5 +34,5 @@ export async function getOrder(id: string) {
     customer.last_name = decryptField(customer.last_name) ?? ''
     customer.phone = decryptField(customer.phone) ?? ''
   }
-  return data
+  return { ...data, location: decryptField(data.location) }
 }

@@ -12,6 +12,7 @@ export interface OrderDetailData {
   priority: OrderPriority
   pickupCode: string
   pickupDate: string | null
+  location: string | null
   subtotal: number
   taxAmount: number
   total: number
@@ -159,6 +160,7 @@ export async function getOrderDetail(id: string, laundryId: string): Promise<Ord
     priority: (order.priority ?? 'normal') as OrderPriority,
     pickupCode: order.pickup_code,
     pickupDate: order.pickup_date ?? null,
+    location: order.location ?? null,
     subtotal: Number(order.subtotal),
     taxAmount: Number(order.tax_amount),
     total: Number(order.total),

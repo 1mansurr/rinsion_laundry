@@ -6,6 +6,7 @@ import { getSoleBranchId } from '@/services/branches/getSoleBranchId'
 import { requireActiveSubscription } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { generatePickupCode } from '@/utils/generatePickupCode'
+import { encryptField } from '@/lib/crypto'
 import type { OrderPriority, PricingMode } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -14,6 +15,8 @@ export interface CreateOrderInput {
   priority: OrderPriority
   pickupDate?: string
   notes?: string
+  /** Per-order snapshot of the customer's location — editable without touching the customer's saved default. */
+  location?: string
   items: {
     /** Absent for per_kg lines — weight-based services aren't priced per item type */
     itemTypeId?: string
@@ -136,6 +139,7 @@ export async function createOrder(input: CreateOrderInput): Promise<ServiceResul
           pricing_mode: item.pricingMode,
         })),
         p_note: input.notes?.trim() || null,
+        p_location: input.location?.trim() ? encryptField(input.location.trim()) : null,
       })
       .single()
 

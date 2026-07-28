@@ -152,6 +152,8 @@ export default async function CustomerDetailPage({ params }: Props) {
             <h3 className="text-h2 font-semibold text-warm-950 mb-3.5">Contact</h3>
             <p className="text-micro font-semibold text-warm-600 uppercase tracking-[0.06em] mb-1">Phone</p>
             <p className="tnum text-ui-sm text-warm-950 mb-3.5">{data.phone}</p>
+            <p className="text-micro font-semibold text-warm-600 uppercase tracking-[0.06em] mb-1">Location</p>
+            <p className="text-ui-sm text-warm-950 mb-3.5">{data.location ?? '—'}</p>
             <p className="text-micro font-semibold text-warm-600 uppercase tracking-[0.06em] mb-1">SMS notifications</p>
             <p className="text-ui-sm font-semibold text-success">Enabled</p>
           </div>
