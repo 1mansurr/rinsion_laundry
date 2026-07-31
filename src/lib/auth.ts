@@ -1,9 +1,10 @@
 import { headers } from 'next/headers'
 import type { createClient } from './supabase'
 import type { MyProfile } from '@/services/employees/getMyProfile'
+import type { MyRiderProfile } from '@/services/riders/getMyRiderProfile'
 import { getActiveSubscription } from '@/services/subscriptions/getActive'
 import { WRITE_BLOCKED_STATUSES } from '@/constants/subscriptionStatuses'
-import type { EmployeeRole } from '@/constants/statuses'
+import type { EmployeeRole, RiderRole } from '@/constants/statuses'
 import type { ServiceResult } from '@/types/serviceResult'
 
 type SessionClient = ReturnType<typeof createClient>
@@ -28,6 +29,13 @@ export async function getVerifiedUserId(supabase: SessionClient): Promise<string
  * the same ServiceResult shape every write-path service already returns.
  */
 export function requireRole(profile: MyProfile | null, role: EmployeeRole): ServiceResult<MyProfile> {
+  if (!profile) return { success: false, error: 'Not authenticated.' }
+  if (profile.role !== role) return { success: false, error: 'Admin only.' }
+  return { success: true, data: profile }
+}
+
+/** Same shape as requireRole, for the rider-company tenant (getMyRiderProfile()). */
+export function requireRiderRole(profile: MyRiderProfile | null, role: RiderRole): ServiceResult<MyRiderProfile> {
   if (!profile) return { success: false, error: 'Not authenticated.' }
   if (profile.role !== role) return { success: false, error: 'Admin only.' }
   return { success: true, data: profile }

@@ -48,9 +48,10 @@ export async function approvePickupRequest(pickupRequestId: string): Promise<Ser
     laundry_id: profile.laundryId,
     order_id: pr.order_id,
     kind: 'pickup',
-    provider: 'manual',
+    provider: 'rinsion_riders',
     provider_ref_id: providerResult.providerRefId ?? null,
     requested_by_employee_id: profile.id,
+    rider_company_id: providerResult.riderCompanyId ?? null,
   })
 
   await supabase.from('activity_logs').insert({

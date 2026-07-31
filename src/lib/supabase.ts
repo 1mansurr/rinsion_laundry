@@ -2,11 +2,17 @@
  * lib/supabase.ts
  *
  * The only file in the codebase allowed to import @supabase/supabase-js or
- * @supabase/ssr. All service functions obtain clients from here.
+ * @supabase/ssr for a server-side client. All service functions obtain
+ * clients from here.
  *
  * Two clients are exported:
  *  - createClient()      — server-side client, respects RLS (uses anon key + cookies)
  *  - createAdminClient() — service-role client, bypasses RLS for internal admin use only
+ *
+ * One narrow exception: lib/supabaseBrowser.ts holds the browser-side client
+ * (anon key only, no cookies() access) — this file imports next/headers,
+ * which cannot be pulled into a client component's bundle, so a genuinely
+ * browser-safe client can't live here.
  *
  * Spec reference: Rinsion_Technical_Overview.md §19 (Supabase Isolation Rule)
  */

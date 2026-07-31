@@ -91,6 +91,35 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse
   }
 
+  // Rider invite accept page: same reasoning as /i/ above — the token is
+  // the authorization, validated server-side in acceptRiderInvite.
+  if (pathname.startsWith('/ri/')) {
+    return supabaseResponse
+  }
+
+  // Rider platform: a separate auth surface from staff /login and the
+  // customer /portal (see services/riders/). An authenticated employee or
+  // customer session still counts as "a session" here — the actual
+  // rider-vs-other-tenant distinction is checked page-side via
+  // getMyRiderProfile(), same pattern as the portal. Must come before the
+  // generic !user redirect below, or a signed-out rider would be bounced to
+  // the staff /login page instead of /rider/login.
+  if (pathname.startsWith('/rider/login')) {
+    if (user) {
+      return NextResponse.redirect(new URL('/rider', request.url))
+    }
+    return supabaseResponse
+  }
+
+  if (pathname.startsWith('/rider')) {
+    if (!user) {
+      const redirectUrl = new URL('/rider/login', request.url)
+      redirectUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(redirectUrl)
+    }
+    return withUserId(supabaseResponse, request, user.id)
+  }
+
   // Customer portal: a separate auth surface from staff /login (see
   // services/customerAuth/). An authenticated employee session still counts
   // as "a session" here — the actual employee-vs-customer distinction is

@@ -39,6 +39,8 @@ export interface OrderDetailData {
   refunds: { id: string; amount: number; refundMethod: string; reason: string | null; createdAt: string }[]
   notes: { id: string; note: string; createdAt: string; authorName: string }[]
   activities: { id: string; description: string; createdAt: string; employeeName: string }[]
+  /** Most recent non-cancelled/failed delivery-kind logistics_requests row, if any — see requestDelivery.ts/confirmDeliveryCompletion.ts. */
+  deliveryRequest: { id: string; status: string } | null
 }
 
 export async function getOrderDetail(id: string, laundryId: string): Promise<OrderDetailData | null> {
@@ -153,6 +155,12 @@ export async function getOrderDetail(id: string, laundryId: string): Promise<Ord
   const cancelledAt = cancelEntry?.created_at ?? null
   const previousStatusOnCancel = cancelEntry?.previous_status ?? null
 
+  const logisticsRows = (order.logistics_requests as { id: string; kind: string; status: string; created_at: string }[]) ?? []
+  const deliveryRequest = logisticsRows
+    .filter(r => r.kind === 'delivery' && r.status !== 'cancelled' && r.status !== 'failed')
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))[0]
+  const deliveryRequestSummary = deliveryRequest ? { id: deliveryRequest.id, status: deliveryRequest.status } : null
+
   return {
     orderId: order.id,
     orderNumber: order.order_number,
@@ -178,5 +186,6 @@ export async function getOrderDetail(id: string, laundryId: string): Promise<Ord
     refunds,
     notes,
     activities,
+    deliveryRequest: deliveryRequestSummary,
   }
 }

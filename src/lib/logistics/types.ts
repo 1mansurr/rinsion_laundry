@@ -23,6 +23,8 @@ export interface LogisticsResult {
   success: boolean
   providerRefId?: string
   errorMessage?: string
+  /** Which rider_companies row (if any) should fulfill this request — set by RinsionRiderNetworkProvider, undefined for a provider with no such concept (e.g. ManualLogisticsProvider). */
+  riderCompanyId?: string | null
 }
 
 export interface RiderAssignment {

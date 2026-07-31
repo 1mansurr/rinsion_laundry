@@ -21,7 +21,8 @@ export async function getOrder(id: string) {
       order_refunds(id, amount, refund_method, reason, created_at),
       order_notes(id, note, created_at, created_by_type),
       order_status_history(previous_status, new_status, created_at),
-      sms_messages(id, trigger_event, status, phone, created_at)
+      sms_messages(id, trigger_event, status, phone, created_at),
+      logistics_requests(id, kind, status, created_at)
     `)
     .eq('id', id)
     .is('deleted_at', null)

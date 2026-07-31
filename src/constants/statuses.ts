@@ -62,6 +62,19 @@ export const ROLES: Record<'ADMIN' | 'EMPLOYEE', EmployeeRole> = {
   EMPLOYEE: 'employee',
 }
 
+/** Rider company tenant — mirrors EMPLOYEE_ROLES/ROLES above. 'admin' manages the roster + job queue; 'rider' works only jobs assigned to them. */
+export const RIDER_ROLES = ['admin', 'rider'] as const
+export type RiderRole = (typeof RIDER_ROLES)[number]
+
+export const RIDER_ROLE: Record<'ADMIN' | 'RIDER', RiderRole> = {
+  ADMIN: 'admin',
+  RIDER: 'rider',
+}
+
+/** Mirrors rider_job_status (supabase/migrations/20240040000000_rider_company_platform.sql). Symmetric across pickup/delivery kind — see that migration's comment. */
+export const RIDER_JOB_STATUSES = ['assigned', 'en_route', 'picked_up', 'dropped_off'] as const
+export type RiderJobStatus = (typeof RIDER_JOB_STATUSES)[number]
+
 export const PRICING_MODES = ['per_item', 'per_kg'] as const
 export type PricingMode = (typeof PRICING_MODES)[number]
 

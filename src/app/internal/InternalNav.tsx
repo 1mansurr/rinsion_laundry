@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 const NAV = [
   { href: '/internal/system-health',    label: 'System Health' },
   { href: '/internal/provision',        label: 'Provision Laundry' },
+  { href: '/internal/provision-rider-company', label: 'Provision Rider Company' },
   { href: '/internal/subscriptions',    label: 'Subscriptions' },
   { href: '/internal/manual-payments',  label: 'Manual Payments' },
   { href: '/internal/erasure-requests', label: 'Erasure Requests' },

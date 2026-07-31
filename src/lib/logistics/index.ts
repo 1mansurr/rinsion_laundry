@@ -6,9 +6,9 @@
  * LogisticsProvider interface in the new module — same shape as lib/sms/index.ts.
  */
 
-import { ManualLogisticsProvider } from './manualProvider'
+import { RinsionRiderNetworkProvider } from './rinsionRiderNetworkProvider'
 import type { LogisticsProvider } from './types'
 
-export const logisticsProvider: LogisticsProvider = new ManualLogisticsProvider()
+export const logisticsProvider: LogisticsProvider = new RinsionRiderNetworkProvider()
 
 export type { LogisticsProvider, LogisticsResult, LogisticsRequestContext, RiderAssignment, LogisticsStatus } from './types'

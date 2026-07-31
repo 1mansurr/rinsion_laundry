@@ -1,0 +1,77 @@
+'use client'
+
+import { useFormState, useFormStatus } from 'react-dom'
+import { riderSignIn } from './actions'
+import { Wordmark } from '@/components/ui/Wordmark'
+import { PasswordInput } from '@/components/ui/PasswordInput'
+
+const initialState = { error: null }
+
+export default function RiderLoginPage() {
+  const [state, action] = useFormState(riderSignIn, initialState)
+
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-canvas px-4">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-2">
+            <Wordmark size="md" />
+          </div>
+          <p className="text-body text-warm-600">Sign in to your rider account</p>
+        </div>
+
+        <form action={action} className="bg-white rounded-18 border border-warm-300 p-6 space-y-4">
+          {state.error && (
+            <div className="bg-red-50 border border-red-200 rounded-12 px-3 py-2 text-ui text-red-700">
+              {state.error}
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="phone" className="block text-label font-medium text-warm-800 mb-1">
+              Phone
+            </label>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              required
+              className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+              placeholder="024 123 4567"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-label font-medium text-warm-800 mb-1">
+              Password
+            </label>
+            <PasswordInput
+              id="password"
+              name="password"
+              autoComplete="current-password"
+              required
+              placeholder="••••••••"
+            />
+          </div>
+
+          <SubmitButton />
+        </form>
+      </div>
+    </main>
+  )
+}
+
+function SubmitButton() {
+  const { pending } = useFormStatus()
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-12 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      {pending ? 'Signing in…' : 'Sign in'}
+    </button>
+  )
+}

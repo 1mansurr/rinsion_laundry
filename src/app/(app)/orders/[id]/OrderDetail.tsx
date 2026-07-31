@@ -12,6 +12,7 @@ import { recordRefund } from '@/services/payments/recordRefund'
 import { resendPickupCodeSms } from '@/services/notifications/resendPickupCodeSms'
 import { createOrderNote } from '@/services/orders/createOrderNote'
 import { setOrderItemPieces } from '@/services/orders/setOrderItemPieces'
+import { DeliverySection } from './DeliverySection'
 import { PAYMENT_METHODS, type OrderStatus, type PaymentMethod } from '@/constants/statuses'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { formatTimeAgo } from '@/utils/formatTimeAgo'
@@ -97,6 +98,7 @@ interface Props {
   refunds: OrderDetailRefund[]
   notes: OrderDetailNote[]
   activities: OrderDetailActivity[]
+  deliveryRequest: { id: string; status: string } | null
 }
 
 const STEPS: OrderStatus[] = ['received', 'processing', 'ready', 'collected']
@@ -116,6 +118,7 @@ export function OrderDetail({
   orderId, orderNumber, status, priority, pickupCode, pickupDate, location, subtotal, taxAmount, total, amountPaid,
   customerName, customerId, customerPhone, branchName, createdAt, cancelledAt,
   previousStatusOnCancel, items: initItems, itemTypes, payments, refunds: initRefunds, notes: initNotes, activities,
+  deliveryRequest,
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -473,6 +476,11 @@ export function OrderDetail({
               <p className="text-micro font-semibold text-warm-500 uppercase tracking-eyebrow mb-3.5">Progress</p>
               <MobileTimeline currentIdx={currentStepIdx} activities={activities} createdAt={createdAt} />
             </div>
+          )}
+
+          {/* Delivery — an alternative to walk-in collection, only once the order is ready */}
+          {!isCancelled && !isCollected && status === 'ready' && (
+            <DeliverySection orderId={orderId} deliveryRequest={deliveryRequest} balance={balance} />
           )}
 
           {/* Action bar */}
