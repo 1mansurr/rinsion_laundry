@@ -1,6 +1,5 @@
 'use server'
 
-import { randomBytes } from 'crypto'
 import { createClient, createAdminClient } from '@/lib/supabase'
 import { toAuthPhone } from '@/utils/toAuthPhone'
 import { encryptField, computeBlindIndex } from '@/lib/crypto'
@@ -12,6 +11,12 @@ const MAX_CODE_ATTEMPTS = 5
 export interface VerifyOtpInput {
   phone: string
   code: string
+  /**
+   * Set as the account's real sign-in password (or reset onto it, for a
+   * repeat verify) — this flow doubles as both first-time signup and
+   * forgot-password recovery, matching acceptInvite.ts's 8-char minimum.
+   */
+  password: string
   /** Only used when this phone has no existing customer_accounts row yet. */
   firstName?: string
   lastName?: string
@@ -21,17 +26,17 @@ export interface VerifyOtpInput {
  * Public/unauthenticated — possession of the phone's most recent unexpired
  * code is the authorization, same principle as verifyPhoneResetCode
  * (services/auth/phoneReset.ts). First-time verify creates the auth user +
- * customer_accounts row; repeat verify signs into the existing one. Neither
- * path touches Supabase's native phone-OTP — both reuse the
- * random-password-then-signInWithPassword trick verifyPhoneResetCode already
- * established, so no second SMS provider needs configuring in the Supabase
- * dashboard.
+ * customer_accounts row; repeat verify (only reached via the "use a text
+ * code instead" recovery path — see signInWithPassword.ts for normal
+ * sign-in) resets the password on the existing one. Neither path touches
+ * Supabase's native phone-OTP.
  */
 export async function verifyOtp(input: VerifyOtpInput): Promise<ServiceResult<{ signedIn: boolean; isNewAccount: boolean }>> {
   const phone = toAuthPhone(input.phone)
   const code = input.code.trim()
   if (!phone) return { success: false, error: 'Enter a valid phone number.' }
   if (!/^\d{6}$/.test(code)) return { success: false, error: 'Enter the 6-digit code.' }
+  if (input.password.length < 8) return { success: false, error: 'Password must be at least 8 characters.' }
 
   const admin = createAdminClient()
   const phoneBidx = computeBlindIndex(phone)
@@ -56,8 +61,6 @@ export async function verifyOtp(input: VerifyOtpInput): Promise<ServiceResult<{ 
 
   await admin.from('customer_otp_codes').update({ used_at: new Date().toISOString() }).eq('id', otpRow.id)
 
-  const randomPassword = randomBytes(32).toString('base64url')
-
   const { data: existingAccount } = await admin
     .from('customer_accounts')
     .select('auth_user_id')
@@ -68,12 +71,12 @@ export async function verifyOtp(input: VerifyOtpInput): Promise<ServiceResult<{ 
   let isNewAccount = false
 
   if (existingAccount) {
-    const { error: authErr } = await admin.auth.admin.updateUserById(existingAccount.auth_user_id, { password: randomPassword })
+    const { error: authErr } = await admin.auth.admin.updateUserById(existingAccount.auth_user_id, { password: input.password })
     if (authErr) return { success: false, error: authErr.message }
   } else {
     const { data: authData, error: authErr } = await admin.auth.admin.createUser({
       phone,
-      password: randomPassword,
+      password: input.password,
       phone_confirm: true,
     })
     if (authErr || !authData.user) return { success: false, error: authErr?.message ?? 'Failed to create account.' }
@@ -91,7 +94,7 @@ export async function verifyOtp(input: VerifyOtpInput): Promise<ServiceResult<{ 
   }
 
   const sessionClient = createClient()
-  const { error: signInErr } = await sessionClient.auth.signInWithPassword({ phone, password: randomPassword })
+  const { error: signInErr } = await sessionClient.auth.signInWithPassword({ phone, password: input.password })
 
   return { success: true, data: { signedIn: !signInErr, isNewAccount } }
 }

@@ -27,18 +27,21 @@ export default async function PortalHomePage() {
 
           {laundries.length === 0 ? (
             <p className="text-body text-warm-600">
-              You haven&apos;t placed an order with any laundry yet. Use the link a laundry gave you to get started.
+              You haven&apos;t placed an order with any laundry yet.
             </p>
           ) : (
             <ul className="space-y-2">
-              {laundries.map(l => (
+              {laundries.map((l, i) => (
                 <li key={l.id}>
                   {l.publicSlug ? (
                     <Link
                       href={`/portal/o/${l.publicSlug}`}
-                      className="block border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 hover:border-brand transition-colors"
+                      className="flex items-center justify-between border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 hover:border-brand transition-colors"
                     >
                       {l.name}
+                      {i === 0 && (
+                        <span className="text-caption text-brand font-medium">Last used</span>
+                      )}
                     </Link>
                   ) : (
                     <span className="block border border-warm-200 rounded-12 px-3 py-2 text-ui text-warm-500">
@@ -49,6 +52,13 @@ export default async function PortalHomePage() {
               ))}
             </ul>
           )}
+
+          <Link
+            href="/portal/directory"
+            className="block text-center text-caption text-warm-500 hover:text-warm-800 transition-colors"
+          >
+            Browse all laundries
+          </Link>
         </div>
       </div>
     </main>

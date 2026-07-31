@@ -2,9 +2,11 @@
 
 import { useState, useTransition, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { signInWithPassword } from '@/services/customerAuth/signInWithPassword'
 import { requestOtp } from '@/services/customerAuth/requestOtp'
 import { verifyOtp } from '@/services/customerAuth/verifyOtp'
 import { Wordmark } from '@/components/ui/Wordmark'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 
 export default function PortalLoginPage() {
   return (
@@ -24,22 +26,39 @@ export default function PortalLoginPage() {
   )
 }
 
-// Same two-step phone/code shape as PhoneResetFlow (app/forgot-password/page.tsx):
-// local step state + direct calls to the 'use server' functions rather than
-// useFormState, since the flow branches on client-only state (which step to
-// show) that a single form action can't express.
+type Step = 'password' | 'phone' | 'code'
+
+// Password is the normal path (no SMS cost per login); the phone/code path
+// serves double duty as both first-time signup and forgot-password recovery
+// — see verifyOtp.ts, which sets/resets the real password on a valid code.
 function PortalLoginFlow() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/portal'
 
+  const [step, setStep] = useState<Step>('password')
   const [phone, setPhone] = useState('')
-  const [step, setStep] = useState<'phone' | 'code'>('phone')
+  const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  function handlePasswordSignIn(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    startTransition(async () => {
+      const result = await signInWithPassword(phone, password)
+      if (!result.success) {
+        setError(result.error)
+        return
+      }
+      router.push(redirectTo)
+    })
+  }
 
   function handleRequestCode(e: React.FormEvent) {
     e.preventDefault()
@@ -57,10 +76,15 @@ function PortalLoginFlow() {
   function handleVerifyCode(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match.')
+      return
+    }
     startTransition(async () => {
       const result = await verifyOtp({
         phone,
         code,
+        password: newPassword,
         firstName: firstName.trim() || undefined,
         lastName: lastName.trim() || undefined,
       })
@@ -121,6 +145,37 @@ function PortalLoginFlow() {
           />
         </div>
 
+        <div>
+          <label htmlFor="newPassword" className="block text-label font-medium text-warm-800 mb-1">
+            Choose a password
+          </label>
+          <PasswordInput
+            id="newPassword"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="••••••••"
+          />
+          <p className="text-caption text-warm-500 mt-1">You&apos;ll use this to sign in next time — no code needed.</p>
+        </div>
+
+        <div>
+          <label htmlFor="confirmPassword" className="block text-label font-medium text-warm-800 mb-1">
+            Confirm password
+          </label>
+          <PasswordInput
+            id="confirmPassword"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="••••••••"
+          />
+        </div>
+
         <button
           type="submit"
           disabled={isPending}
@@ -139,8 +194,49 @@ function PortalLoginFlow() {
     )
   }
 
+  if (step === 'phone') {
+    return (
+      <form onSubmit={handleRequestCode} className="bg-white rounded-18 border border-warm-300 p-6 space-y-4">
+        {error && <ErrorBanner message={error} />}
+
+        <div>
+          <label htmlFor="phone" className="block text-label font-medium text-warm-800 mb-1">
+            Phone
+          </label>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            required
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="w-full border border-warm-300 rounded-12 px-3 py-2 text-ui text-warm-950 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+            placeholder="024 123 4567"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={isPending}
+          className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-12 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {isPending ? 'Sending…' : 'Send code'}
+        </button>
+        <button
+          type="button"
+          onClick={() => { setStep('password'); setError(null) }}
+          className="w-full text-center text-caption text-warm-500 hover:text-warm-800 transition-colors"
+        >
+          Have a password? Sign in directly
+        </button>
+      </form>
+    )
+  }
+
   return (
-    <form onSubmit={handleRequestCode} className="bg-white rounded-18 border border-warm-300 p-6 space-y-4">
+    <form onSubmit={handlePasswordSignIn} className="bg-white rounded-18 border border-warm-300 p-6 space-y-4">
       {error && <ErrorBanner message={error} />}
 
       <div>
@@ -161,12 +257,33 @@ function PortalLoginFlow() {
         />
       </div>
 
+      <div>
+        <label htmlFor="password" className="block text-label font-medium text-warm-800 mb-1">
+          Password
+        </label>
+        <PasswordInput
+          id="password"
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+        />
+      </div>
+
       <button
         type="submit"
         disabled={isPending}
         className="w-full bg-brand text-[#FAF8F5] py-2.5 px-4 rounded-12 text-ui font-semibold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {isPending ? 'Sending…' : 'Send code'}
+        {isPending ? 'Signing in…' : 'Sign in'}
+      </button>
+      <button
+        type="button"
+        onClick={() => { setStep('phone'); setError(null) }}
+        className="w-full text-center text-caption text-warm-500 hover:text-warm-800 transition-colors"
+      >
+        New here or forgot password? Use a text code
       </button>
     </form>
   )
