@@ -1,12 +1,8 @@
-/**
- * Learn more about light and dark modes:
- * https://docs.expo.dev/guides/color-schemes/
- */
-
 import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
+// Single brand palette, no light/dark split — see constants/theme.ts's own
+// comment on why. Kept as a hook (not a plain import) so screens don't need
+// to change if a real dark variant ever gets designed later.
 export function useTheme() {
-  const scheme = useColorScheme();
-  return Colors[scheme ?? 'light'];
+  return Colors;
 }

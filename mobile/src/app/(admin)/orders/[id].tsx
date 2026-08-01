@@ -1,10 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { useTheme } from '@/hooks/use-theme';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Chip } from '@/components/ui/Chip';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { TextField } from '@/components/ui/TextField';
+import { Colors } from '@/constants/theme';
 import { apiGet, apiPost } from '@/lib/api';
 import { ORDER_STATUS_TRANSITIONS, PAYMENT_METHODS, PAYMENT_METHOD_LABELS, STATUS_LABELS, type PaymentMethod } from '@/constants/statuses';
 import type { OrderDetailData } from '@/types/orders';
@@ -12,7 +18,6 @@ import type { OrderDetailData } from '@/types/orders';
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const theme = useTheme();
   const [order, setOrder] = useState<OrderDetailData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -74,7 +79,7 @@ export default function OrderDetailScreen() {
   if (isLoading) {
     return (
       <ThemedView style={styles.centered}>
-        <ActivityIndicator />
+        <ActivityIndicator color={Colors.brand} />
       </ThemedView>
     );
   }
@@ -91,25 +96,26 @@ export default function OrderDetailScreen() {
   const nextStatuses = ORDER_STATUS_TRANSITIONS[order.status]?.filter(s => s !== 'cancelled') ?? [];
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: theme.background }} contentContainerStyle={styles.container}>
+    <ScrollView style={{ flex: 1, backgroundColor: Colors.background }} contentContainerStyle={styles.container}>
       <Pressable onPress={() => router.back()}>
         <ThemedText themeColor="textSecondary">← Back</ThemedText>
       </Pressable>
 
-      <ThemedText type="title">{order.orderNumber}</ThemedText>
+      <View style={styles.titleRow}>
+        <ThemedText type="title" style={{ color: Colors.brand }}>{order.orderNumber}</ThemedText>
+        <StatusBadge status={order.status} />
+      </View>
       <ThemedText themeColor="textSecondary">
         {order.customerName} · {order.customerPhone}
       </ThemedText>
 
-      <Section label="Status">
-        <ThemedText>{STATUS_LABELS[order.status] ?? order.status}</ThemedText>
-      </Section>
-
-      <Section label="Location">
+      <Card style={styles.section}>
+        <SectionLabel>Location</SectionLabel>
         <ThemedText>{order.location ?? '—'}</ThemedText>
-      </Section>
+      </Card>
 
-      <Section label="Items">
+      <Card style={styles.section}>
+        <SectionLabel>Items</SectionLabel>
         {order.items.map(item => (
           <View key={item.id} style={styles.itemRow}>
             <ThemedText type="small">
@@ -118,77 +124,62 @@ export default function OrderDetailScreen() {
             <ThemedText type="small">GHS {item.totalPrice.toFixed(2)}</ThemedText>
           </View>
         ))}
-      </Section>
+      </Card>
 
-      <Section label="Payment">
+      <Card style={styles.section}>
+        <SectionLabel>Payment</SectionLabel>
         <ThemedText>Total: GHS {order.total.toFixed(2)}</ThemedText>
         <ThemedText>Paid: GHS {order.amountPaid.toFixed(2)}</ThemedText>
-        <ThemedText style={{ fontWeight: '700', color: balance > 0 ? '#B91C1C' : '#15803D' }}>
+        <ThemedText style={{ fontWeight: '700', color: balance > 0 ? Colors.error.fg : Colors.success.fg }}>
           Balance: GHS {balance.toFixed(2)}
         </ThemedText>
-      </Section>
+      </Card>
 
-      {actionError && <ThemedText style={styles.error}>{actionError}</ThemedText>}
+      {actionError && <ErrorBanner message={actionError} />}
 
       {balance > 0 && (
-        <Section label="Record payment">
-          <TextInput
+        <Card style={styles.section}>
+          <SectionLabel>Record payment</SectionLabel>
+          <TextField
             value={amount}
             onChangeText={setAmount}
             placeholder={`Amount (up to GHS ${balance.toFixed(2)})`}
-            placeholderTextColor={theme.textSecondary}
             keyboardType="decimal-pad"
-            style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
           />
           <View style={styles.chipRow}>
             {PAYMENT_METHODS.map(m => (
-              <Pressable
-                key={m}
-                onPress={() => setMethod(m)}
-                style={[
-                  styles.chip,
-                  { borderColor: theme.backgroundSelected },
-                  method === m && { backgroundColor: theme.backgroundSelected },
-                ]}
-              >
-                <ThemedText type="small">{PAYMENT_METHOD_LABELS[m]}</ThemedText>
-              </Pressable>
+              <Chip key={m} selected={method === m} onPress={() => setMethod(m)}>
+                {PAYMENT_METHOD_LABELS[m]}
+              </Chip>
             ))}
           </View>
-          <Pressable onPress={handleRecordPayment} disabled={isSubmitting} style={[styles.button, { opacity: isSubmitting ? 0.6 : 1 }]}>
-            <ThemedText style={styles.buttonText}>{isSubmitting ? 'Saving…' : 'Record payment'}</ThemedText>
-          </Pressable>
-        </Section>
+          <Button onPress={handleRecordPayment} isPending={isSubmitting}>
+            Record payment
+          </Button>
+        </Card>
       )}
 
       {nextStatuses.length > 0 && (
-        <Section label="Advance status">
+        <Card style={styles.section}>
+          <SectionLabel>Advance status</SectionLabel>
           <View style={styles.chipRow}>
             {nextStatuses.map(s => (
-              <Pressable
-                key={s}
-                onPress={() => handleAdvanceStatus(s)}
-                disabled={isSubmitting}
-                style={[styles.button, { opacity: isSubmitting ? 0.6 : 1 }]}
-              >
-                <ThemedText style={styles.buttonText}>Mark {STATUS_LABELS[s] ?? s}</ThemedText>
-              </Pressable>
+              <Button key={s} variant="secondary" onPress={() => handleAdvanceStatus(s)} isPending={isSubmitting}>
+                {`Mark ${STATUS_LABELS[s] ?? s}`}
+              </Button>
             ))}
           </View>
-        </Section>
+        </Card>
       )}
     </ScrollView>
   );
 }
 
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
+function SectionLabel({ children }: { children: string }) {
   return (
-    <View style={styles.section}>
-      <ThemedText themeColor="textSecondary" type="small" style={styles.sectionLabel}>
-        {label.toUpperCase()}
-      </ThemedText>
-      {children}
-    </View>
+    <ThemedText themeColor="textSecondary" type="small" style={styles.sectionLabel}>
+      {children.toUpperCase()}
+    </ThemedText>
   );
 }
 
@@ -196,15 +187,20 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     paddingTop: 60,
-    gap: 8,
+    gap: 12,
   },
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: Colors.background,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   section: {
-    marginTop: 16,
     gap: 8,
   },
   sectionLabel: {
@@ -214,37 +210,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  error: {
-    color: '#B91C1C',
-    marginTop: 12,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 16,
-  },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-  },
-  chip: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  button: {
-    backgroundColor: '#2F6B4F',
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#FAF8F5',
-    fontWeight: '600',
   },
 });

@@ -1,17 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { FlatList, Pressable, RefreshControl, StyleSheet, TextInput, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { useTheme } from '@/hooks/use-theme';
+import { Card } from '@/components/ui/Card';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { TextField } from '@/components/ui/TextField';
 import { useAuth } from '@/contexts/AuthContext';
+import { Colors } from '@/constants/theme';
 import { apiGet } from '@/lib/api';
-import { STATUS_LABELS } from '@/constants/statuses';
 import type { OrderListRow } from '@/types/orders';
 
 export default function OrdersListScreen() {
-  const theme = useTheme();
   const router = useRouter();
   const { signOut } = useAuth();
   const [rows, setRows] = useState<OrderListRow[]>([]);
@@ -41,10 +43,10 @@ export default function OrdersListScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
-        <ThemedText type="title">Orders</ThemedText>
-        <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
+        <ThemedText type="title" style={{ color: Colors.brand }}>Orders</ThemedText>
+        <View style={styles.headerActions}>
           <Pressable onPress={() => router.push('/orders/new')}>
-            <ThemedText themeColor="textSecondary">+ New</ThemedText>
+            <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>+ New</ThemedText>
           </Pressable>
           <Pressable onPress={signOut}>
             <ThemedText themeColor="textSecondary">Sign out</ThemedText>
@@ -52,16 +54,14 @@ export default function OrdersListScreen() {
         </View>
       </View>
 
-      <TextInput
+      <TextField
         value={query}
         onChangeText={setQuery}
         onSubmitEditing={() => load(query)}
         placeholder="Search order # or customer"
-        placeholderTextColor={theme.textSecondary}
-        style={[styles.search, { color: theme.text, borderColor: theme.backgroundSelected }]}
       />
 
-      {error && <ThemedText style={styles.error}>{error}</ThemedText>}
+      {error && <ErrorBanner message={error} />}
 
       <FlatList
         data={rows}
@@ -70,22 +70,19 @@ export default function OrdersListScreen() {
         contentContainerStyle={styles.list}
         ListEmptyComponent={!isLoading ? <ThemedText themeColor="textSecondary">No orders found.</ThemedText> : null}
         renderItem={({ item }) => (
-          <Pressable
-            onPress={() => router.push(`/orders/${item.id}`)}
-            style={[styles.row, { borderColor: theme.backgroundSelected }]}
-          >
-            <View style={{ flex: 1 }}>
-              <ThemedText type="smallBold">{item.orderNumber}</ThemedText>
-              <ThemedText themeColor="textSecondary" type="small">
-                {item.customerName || '—'}
-              </ThemedText>
-            </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              <ThemedText type="small">{STATUS_LABELS[item.status] ?? item.status}</ThemedText>
-              <ThemedText themeColor="textSecondary" type="small">
-                GHS {item.total.toFixed(2)}
-              </ThemedText>
-            </View>
+          <Pressable onPress={() => router.push(`/orders/${item.id}`)}>
+            <Card style={styles.row}>
+              <View style={{ flex: 1, gap: 4 }}>
+                <ThemedText type="smallBold">{item.orderNumber}</ThemedText>
+                <ThemedText themeColor="textSecondary" type="small">
+                  {item.customerName || '—'}
+                </ThemedText>
+              </View>
+              <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                <StatusBadge status={item.status} />
+                <ThemedText type="small" style={styles.amount}>GHS {item.total.toFixed(2)}</ThemedText>
+              </View>
+            </Card>
           </Pressable>
         )}
       />
@@ -99,32 +96,27 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 16,
     gap: 12,
+    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  search: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 16,
-  },
-  error: {
-    color: '#B91C1C',
+  headerActions: {
+    flexDirection: 'row',
+    gap: 16,
+    alignItems: 'center',
   },
   list: {
-    gap: 8,
+    gap: 10,
     paddingBottom: 24,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 14,
-    gap: 12,
+  },
+  amount: {
+    fontVariant: ['tabular-nums'],
   },
 });

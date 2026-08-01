@@ -1,10 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { useTheme } from '@/hooks/use-theme';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Chip } from '@/components/ui/Chip';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import { TextField } from '@/components/ui/TextField';
+import { Colors } from '@/constants/theme';
 import { apiGet, apiPost } from '@/lib/api';
 import { ORDER_PRIORITIES, type OrderPriority } from '@/constants/statuses';
 import type { ItemType, LaundryService, PriceCell, CustomerListRow } from '@/types/referenceData';
@@ -22,7 +27,6 @@ interface OrderLine {
 }
 
 export default function CreateOrderScreen() {
-  const theme = useTheme();
   const router = useRouter();
 
   const [itemTypes, setItemTypes] = useState<ItemType[]>([]);
@@ -187,21 +191,22 @@ export default function CreateOrderScreen() {
   if (isLoadingRefData) {
     return (
       <ThemedView style={styles.centered}>
-        <ActivityIndicator />
+        <ActivityIndicator color={Colors.brand} />
       </ThemedView>
     );
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: theme.background }} contentContainerStyle={styles.container}>
+    <ScrollView style={{ flex: 1, backgroundColor: Colors.background }} contentContainerStyle={styles.container}>
       <Pressable onPress={() => router.back()}>
         <ThemedText themeColor="textSecondary">← Back</ThemedText>
       </Pressable>
-      <ThemedText type="title">New order</ThemedText>
+      <ThemedText type="title" style={{ color: Colors.brand }}>New order</ThemedText>
 
-      {error && <ThemedText style={styles.error}>{error}</ThemedText>}
+      {error && <ErrorBanner message={error} />}
 
-      <Section label="Customer">
+      <Card style={styles.section}>
+        <SectionLabel>Customer</SectionLabel>
         {selectedCustomer ? (
           <View style={styles.selectedRow}>
             <ThemedText>{selectedCustomer.firstName} {selectedCustomer.lastName} · {selectedCustomer.phone}</ThemedText>
@@ -211,71 +216,41 @@ export default function CreateOrderScreen() {
           </View>
         ) : showNewCustomer ? (
           <View style={{ gap: 8 }}>
-            <TextInput
-              value={newFirstName}
-              onChangeText={setNewFirstName}
-              placeholder="First name"
-              placeholderTextColor={theme.textSecondary}
-              style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-            />
-            <TextInput
-              value={newLastName}
-              onChangeText={setNewLastName}
-              placeholder="Last name"
-              placeholderTextColor={theme.textSecondary}
-              style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-            />
-            <TextInput
-              value={newPhone}
-              onChangeText={setNewPhone}
-              placeholder="Phone"
-              placeholderTextColor={theme.textSecondary}
-              keyboardType="phone-pad"
-              style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-            />
-            <Pressable onPress={handleCreateCustomer} style={styles.button}>
-              <ThemedText style={styles.buttonText}>Create & select</ThemedText>
-            </Pressable>
+            <TextField value={newFirstName} onChangeText={setNewFirstName} placeholder="First name" />
+            <TextField value={newLastName} onChangeText={setNewLastName} placeholder="Last name" />
+            <TextField value={newPhone} onChangeText={setNewPhone} placeholder="Phone" keyboardType="phone-pad" />
+            <Button onPress={handleCreateCustomer}>Create & select</Button>
             <Pressable onPress={() => setShowNewCustomer(false)}>
               <ThemedText themeColor="textSecondary">← Back to search</ThemedText>
             </Pressable>
           </View>
         ) : (
           <>
-            <TextInput
-              value={customerQuery}
-              onChangeText={setCustomerQuery}
-              placeholder="Search name or phone"
-              placeholderTextColor={theme.textSecondary}
-              style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-            />
+            <TextField value={customerQuery} onChangeText={setCustomerQuery} placeholder="Search name or phone" />
             {customerResults.map(c => (
               <Pressable
                 key={c.id}
                 onPress={() => { setSelectedCustomer(c); setCustomerResults([]); }}
-                style={[styles.listRow, { borderColor: theme.backgroundSelected }]}
+                style={styles.listRow}
               >
                 <ThemedText type="small">{c.firstName} {c.lastName} · {c.phone}</ThemedText>
               </Pressable>
             ))}
             <Pressable onPress={() => setShowNewCustomer(true)}>
-              <ThemedText themeColor="textSecondary">+ New customer</ThemedText>
+              <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>+ New customer</ThemedText>
             </Pressable>
           </>
         )}
-      </Section>
+      </Card>
 
-      <Section label="Add item">
+      <Card style={styles.section}>
+        <SectionLabel>Add item</SectionLabel>
         <ThemedText themeColor="textSecondary" type="small">Service</ThemedText>
         <View style={styles.chipRow}>
           {activeServices.map(s => (
-            <Pressable
-              key={s.id}
-              onPress={() => { setSelectedServiceId(s.id); setSelectedItemTypeId(null); }}
-              style={[styles.chip, { borderColor: theme.backgroundSelected }, selectedServiceId === s.id && { backgroundColor: theme.backgroundSelected }]}
-            >
-              <ThemedText type="small">{s.name}</ThemedText>
-            </Pressable>
+            <Chip key={s.id} selected={selectedServiceId === s.id} onPress={() => { setSelectedServiceId(s.id); setSelectedItemTypeId(null); }}>
+              {s.name}
+            </Chip>
           ))}
         </View>
 
@@ -284,13 +259,9 @@ export default function CreateOrderScreen() {
             <ThemedText themeColor="textSecondary" type="small">Item type</ThemedText>
             <View style={styles.chipRow}>
               {activeItemTypes.map(t => (
-                <Pressable
-                  key={t.id}
-                  onPress={() => setSelectedItemTypeId(t.id)}
-                  style={[styles.chip, { borderColor: theme.backgroundSelected }, selectedItemTypeId === t.id && { backgroundColor: theme.backgroundSelected }]}
-                >
-                  <ThemedText type="small">{t.name}</ThemedText>
-                </Pressable>
+                <Chip key={t.id} selected={selectedItemTypeId === t.id} onPress={() => setSelectedItemTypeId(t.id)}>
+                  {t.name}
+                </Chip>
               ))}
             </View>
           </>
@@ -298,32 +269,29 @@ export default function CreateOrderScreen() {
 
         {selectedService && priceRange && (
           <View style={styles.row}>
-            <TextInput
+            <TextField
               value={quantity}
               onChangeText={setQuantity}
               placeholder={selectedService.pricingMode === 'per_kg' ? 'Weight (kg)' : 'Quantity'}
-              placeholderTextColor={theme.textSecondary}
               keyboardType="decimal-pad"
-              style={[styles.input, { flex: 1, color: theme.text, borderColor: theme.backgroundSelected }]}
+              style={{ flex: 1 }}
             />
-            <TextInput
+            <TextField
               value={unitPrice}
               onChangeText={setUnitPrice}
               placeholder={`GHS ${priceRange.min.toFixed(2)}–${priceRange.max.toFixed(2)}`}
-              placeholderTextColor={theme.textSecondary}
               keyboardType="decimal-pad"
-              style={[styles.input, { flex: 1, color: theme.text, borderColor: theme.backgroundSelected }]}
+              style={{ flex: 1 }}
             />
           </View>
         )}
 
-        <Pressable onPress={handleAddLine} style={styles.button}>
-          <ThemedText style={styles.buttonText}>Add item</ThemedText>
-        </Pressable>
-      </Section>
+        <Button variant="secondary" onPress={handleAddLine}>Add item</Button>
+      </Card>
 
       {lines.length > 0 && (
-        <Section label="Items in this order">
+        <Card style={styles.section}>
+          <SectionLabel>Items in this order</SectionLabel>
           {lines.map(line => (
             <View key={line.key} style={styles.itemRow}>
               <ThemedText type="small">
@@ -332,64 +300,48 @@ export default function CreateOrderScreen() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                 <ThemedText type="small">GHS {line.totalPrice.toFixed(2)}</ThemedText>
                 <Pressable onPress={() => removeLine(line.key)}>
-                  <ThemedText style={{ color: '#B91C1C' }}>Remove</ThemedText>
+                  <ThemedText style={{ color: Colors.error.fg }}>Remove</ThemedText>
                 </Pressable>
               </View>
             </View>
           ))}
           <ThemedText style={{ fontWeight: '700', marginTop: 8 }}>Subtotal: GHS {subtotal.toFixed(2)}</ThemedText>
-        </Section>
+        </Card>
       )}
 
-      <Section label="Priority">
+      <Card style={styles.section}>
+        <SectionLabel>Priority</SectionLabel>
         <View style={styles.chipRow}>
           {ORDER_PRIORITIES.map(p => (
-            <Pressable
-              key={p}
-              onPress={() => setPriority(p)}
-              style={[styles.chip, { borderColor: theme.backgroundSelected }, priority === p && { backgroundColor: theme.backgroundSelected }]}
-            >
-              <ThemedText type="small" style={{ textTransform: 'capitalize' }}>{p}</ThemedText>
-            </Pressable>
+            <Chip key={p} selected={priority === p} onPress={() => setPriority(p)}>
+              {p.charAt(0).toUpperCase() + p.slice(1)}
+            </Chip>
           ))}
         </View>
-      </Section>
+      </Card>
 
-      <Section label="Location (optional)">
-        <TextInput
-          value={location}
-          onChangeText={setLocation}
-          placeholder="Pickup/delivery address"
-          placeholderTextColor={theme.textSecondary}
-          style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-        />
-      </Section>
+      <Card style={styles.section}>
+        <SectionLabel>Location (optional)</SectionLabel>
+        <TextField value={location} onChangeText={setLocation} placeholder="Pickup/delivery address" />
+      </Card>
 
-      <Section label="Notes (optional)">
-        <TextInput
-          value={notes}
-          onChangeText={setNotes}
-          placeholder="Any special instructions"
-          placeholderTextColor={theme.textSecondary}
-          style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-        />
-      </Section>
+      <Card style={styles.section}>
+        <SectionLabel>Notes (optional)</SectionLabel>
+        <TextField value={notes} onChangeText={setNotes} placeholder="Any special instructions" />
+      </Card>
 
-      <Pressable onPress={handleSubmit} disabled={isSubmitting} style={[styles.button, styles.submitButton, { opacity: isSubmitting ? 0.6 : 1 }]}>
-        <ThemedText style={styles.buttonText}>{isSubmitting ? 'Creating…' : 'Create order'}</ThemedText>
-      </Pressable>
+      <Button onPress={handleSubmit} isPending={isSubmitting} style={styles.submitButton}>
+        Create order
+      </Button>
     </ScrollView>
   );
 }
 
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
+function SectionLabel({ children }: { children: string }) {
   return (
-    <View style={styles.section}>
-      <ThemedText themeColor="textSecondary" type="small" style={styles.sectionLabel}>
-        {label.toUpperCase()}
-      </ThemedText>
-      {children}
-    </View>
+    <ThemedText themeColor="textSecondary" type="small" style={styles.sectionLabel}>
+      {children.toUpperCase()}
+    </ThemedText>
   );
 }
 
@@ -398,30 +350,19 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingTop: 60,
     paddingBottom: 48,
-    gap: 8,
+    gap: 12,
   },
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: Colors.background,
   },
   section: {
-    marginTop: 16,
     gap: 8,
   },
   sectionLabel: {
     letterSpacing: 0.5,
-  },
-  error: {
-    color: '#B91C1C',
-    marginTop: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 16,
   },
   row: {
     flexDirection: 'row',
@@ -432,14 +373,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
-  chip: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
   listRow: {
     borderWidth: 1,
+    borderColor: Colors.backgroundSelected,
     borderRadius: 10,
     padding: 10,
   },
@@ -453,18 +389,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  button: {
-    backgroundColor: '#2F6B4F',
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-  },
   submitButton: {
-    marginTop: 24,
-  },
-  buttonText: {
-    color: '#FAF8F5',
-    fontWeight: '600',
+    marginTop: 8,
   },
 });

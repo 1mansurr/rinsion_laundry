@@ -1,8 +1,10 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/contexts/AuthContext';
+import { Colors } from '@/constants/theme';
 
 /**
  * M1 placeholder — proves auth + role routing end to end. Replaced by the
@@ -13,15 +15,15 @@ export function PlaceholderHome({ sectionLabel }: { sectionLabel: string }) {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title">{sectionLabel}</ThemedText>
+      <ThemedText type="title" style={{ color: Colors.brand }}>{sectionLabel}</ThemedText>
       {profile && (
         <ThemedText themeColor="textSecondary">
           Signed in as {profile.firstName} {profile.lastName} · {profile.role}
         </ThemedText>
       )}
-      <Pressable onPress={signOut} style={styles.button}>
-        <ThemedText style={styles.buttonText}>Sign out</ThemedText>
-      </Pressable>
+      <Button variant="destructive" onPress={signOut} style={styles.button}>
+        Sign out
+      </Button>
     </ThemedView>
   );
 }
@@ -36,14 +38,5 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 24,
-    borderWidth: 1,
-    borderColor: '#B91C1C',
-    borderRadius: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  buttonText: {
-    color: '#B91C1C',
-    fontWeight: '600',
   },
 });

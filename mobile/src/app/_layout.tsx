@@ -1,15 +1,28 @@
 import { Stack } from 'expo-router';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useColorScheme } from 'react-native';
+import { DefaultTheme, ThemeProvider, type Theme } from '@react-navigation/native';
 
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
+import { Colors } from '@/constants/theme';
+
+// Rinsion has no dark mode (see constants/theme.ts) — one fixed navigation
+// theme rather than switching on the device's color scheme.
+const RinsionNavigationTheme: Theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: Colors.brand,
+    background: Colors.background,
+    card: Colors.card,
+    text: Colors.text,
+    border: Colors.backgroundSelected,
+  },
+};
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={RinsionNavigationTheme}>
       <AuthProvider>
         <RootNavigator />
       </AuthProvider>
