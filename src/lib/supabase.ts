@@ -76,6 +76,27 @@ export function createAdminClient() {
 }
 
 /**
+ * Verifies the mobile app's Supabase access token and returns the
+ * authenticated user id, or null. The React Native app has no cookie jar
+ * (createClient() above needs one) — it sends its session's access token in
+ * an Authorization: Bearer header instead, same identity space as the
+ * website (see mobile/src/lib/supabase.ts). Used by src/app/api/mobile/*
+ * route handlers, which then look up the caller's employees/riders row
+ * themselves via createAdminClient() — there is no cookie-bound RLS session
+ * to piggyback on here, so those lookups are scoped explicitly rather than
+ * left to RLS, same pattern already used throughout services/riders/.
+ */
+export async function verifyMobileToken(accessToken: string): Promise<string | null> {
+  const anon = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+  const { data, error } = await anon.auth.getUser(accessToken)
+  if (error || !data.user) return null
+  return data.user.id
+}
+
+/**
  * Shared client type so service functions that accept an injectable client
  * (e.g. getSoleBranchId, used both under a session and, unauthenticated,
  * from acceptInvite) can type that parameter without importing

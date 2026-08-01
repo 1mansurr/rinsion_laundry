@@ -1,10 +1,16 @@
 'use server'
 
-import { createClient } from '@/lib/supabase'
+import { createClient, type DbClient } from '@/lib/supabase'
 import { decryptField } from '@/lib/crypto'
 
-export async function getOrder(id: string) {
-  const supabase = createClient()
+// client is overridable for the mobile API routes (src/app/api/mobile/),
+// which pass createAdminClient() — see getOrdersList.ts's comment on why.
+// laundryId is enforced explicitly here (not just left to RLS): the website
+// path already relies on tenant_isolation via createClient(), but an
+// admin-client caller bypasses RLS entirely, so this filter is the only
+// thing standing between a mobile request and another laundry's order.
+export async function getOrder(id: string, laundryId: string, client: DbClient = createClient()) {
+  const supabase = client
   const { data } = await supabase
     .from('orders')
     .select(`
@@ -25,6 +31,7 @@ export async function getOrder(id: string) {
       logistics_requests(id, kind, status, created_at)
     `)
     .eq('id', id)
+    .eq('laundry_id', laundryId)
     .is('deleted_at', null)
     .single()
 

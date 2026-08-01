@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase'
+import { createClient, type DbClient } from '@/lib/supabase'
 import { decryptField, computeBlindIndex } from '@/lib/crypto'
 import { normalizeCustomerPhone } from '@/utils/normalizeCustomerPhone'
 
@@ -23,9 +23,15 @@ export interface OrderListRow {
 
 export async function getOrdersList(
   laundryId: string,
-  options: { status?: string; q?: string; page?: number; perPage?: number } = {}
+  options: { status?: string; q?: string; page?: number; perPage?: number } = {},
+  // Overridable for the mobile API routes (src/app/api/mobile/), which have
+  // no cookie session to build an RLS-scoped createClient() from — they pass
+  // createAdminClient() instead, having already verified the caller/laundryId
+  // themselves. Defaults to the normal cookie-session client for every
+  // existing website caller.
+  client: DbClient = createClient()
 ): Promise<{ rows: OrderListRow[]; total: number }> {
-  const supabase = createClient()
+  const supabase = client
   const { status, q, page = 1, perPage = 30 } = options
   const from = (page - 1) * perPage
   const to = from + perPage - 1

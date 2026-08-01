@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase'
+import { createClient, type DbClient } from '@/lib/supabase'
 import { getOrder } from '@/services/orders/getOrder'
 import { getItemTypes } from '@/services/items/getItemTypes'
 import type { OrderStatus, OrderPriority, PricingMode } from '@/constants/statuses'
@@ -43,11 +43,13 @@ export interface OrderDetailData {
   deliveryRequest: { id: string; status: string } | null
 }
 
-export async function getOrderDetail(id: string, laundryId: string): Promise<OrderDetailData | null> {
-  const order = await getOrder(id)
+// client is overridable for the mobile API routes (src/app/api/mobile/),
+// which pass createAdminClient() — see getOrdersList.ts's comment on why.
+export async function getOrderDetail(id: string, laundryId: string, client: DbClient = createClient()): Promise<OrderDetailData | null> {
+  const order = await getOrder(id, laundryId, client)
   if (!order) return null
 
-  const supabase = createClient()
+  const supabase = client
 
   // Enrich notes with employee author names
   const { data: rawNotes } = await supabase

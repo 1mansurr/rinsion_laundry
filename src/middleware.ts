@@ -49,6 +49,16 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
+  // Mobile app API routes (src/app/api/mobile/*): the React Native app has
+  // no cookie jar, so it authenticates with an Authorization: Bearer header
+  // instead — verified inside each route via getMobileEmployeeProfile(),
+  // not here. Every other branch below redirects a cookie-less request to
+  // /login, which would otherwise turn every mobile API call into an HTML
+  // redirect response instead of JSON.
+  if (pathname.startsWith('/api/mobile/')) {
+    return supabaseResponse
+  }
+
   // /internal and /platform both require platform_admins clearance, checked
   // server-side in their own layouts (needs the service-role client, which
   // stays out of middleware) — here they just need a valid session, same as

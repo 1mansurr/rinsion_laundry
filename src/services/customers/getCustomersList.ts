@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase'
+import { createClient, type DbClient } from '@/lib/supabase'
 import { decryptField, computeBlindIndex } from '@/lib/crypto'
 import { normalizeCustomerPhone } from '@/utils/normalizeCustomerPhone'
 
@@ -15,11 +15,14 @@ export interface CustomerListRow {
   lastOrderDate: string | null
 }
 
+// client is overridable for the mobile API routes (src/app/api/mobile/) —
+// see getOrdersList.ts's comment on why.
 export async function getCustomersList(
   laundryId: string,
-  options: { q?: string; page?: number; perPage?: number } = {}
+  options: { q?: string; page?: number; perPage?: number } = {},
+  client: DbClient = createClient()
 ): Promise<{ rows: CustomerListRow[]; total: number }> {
-  const supabase = createClient()
+  const supabase = client
   const { q, page = 1, perPage = 30 } = options
   const from = (page - 1) * perPage
   const to = from + perPage - 1
