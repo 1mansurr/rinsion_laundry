@@ -19,13 +19,31 @@ export async function GET(request: NextRequest) {
   const page = Math.max(1, Number(searchParams.get('page') ?? '1'))
   const perPage = 30
 
+  const admin = createAdminClient()
+
   const { rows, total } = await getOrdersList(
     profile.laundryId,
     { q, status, page, perPage },
-    createAdminClient()
+    admin
   )
 
-  return NextResponse.json({ rows, total, page, perPage })
+  // Temporary diagnostic — an empty list is ambiguous (no orders at all for
+  // this laundry vs. a filter/query problem). A raw, unfiltered count next
+  // to the resolved employee identity makes that unambiguous. Remove once
+  // the on-device testing session that needed this is done.
+  const { count: rawOrderCount } = await admin
+    .from('orders')
+    .select('id', { count: 'exact', head: true })
+    .eq('laundry_id', profile.laundryId)
+    .is('deleted_at', null)
+
+  return NextResponse.json({
+    rows,
+    total,
+    page,
+    perPage,
+    debug: { employeeId: profile.employeeId, laundryId: profile.laundryId, rawOrderCount },
+  })
 }
 
 interface CreateOrderBody {
