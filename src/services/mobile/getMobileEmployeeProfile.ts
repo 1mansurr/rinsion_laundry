@@ -6,6 +6,7 @@ export interface MobileEmployeeProfile {
   userId: string
   employeeId: string
   laundryId: string
+  branchId: string
   role: EmployeeRole
   firstName: string
   lastName: string
@@ -30,7 +31,7 @@ export async function getMobileEmployeeProfile(request: NextRequest): Promise<Mo
   const admin = createAdminClient()
   const { data: employee } = await admin
     .from('employees')
-    .select('id, laundry_id, role, first_name, last_name')
+    .select('id, laundry_id, branch_id, role, first_name, last_name')
     .eq('auth_user_id', userId)
     .eq('is_active', true)
     .is('deleted_at', null)
@@ -41,6 +42,7 @@ export async function getMobileEmployeeProfile(request: NextRequest): Promise<Mo
     userId,
     employeeId: employee.id,
     laundryId: employee.laundry_id,
+    branchId: employee.branch_id,
     role: employee.role as EmployeeRole,
     firstName: employee.first_name,
     lastName: employee.last_name,

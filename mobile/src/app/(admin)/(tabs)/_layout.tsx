@@ -13,6 +13,10 @@ export default function AdminTabsLayout() {
       }}
     >
       <Tabs.Screen
+        name="dashboard/index"
+        options={{ title: 'Home', tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" color={color} size={size} /> }}
+      />
+      <Tabs.Screen
         name="index"
         options={{ title: 'Orders', tabBarIcon: ({ color, size }) => <Ionicons name="receipt-outline" color={color} size={size} /> }}
       />
