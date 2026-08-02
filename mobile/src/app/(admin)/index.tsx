@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
@@ -9,6 +9,7 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { TextField } from '@/components/ui/TextField';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOfflineQueue } from '@/hooks/useOfflineQueue';
 import { Colors } from '@/constants/theme';
 import { apiGet } from '@/lib/api';
 import type { OrderListRow } from '@/types/orders';
@@ -16,6 +17,7 @@ import type { OrderListRow } from '@/types/orders';
 export default function OrdersListScreen() {
   const router = useRouter();
   const { signOut } = useAuth();
+  const { pending, failed, clearFailed } = useOfflineQueue();
   const [rows, setRows] = useState<OrderListRow[]>([]);
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -40,6 +42,14 @@ export default function OrdersListScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Everything just synced — refresh so newly-created/updated orders show up.
+  const hadPending = useRef(false);
+  useEffect(() => {
+    if (hadPending.current && pending.length === 0) load(query);
+    hadPending.current = pending.length > 0;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pending.length]);
+
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
@@ -60,6 +70,20 @@ export default function OrdersListScreen() {
         onSubmitEditing={() => load(query)}
         placeholder="Search order # or customer"
       />
+
+      {pending.length > 0 && (
+        <ThemedText themeColor="textSecondary" type="small">
+          {pending.length} pending, syncing…
+        </ThemedText>
+      )}
+
+      {failed.map(f => (
+        <ErrorBanner
+          key={f.id}
+          message={`A queued action failed to sync: ${f.error}`}
+          onDismiss={() => clearFailed(f.id)}
+        />
+      ))}
 
       {error && <ErrorBanner message={error} />}
 

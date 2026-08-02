@@ -1,6 +1,12 @@
 import { Stack } from 'expo-router';
 
+import { useOfflineQueue } from '@/hooks/useOfflineQueue';
+
 export default function AdminLayout() {
+  // Mounted here (not per-screen) so the offline queue keeps replaying on
+  // reconnect/foreground no matter which admin screen is active.
+  useOfflineQueue();
+
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />

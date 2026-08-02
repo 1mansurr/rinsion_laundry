@@ -7,7 +7,14 @@ import { validatePriceRanges } from '@/services/pricing/validatePriceRanges'
 import { generatePickupCode } from '@/utils/generatePickupCode'
 import { generateOrderNumber } from '@/utils/generateOrderNumber'
 import { encryptField } from '@/lib/crypto'
+import { findIdempotentResponse, storeIdempotentResponse } from '@/services/mobile/idempotency'
 import type { OrderPriority, PricingMode } from '@/constants/statuses'
+
+interface CreateOrderResponse {
+  orderId: string
+  orderNumber: string
+  pickupCode: string
+}
 
 export async function GET(request: NextRequest) {
   const profile = await getMobileEmployeeProfile(request)
@@ -34,6 +41,8 @@ interface CreateOrderBody {
   pickupDate?: string
   notes?: string
   location?: string
+  /** Set by the mobile app's offline queue on a replayed create — see idempotency.ts. */
+  clientRequestId?: string
   items: {
     itemTypeId?: string
     serviceId: string
@@ -55,6 +64,11 @@ export async function POST(request: NextRequest) {
   }
 
   const admin = createAdminClient()
+
+  if (body.clientRequestId) {
+    const existing = await findIdempotentResponse<CreateOrderResponse>(admin, profile.laundryId, body.clientRequestId)
+    if (existing) return NextResponse.json(existing)
+  }
 
   const priceError = await validatePriceRanges(admin, profile.laundryId, body.items)
   if (priceError) return NextResponse.json({ error: priceError.error }, { status: 400 })
@@ -119,9 +133,13 @@ export async function POST(request: NextRequest) {
     .then(m => m.sendOrderCreatedSms(created!.order_id))
     .catch(() => null)
 
-  return NextResponse.json({
+  const response: CreateOrderResponse = {
     orderId: created.order_id,
     orderNumber: created.order_number,
     pickupCode: created.pickup_code,
-  })
+  }
+  if (body.clientRequestId) {
+    await storeIdempotentResponse(admin, profile.laundryId, body.clientRequestId, response)
+  }
+  return NextResponse.json(response)
 }

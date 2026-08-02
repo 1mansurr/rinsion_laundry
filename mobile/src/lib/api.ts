@@ -16,6 +16,15 @@ import { supabase } from '@/lib/supabase';
 // leading-slash path (e.g. "/api/mobile/orders") would otherwise double up.
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/+$/, '');
 
+/**
+ * Thrown when the request never reached the server at all (no connectivity,
+ * DNS failure, timeout) — distinguishable from a request that DID reach the
+ * server and got a real error response. The offline queue (lib/offlineQueue.ts)
+ * only queues actions that fail this way; a genuine validation/business
+ * error should surface to the user immediately, not get queued and retried.
+ */
+export class NetworkError extends Error {}
+
 async function authedFetch(path: string, init?: RequestInit): Promise<Response> {
   if (!API_BASE_URL) {
     throw new Error(
@@ -27,14 +36,19 @@ async function authedFetch(path: string, init?: RequestInit): Promise<Response> 
   const token = data.session?.access_token;
   if (!token) throw new Error('Not signed in.');
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      ...init?.headers,
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...init,
+      headers: {
+        ...init?.headers,
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch (err) {
+    throw new NetworkError(err instanceof Error ? err.message : 'Network request failed.');
+  }
 
   if (!response.ok) {
     const body = await response.json().catch(() => null);

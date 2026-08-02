@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -10,7 +10,8 @@ import { Chip } from '@/components/ui/Chip';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { TextField } from '@/components/ui/TextField';
 import { Colors } from '@/constants/theme';
-import { apiGet, apiPost } from '@/lib/api';
+import { apiGet, apiPost, NetworkError } from '@/lib/api';
+import { enqueueAction, generateOfflineActionId } from '@/lib/offlineQueue';
 import { ORDER_PRIORITIES, type OrderPriority } from '@/constants/statuses';
 import type { ItemType, LaundryService, PriceCell, CustomerListRow } from '@/types/referenceData';
 
@@ -177,23 +178,32 @@ export default function CreateOrderScreen() {
 
     setError(null);
     setIsSubmitting(true);
+    const clientRequestId = generateOfflineActionId();
+    const orderBody = {
+      customerId: selectedCustomer.id,
+      priority,
+      location: location.trim() || undefined,
+      notes: notes.trim() || undefined,
+      clientRequestId,
+      items: lines.map(l => ({
+        itemTypeId: l.itemTypeId,
+        serviceId: l.serviceId,
+        quantity: l.quantity,
+        unitPrice: l.unitPrice,
+        totalPrice: l.totalPrice,
+        pricingMode: l.pricingMode,
+      })),
+    };
     try {
-      const data = await apiPost<{ orderId: string }>('/api/mobile/orders', {
-        customerId: selectedCustomer.id,
-        priority,
-        location: location.trim() || undefined,
-        notes: notes.trim() || undefined,
-        items: lines.map(l => ({
-          itemTypeId: l.itemTypeId,
-          serviceId: l.serviceId,
-          quantity: l.quantity,
-          unitPrice: l.unitPrice,
-          totalPrice: l.totalPrice,
-          pricingMode: l.pricingMode,
-        })),
-      });
+      const data = await apiPost<{ orderId: string }>('/api/mobile/orders', orderBody);
       router.replace(`/orders/${data.orderId}`);
     } catch (err) {
+      if (err instanceof NetworkError) {
+        await enqueueAction(clientRequestId, 'create_order', '/api/mobile/orders', orderBody);
+        Alert.alert('Saved offline', "This order will be created automatically once you're back online.");
+        router.replace('/');
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Failed to create order.');
       setIsSubmitting(false);
     }

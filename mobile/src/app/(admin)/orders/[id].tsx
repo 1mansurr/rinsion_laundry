@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -11,7 +11,8 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { TextField } from '@/components/ui/TextField';
 import { Colors } from '@/constants/theme';
-import { apiGet, apiPost } from '@/lib/api';
+import { apiGet, apiPost, NetworkError } from '@/lib/api';
+import { enqueueAction, generateOfflineActionId } from '@/lib/offlineQueue';
 import { ORDER_STATUS_TRANSITIONS, PAYMENT_METHODS, PAYMENT_METHOD_LABELS, STATUS_LABELS, type PaymentMethod } from '@/constants/statuses';
 import type { OrderDetailData } from '@/types/orders';
 
@@ -52,11 +53,21 @@ export default function OrderDetailScreen() {
     }
     setActionError(null);
     setIsSubmitting(true);
+    const clientRequestId = generateOfflineActionId();
+    const path = `/api/mobile/orders/${id}/payments`;
+    const body = { amount: parsed, paymentMethod: method, clientRequestId };
     try {
-      await apiPost(`/api/mobile/orders/${id}/payments`, { amount: parsed, paymentMethod: method });
+      await apiPost(path, body);
       setAmount('');
       await load();
     } catch (err) {
+      if (err instanceof NetworkError) {
+        await enqueueAction(clientRequestId, 'record_payment', path, body);
+        setOrder(prev => (prev ? { ...prev, amountPaid: prev.amountPaid + parsed } : prev));
+        setAmount('');
+        Alert.alert('Saved offline', "This payment will sync automatically once you're back online.");
+        return;
+      }
       setActionError(err instanceof Error ? err.message : 'Failed to record payment.');
     } finally {
       setIsSubmitting(false);
@@ -66,10 +77,19 @@ export default function OrderDetailScreen() {
   async function handleAdvanceStatus(nextStatus: string) {
     setActionError(null);
     setIsSubmitting(true);
+    const path = `/api/mobile/orders/${id}/status`;
+    const body = { status: nextStatus };
     try {
-      await apiPost(`/api/mobile/orders/${id}/status`, { status: nextStatus });
+      await apiPost(path, body);
       await load();
     } catch (err) {
+      if (err instanceof NetworkError) {
+        // No clientRequestId needed — re-applying the same status is a harmless no-op server-side.
+        await enqueueAction(generateOfflineActionId(), 'update_status', path, body);
+        setOrder(prev => (prev ? { ...prev, status: nextStatus } : prev));
+        Alert.alert('Saved offline', "This status update will sync automatically once you're back online.");
+        return;
+      }
       setActionError(err instanceof Error ? err.message : 'Failed to update status.');
     } finally {
       setIsSubmitting(false);

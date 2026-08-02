@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { getMobileEmployeeProfile } from '@/services/mobile/getMobileEmployeeProfile'
+import { findIdempotentResponse, storeIdempotentResponse } from '@/services/mobile/idempotency'
 import type { PaymentMethod } from '@/constants/statuses'
 
 interface Params {
@@ -18,13 +19,23 @@ export async function POST(request: NextRequest, { params }: Params) {
   const profile = await getMobileEmployeeProfile(request)
   if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json().catch(() => null) as { amount?: number; paymentMethod?: PaymentMethod } | null
+  const body = await request.json().catch(() => null) as {
+    amount?: number
+    paymentMethod?: PaymentMethod
+    /** Set by the mobile app's offline queue on a replayed record-payment — see idempotency.ts. */
+    clientRequestId?: string
+  } | null
   const amount = body?.amount
   const paymentMethod = body?.paymentMethod
   if (!amount || amount <= 0) return NextResponse.json({ error: 'Amount must be greater than 0.' }, { status: 400 })
   if (!paymentMethod) return NextResponse.json({ error: 'Payment method is required.' }, { status: 400 })
 
   const admin = createAdminClient()
+
+  if (body!.clientRequestId) {
+    const existing = await findIdempotentResponse<{ success: true }>(admin, profile.laundryId, body!.clientRequestId)
+    if (existing) return NextResponse.json(existing)
+  }
 
   const { data: order } = await admin
     .from('orders')
@@ -62,5 +73,9 @@ export async function POST(request: NextRequest, { params }: Params) {
   })
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  return NextResponse.json({ success: true })
+  const response = { success: true as const }
+  if (body!.clientRequestId) {
+    await storeIdempotentResponse(admin, profile.laundryId, body!.clientRequestId, response)
+  }
+  return NextResponse.json(response)
 }
