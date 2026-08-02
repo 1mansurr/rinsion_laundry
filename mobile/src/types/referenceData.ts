@@ -15,6 +15,7 @@ export interface LaundryService {
   pricingMode: 'per_item' | 'per_kg';
   minKgRate: number | null;
   maxKgRate: number | null;
+  notes?: string | null;
 }
 
 export interface PriceCell {

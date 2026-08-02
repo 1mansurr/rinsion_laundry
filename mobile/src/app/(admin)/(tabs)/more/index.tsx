@@ -9,8 +9,8 @@ import { Colors } from '@/constants/theme';
 
 /**
  * Catch-all for anything that doesn't need its own tab — as
- * Items & Services/Reports/Settings (M11-M13) get built, their entry points
- * land here rather than adding more top-level tabs.
+ * Reports/Settings (M12-M13) get built, their entry points land here rather
+ * than adding more top-level tabs.
  */
 export default function MoreScreen() {
   const router = useRouter();
@@ -23,6 +23,9 @@ export default function MoreScreen() {
       <Card style={{ gap: 0 }}>
         <Pressable onPress={() => router.push('/employees')} style={styles.row}>
           <ThemedText style={{ fontWeight: '600' }}>Team</ThemedText>
+        </Pressable>
+        <Pressable onPress={() => router.push('/items-and-services')} style={styles.row}>
+          <ThemedText style={{ fontWeight: '600' }}>Items & Services</ThemedText>
         </Pressable>
       </Card>
 
