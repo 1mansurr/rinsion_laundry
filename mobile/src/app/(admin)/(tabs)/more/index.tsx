@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -8,15 +9,22 @@ import { Colors } from '@/constants/theme';
 
 /**
  * Catch-all for anything that doesn't need its own tab — as
- * Employees/Items & Services/Reports/Settings (M10-M13) get built, their
- * entry points land here rather than adding more top-level tabs.
+ * Items & Services/Reports/Settings (M11-M13) get built, their entry points
+ * land here rather than adding more top-level tabs.
  */
 export default function MoreScreen() {
+  const router = useRouter();
   const { signOut } = useAuth();
 
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="title" style={{ color: Colors.brand }}>More</ThemedText>
+
+      <Card style={{ gap: 0 }}>
+        <Pressable onPress={() => router.push('/employees')} style={styles.row}>
+          <ThemedText style={{ fontWeight: '600' }}>Team</ThemedText>
+        </Pressable>
+      </Card>
 
       <Card>
         <Pressable onPress={signOut}>

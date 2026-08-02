@@ -31,6 +31,14 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   bank_transfer: 'Bank Transfer',
 };
 
+export const EMPLOYEE_ROLE = { ADMIN: 'admin', EMPLOYEE: 'employee' } as const;
+export type EmployeeRole = (typeof EMPLOYEE_ROLE)[keyof typeof EMPLOYEE_ROLE];
+
+export const EMPLOYEE_ROLE_LABELS: Record<EmployeeRole, string> = {
+  admin: 'Admin',
+  employee: 'Employee',
+};
+
 export const RIDER_ROLE = { ADMIN: 'admin', RIDER: 'rider' } as const;
 export type RiderRole = (typeof RIDER_ROLE)[keyof typeof RIDER_ROLE];
 
