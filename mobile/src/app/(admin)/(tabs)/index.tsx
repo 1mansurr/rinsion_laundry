@@ -8,7 +8,6 @@ import { Card } from '@/components/ui/Card';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { TextField } from '@/components/ui/TextField';
-import { useAuth } from '@/contexts/AuthContext';
 import { useOfflineQueue } from '@/hooks/useOfflineQueue';
 import { Colors } from '@/constants/theme';
 import { apiGet } from '@/lib/api';
@@ -16,7 +15,6 @@ import type { OrderListRow } from '@/types/orders';
 
 export default function OrdersListScreen() {
   const router = useRouter();
-  const { signOut } = useAuth();
   const { pending, failed, clearFailed } = useOfflineQueue();
   const [rows, setRows] = useState<OrderListRow[]>([]);
   const [query, setQuery] = useState('');
@@ -54,20 +52,9 @@ export default function OrdersListScreen() {
     <ThemedView style={styles.container}>
       <View style={styles.header}>
         <ThemedText type="title" style={{ color: Colors.brand }}>Orders</ThemedText>
-        <View style={styles.headerActions}>
-          <Pressable onPress={() => router.push('/customers')}>
-            <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>Customers</ThemedText>
-          </Pressable>
-          <Pressable onPress={() => router.push('/payments')}>
-            <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>Payments</ThemedText>
-          </Pressable>
-          <Pressable onPress={() => router.push('/orders/new')}>
-            <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>+ New</ThemedText>
-          </Pressable>
-          <Pressable onPress={signOut}>
-            <ThemedText themeColor="textSecondary">Sign out</ThemedText>
-          </Pressable>
-        </View>
+        <Pressable onPress={() => router.push('/orders/new')}>
+          <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>+ New</ThemedText>
+        </Pressable>
       </View>
 
       <TextField
@@ -131,11 +118,6 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: 16,
     alignItems: 'center',
   },
   list: {

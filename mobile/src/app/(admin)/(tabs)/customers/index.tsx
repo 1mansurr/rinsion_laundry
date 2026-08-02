@@ -42,14 +42,9 @@ export default function CustomersListScreen() {
     <ThemedView style={styles.container}>
       <View style={styles.header}>
         <ThemedText type="title" style={{ color: Colors.brand }}>Customers</ThemedText>
-        <View style={styles.headerActions}>
-          <Pressable onPress={() => router.push('/')}>
-            <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>Orders</ThemedText>
-          </Pressable>
-          <Pressable onPress={() => router.push('/customers/new')}>
-            <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>+ New</ThemedText>
-          </Pressable>
-        </View>
+        <Pressable onPress={() => router.push('/customers/new')}>
+          <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>+ New</ThemedText>
+        </Pressable>
       </View>
 
       <TextField
@@ -105,11 +100,6 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: 16,
     alignItems: 'center',
   },
   list: {

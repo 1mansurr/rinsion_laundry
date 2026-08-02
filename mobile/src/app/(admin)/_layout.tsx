@@ -9,14 +9,12 @@ export default function AdminLayout() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
+      <Stack.Screen name="(tabs)" />
       <Stack.Screen name="orders/[id]" />
       <Stack.Screen name="orders/new" />
-      <Stack.Screen name="customers/index" />
       <Stack.Screen name="customers/[id]" />
       <Stack.Screen name="customers/[id]/edit" />
       <Stack.Screen name="customers/new" />
-      <Stack.Screen name="payments/index" />
     </Stack>
   );
 }

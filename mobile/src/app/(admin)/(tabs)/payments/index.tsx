@@ -45,9 +45,6 @@ export default function PaymentsListScreen() {
     <ThemedView style={styles.container}>
       <View style={styles.header}>
         <ThemedText type="title" style={{ color: Colors.brand }}>Payments</ThemedText>
-        <Pressable onPress={() => router.push('/')}>
-          <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>Orders</ThemedText>
-        </Pressable>
       </View>
 
       {summary && (
