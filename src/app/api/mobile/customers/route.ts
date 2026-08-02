@@ -71,7 +71,34 @@ export async function POST(request: NextRequest) {
     })
     .select('id, first_name, last_name, phone, location')
     .single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    // 23505 = unique_violation on customers_laundry_phone_bidx_key — another
+    // request for the same phone number won the race between our existence
+    // check and this insert. Return that row instead of surfacing a raw SQL
+    // error to the app.
+    if (error.code === '23505') {
+      const { data: winner } = await admin
+        .from('customers')
+        .select('id, first_name, last_name, phone, location')
+        .eq('laundry_id', profile.laundryId)
+        .eq('phone_bidx', phoneBidx)
+        .is('deleted_at', null)
+        .maybeSingle()
+      if (winner) {
+        return NextResponse.json({
+          customer: {
+            id: winner.id,
+            firstName: decryptField(winner.first_name) ?? '',
+            lastName: decryptField(winner.last_name) ?? '',
+            phone: decryptField(winner.phone) ?? '',
+            location: winner.location ? decryptField(winner.location) : null,
+          },
+        })
+      }
+      return NextResponse.json({ error: 'A customer with this phone number already exists.' }, { status: 409 })
+    }
+    return NextResponse.json({ error: 'Failed to create customer.' }, { status: 500 })
+  }
 
   return NextResponse.json({
     customer: {

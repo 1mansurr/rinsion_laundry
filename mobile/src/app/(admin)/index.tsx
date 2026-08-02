@@ -20,16 +20,14 @@ export default function OrdersListScreen() {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [debug, setDebug] = useState<{ employeeId: string; laundryId: string; rawOrderCount: number | null } | null>(null);
 
   const load = useCallback(async (q: string) => {
     setIsLoading(true);
     setError(null);
     try {
       const params = q ? `?q=${encodeURIComponent(q)}` : '';
-      const data = await apiGet<{ rows: OrderListRow[]; total: number; debug?: typeof debug }>(`/api/mobile/orders${params}`);
+      const data = await apiGet<{ rows: OrderListRow[]; total: number }>(`/api/mobile/orders${params}`);
       setRows(data.rows);
-      setDebug(data.debug ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load orders.');
     } finally {
@@ -70,16 +68,7 @@ export default function OrdersListScreen() {
         keyExtractor={item => item.id}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={() => load(query)} />}
         contentContainerStyle={styles.list}
-        ListEmptyComponent={!isLoading ? (
-          <View style={{ gap: 4 }}>
-            <ThemedText themeColor="textSecondary">No orders found.</ThemedText>
-            {debug && (
-              <ThemedText themeColor="textSecondary" type="small">
-                (debug: employee {debug.employeeId.slice(0, 8)}, laundry {debug.laundryId.slice(0, 8)}, {debug.rawOrderCount ?? '?'} total orders on this laundry)
-              </ThemedText>
-            )}
-          </View>
-        ) : null}
+        ListEmptyComponent={!isLoading ? <ThemedText themeColor="textSecondary">No orders found.</ThemedText> : null}
         renderItem={({ item }) => (
           <Pressable onPress={() => router.push(`/orders/${item.id}`)}>
             <Card style={styles.row}>

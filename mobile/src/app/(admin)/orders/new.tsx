@@ -42,6 +42,7 @@ export default function CreateOrderScreen() {
   const [newLastName, setNewLastName] = useState('');
   const [newPhone, setNewPhone] = useState('');
   const [newLocation, setNewLocation] = useState('');
+  const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
 
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [selectedItemTypeId, setSelectedItemTypeId] = useState<string | null>(null);
@@ -104,11 +105,13 @@ export default function CreateOrderScreen() {
   // inside order creation (CreateOrderForm.tsx), not the standalone
   // /customers/new page's stricter validation.
   async function handleCreateCustomer() {
+    if (isCreatingCustomer) return;
     if (!newFirstName.trim() || !newPhone.trim()) {
       setError('First name and phone are required.');
       return;
     }
     setError(null);
+    setIsCreatingCustomer(true);
     try {
       const data = await apiPost<{ customer: CustomerListRow }>('/api/mobile/customers', {
         firstName: newFirstName.trim(),
@@ -122,6 +125,8 @@ export default function CreateOrderScreen() {
       setCustomerQuery('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create customer.');
+    } finally {
+      setIsCreatingCustomer(false);
     }
   }
 
@@ -226,7 +231,7 @@ export default function CreateOrderScreen() {
             <TextField value={newLastName} onChangeText={setNewLastName} placeholder="Last name (optional)" />
             <TextField value={newPhone} onChangeText={setNewPhone} placeholder="Phone" keyboardType="phone-pad" />
             <TextField value={newLocation} onChangeText={setNewLocation} placeholder="Location (optional)" />
-            <Button onPress={handleCreateCustomer}>Create & select</Button>
+            <Button onPress={handleCreateCustomer} isPending={isCreatingCustomer}>Create & select</Button>
             <Pressable onPress={() => setShowNewCustomer(false)}>
               <ThemedText themeColor="textSecondary">← Back to search</ThemedText>
             </Pressable>
