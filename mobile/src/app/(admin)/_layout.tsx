@@ -18,6 +18,7 @@ export default function AdminLayout() {
       <Stack.Screen name="employees/index" />
       <Stack.Screen name="items-and-services/index" />
       <Stack.Screen name="items-and-services/service/[id]" />
+      <Stack.Screen name="reports/index" />
     </Stack>
   );
 }
