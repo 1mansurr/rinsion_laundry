@@ -12,6 +12,10 @@ export default function AdminLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="orders/[id]" />
       <Stack.Screen name="orders/new" />
+      <Stack.Screen name="customers/index" />
+      <Stack.Screen name="customers/[id]" />
+      <Stack.Screen name="customers/[id]/edit" />
+      <Stack.Screen name="customers/new" />
     </Stack>
   );
 }

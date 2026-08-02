@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
@@ -6,19 +6,15 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Card } from '@/components/ui/Card';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
-import { StatusBadge } from '@/components/ui/StatusBadge';
 import { TextField } from '@/components/ui/TextField';
-import { useAuth } from '@/contexts/AuthContext';
-import { useOfflineQueue } from '@/hooks/useOfflineQueue';
 import { Colors } from '@/constants/theme';
 import { apiGet } from '@/lib/api';
-import type { OrderListRow } from '@/types/orders';
+import { formatDate } from '@/utils/formatDate';
+import type { CustomerRow } from '@/types/customers';
 
-export default function OrdersListScreen() {
+export default function CustomersListScreen() {
   const router = useRouter();
-  const { signOut } = useAuth();
-  const { pending, failed, clearFailed } = useOfflineQueue();
-  const [rows, setRows] = useState<OrderListRow[]>([]);
+  const [rows, setRows] = useState<CustomerRow[]>([]);
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,10 +24,10 @@ export default function OrdersListScreen() {
     setError(null);
     try {
       const params = q ? `?q=${encodeURIComponent(q)}` : '';
-      const data = await apiGet<{ rows: OrderListRow[]; total: number }>(`/api/mobile/orders${params}`);
+      const data = await apiGet<{ rows: CustomerRow[]; total: number }>(`/api/mobile/customers${params}`);
       setRows(data.rows);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load orders.');
+      setError(err instanceof Error ? err.message : 'Failed to load customers.');
     } finally {
       setIsLoading(false);
     }
@@ -42,27 +38,16 @@ export default function OrdersListScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Everything just synced — refresh so newly-created/updated orders show up.
-  const hadPending = useRef(false);
-  useEffect(() => {
-    if (hadPending.current && pending.length === 0) load(query);
-    hadPending.current = pending.length > 0;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pending.length]);
-
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
-        <ThemedText type="title" style={{ color: Colors.brand }}>Orders</ThemedText>
+        <ThemedText type="title" style={{ color: Colors.brand }}>Customers</ThemedText>
         <View style={styles.headerActions}>
-          <Pressable onPress={() => router.push('/customers')}>
-            <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>Customers</ThemedText>
+          <Pressable onPress={() => router.push('/')}>
+            <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>Orders</ThemedText>
           </Pressable>
-          <Pressable onPress={() => router.push('/orders/new')}>
+          <Pressable onPress={() => router.push('/customers/new')}>
             <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>+ New</ThemedText>
-          </Pressable>
-          <Pressable onPress={signOut}>
-            <ThemedText themeColor="textSecondary">Sign out</ThemedText>
           </Pressable>
         </View>
       </View>
@@ -71,22 +56,8 @@ export default function OrdersListScreen() {
         value={query}
         onChangeText={setQuery}
         onSubmitEditing={() => load(query)}
-        placeholder="Search order # or customer"
+        placeholder="Search name or phone"
       />
-
-      {pending.length > 0 && (
-        <ThemedText themeColor="textSecondary" type="small">
-          {pending.length} pending, syncing…
-        </ThemedText>
-      )}
-
-      {failed.map(f => (
-        <ErrorBanner
-          key={f.id}
-          message={`A queued action failed to sync: ${f.error}`}
-          onDismiss={() => clearFailed(f.id)}
-        />
-      ))}
 
       {error && <ErrorBanner message={error} />}
 
@@ -95,19 +66,25 @@ export default function OrdersListScreen() {
         keyExtractor={item => item.id}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={() => load(query)} />}
         contentContainerStyle={styles.list}
-        ListEmptyComponent={!isLoading ? <ThemedText themeColor="textSecondary">No orders found.</ThemedText> : null}
+        ListEmptyComponent={!isLoading ? <ThemedText themeColor="textSecondary">No customers found.</ThemedText> : null}
         renderItem={({ item }) => (
-          <Pressable onPress={() => router.push(`/orders/${item.id}`)}>
+          <Pressable onPress={() => router.push(`/customers/${item.id}`)}>
             <Card style={styles.row}>
               <View style={{ flex: 1, gap: 4 }}>
-                <ThemedText type="smallBold">{item.orderNumber}</ThemedText>
-                <ThemedText themeColor="textSecondary" type="small">
-                  {item.customerName || '—'}
-                </ThemedText>
+                <ThemedText type="smallBold">{item.firstName} {item.lastName}</ThemedText>
+                <ThemedText themeColor="textSecondary" type="small">{item.phone}</ThemedText>
               </View>
               <View style={{ alignItems: 'flex-end', gap: 4 }}>
-                <StatusBadge status={item.status} />
-                <ThemedText type="small" style={styles.amount}>GHS {item.total.toFixed(2)}</ThemedText>
+                <ThemedText type="small">{item.ordersCount} order{item.ordersCount !== 1 ? 's' : ''}</ThemedText>
+                {item.outstandingBalance > 0 ? (
+                  <ThemedText type="small" style={{ color: Colors.error.fg, fontWeight: '600' }}>
+                    GHS {item.outstandingBalance.toFixed(2)} due
+                  </ThemedText>
+                ) : (
+                  <ThemedText themeColor="textSecondary" type="small">
+                    {item.lastOrderDate ? formatDate(item.lastOrderDate) : '—'}
+                  </ThemedText>
+                )}
               </View>
             </Card>
           </Pressable>
@@ -142,8 +119,5 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  amount: {
-    fontVariant: ['tabular-nums'],
   },
 });

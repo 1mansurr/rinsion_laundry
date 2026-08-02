@@ -9,9 +9,12 @@ export async function GET(request: NextRequest) {
   const profile = await getMobileEmployeeProfile(request)
   if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const q = request.nextUrl.searchParams.get('q') ?? ''
-  const { rows, total } = await getCustomersList(profile.laundryId, { q, perPage: 20 }, createAdminClient())
-  return NextResponse.json({ rows, total })
+  const { searchParams } = request.nextUrl
+  const q = searchParams.get('q') ?? ''
+  const page = Math.max(1, Number(searchParams.get('page') ?? '1'))
+  const perPage = Number(searchParams.get('perPage') ?? '20')
+  const { rows, total } = await getCustomersList(profile.laundryId, { q, page, perPage }, createAdminClient())
+  return NextResponse.json({ rows, total, page, perPage })
 }
 
 /**

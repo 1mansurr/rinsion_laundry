@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -29,6 +29,7 @@ interface OrderLine {
 
 export default function CreateOrderScreen() {
   const router = useRouter();
+  const { customerId } = useLocalSearchParams<{ customerId?: string }>();
 
   const [itemTypes, setItemTypes] = useState<ItemType[]>([]);
   const [services, setServices] = useState<LaundryService[]>([]);
@@ -68,6 +69,16 @@ export default function CreateOrderScreen() {
       .catch(err => setError(err instanceof Error ? err.message : 'Failed to load pricing.'))
       .finally(() => setIsLoadingRefData(false));
   }, []);
+
+  // Preselects the customer when arriving from their detail screen's "New order" button.
+  useEffect(() => {
+    if (!customerId) return;
+    apiGet<{ customer: { id: string; firstName: string; lastName: string; phone: string; location: string | null } }>(
+      `/api/mobile/customers/${customerId}`
+    )
+      .then(data => setSelectedCustomer(data.customer))
+      .catch(() => null);
+  }, [customerId]);
 
   useEffect(() => {
     if (!customerQuery.trim()) {
