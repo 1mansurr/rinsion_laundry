@@ -32,6 +32,12 @@ export default function SettingsHubScreen() {
           </Pressable>
         ))}
       </Card>
+
+      <Card style={{ borderColor: Colors.error.border, backgroundColor: Colors.error.bg }}>
+        <Pressable onPress={() => router.push('/settings/danger-zone')}>
+          <ThemedText style={{ fontWeight: '600', color: Colors.error.fg }}>Danger zone</ThemedText>
+        </Pressable>
+      </Card>
     </ScrollView>
   );
 }

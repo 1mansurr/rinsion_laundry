@@ -27,6 +27,7 @@ export default function AdminLayout() {
       <Stack.Screen name="settings/subscription" />
       <Stack.Screen name="settings/sms-usage" />
       <Stack.Screen name="settings/recycle-bin" />
+      <Stack.Screen name="settings/danger-zone" />
     </Stack>
   );
 }
