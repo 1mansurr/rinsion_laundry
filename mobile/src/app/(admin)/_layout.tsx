@@ -19,6 +19,14 @@ export default function AdminLayout() {
       <Stack.Screen name="items-and-services/index" />
       <Stack.Screen name="items-and-services/service/[id]" />
       <Stack.Screen name="reports/index" />
+      <Stack.Screen name="settings/index" />
+      <Stack.Screen name="settings/laundry" />
+      <Stack.Screen name="settings/branches" />
+      <Stack.Screen name="settings/workflow" />
+      <Stack.Screen name="settings/pricing-model" />
+      <Stack.Screen name="settings/subscription" />
+      <Stack.Screen name="settings/sms-usage" />
+      <Stack.Screen name="settings/recycle-bin" />
     </Stack>
   );
 }

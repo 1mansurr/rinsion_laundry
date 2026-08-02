@@ -31,6 +31,9 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   bank_transfer: 'Bank Transfer',
 };
 
+export const PRICING_MODELS = ['per_item', 'per_kg', 'mixed'] as const;
+export type PricingModel = (typeof PRICING_MODELS)[number];
+
 export const EMPLOYEE_ROLE = { ADMIN: 'admin', EMPLOYEE: 'employee' } as const;
 export type EmployeeRole = (typeof EMPLOYEE_ROLE)[keyof typeof EMPLOYEE_ROLE];
 

@@ -8,8 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/theme';
 
 /**
- * Catch-all for anything that doesn't need its own tab — as Settings (M13)
- * gets built, its entry point lands here rather than adding another tab.
+ * Catch-all for anything that doesn't need its own tab.
  */
 export default function MoreScreen() {
   const router = useRouter();
@@ -28,6 +27,9 @@ export default function MoreScreen() {
         </Pressable>
         <Pressable onPress={() => router.push('/reports')} style={styles.row}>
           <ThemedText style={{ fontWeight: '600' }}>Reports</ThemedText>
+        </Pressable>
+        <Pressable onPress={() => router.push('/settings')} style={styles.row}>
+          <ThemedText style={{ fontWeight: '600' }}>Settings</ThemedText>
         </Pressable>
       </Card>
 
