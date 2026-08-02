@@ -41,6 +41,7 @@ export default function CreateOrderScreen() {
   const [newFirstName, setNewFirstName] = useState('');
   const [newLastName, setNewLastName] = useState('');
   const [newPhone, setNewPhone] = useState('');
+  const [newLocation, setNewLocation] = useState('');
 
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [selectedItemTypeId, setSelectedItemTypeId] = useState<string | null>(null);
@@ -99,19 +100,24 @@ export default function CreateOrderScreen() {
     if (priceRange) setUnitPrice(priceRange.min.toFixed(2));
   }, [priceRange]);
 
+  // Last name is optional here — matches the website's inline quick-add
+  // inside order creation (CreateOrderForm.tsx), not the standalone
+  // /customers/new page's stricter validation.
   async function handleCreateCustomer() {
-    if (!newFirstName.trim() || !newLastName.trim() || !newPhone.trim()) {
-      setError('First name, last name, and phone are required.');
+    if (!newFirstName.trim() || !newPhone.trim()) {
+      setError('First name and phone are required.');
       return;
     }
     setError(null);
     try {
       const data = await apiPost<{ customer: CustomerListRow }>('/api/mobile/customers', {
         firstName: newFirstName.trim(),
-        lastName: newLastName.trim(),
+        lastName: newLastName.trim() || undefined,
         phone: newPhone.trim(),
+        location: newLocation.trim() || undefined,
       });
       setSelectedCustomer(data.customer);
+      setLocation(data.customer.location ?? '');
       setShowNewCustomer(false);
       setCustomerQuery('');
     } catch (err) {
@@ -217,8 +223,9 @@ export default function CreateOrderScreen() {
         ) : showNewCustomer ? (
           <View style={{ gap: 8 }}>
             <TextField value={newFirstName} onChangeText={setNewFirstName} placeholder="First name" />
-            <TextField value={newLastName} onChangeText={setNewLastName} placeholder="Last name" />
+            <TextField value={newLastName} onChangeText={setNewLastName} placeholder="Last name (optional)" />
             <TextField value={newPhone} onChangeText={setNewPhone} placeholder="Phone" keyboardType="phone-pad" />
+            <TextField value={newLocation} onChangeText={setNewLocation} placeholder="Location (optional)" />
             <Button onPress={handleCreateCustomer}>Create & select</Button>
             <Pressable onPress={() => setShowNewCustomer(false)}>
               <ThemedText themeColor="textSecondary">← Back to search</ThemedText>

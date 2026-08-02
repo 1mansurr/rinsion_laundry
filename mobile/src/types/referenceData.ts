@@ -31,4 +31,5 @@ export interface CustomerListRow {
   firstName: string;
   lastName: string;
   phone: string;
+  location?: string | null;
 }

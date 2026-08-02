@@ -14,17 +14,23 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ rows, total })
 }
 
-/** Mirrors services/customers/createCustomer.ts's phone-uniqueness-first logic, via the admin client. */
+/**
+ * Mirrors services/customers/createCustomer.ts's phone-uniqueness-first
+ * logic, via the admin client. Last name is optional here — matches the
+ * website's inline quick-add inside order creation (CreateOrderForm.tsx),
+ * not the stricter standalone /customers/new page which requires it.
+ */
 export async function POST(request: NextRequest) {
   const profile = await getMobileEmployeeProfile(request)
   if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json().catch(() => null) as { firstName?: string; lastName?: string; phone?: string } | null
+  const body = await request.json().catch(() => null) as { firstName?: string; lastName?: string; phone?: string; location?: string } | null
   const firstName = body?.firstName?.trim()
-  const lastName = body?.lastName?.trim()
+  const lastName = body?.lastName?.trim() ?? ''
   const phone = body?.phone?.trim()
-  if (!firstName || !lastName || !phone) {
-    return NextResponse.json({ error: 'First name, last name, and phone are required.' }, { status: 400 })
+  const location = body?.location?.trim()
+  if (!firstName || !phone) {
+    return NextResponse.json({ error: 'First name and phone are required.' }, { status: 400 })
   }
 
   const admin = createAdminClient()
@@ -33,7 +39,7 @@ export async function POST(request: NextRequest) {
 
   const { data: existing } = await admin
     .from('customers')
-    .select('id, first_name, last_name, phone')
+    .select('id, first_name, last_name, phone, location')
     .eq('laundry_id', profile.laundryId)
     .eq('phone_bidx', phoneBidx)
     .is('deleted_at', null)
@@ -46,6 +52,7 @@ export async function POST(request: NextRequest) {
         firstName: decryptField(existing.first_name) ?? '',
         lastName: decryptField(existing.last_name) ?? '',
         phone: decryptField(existing.phone) ?? '',
+        location: existing.location ? decryptField(existing.location) : null,
       },
     })
   }
@@ -60,8 +67,9 @@ export async function POST(request: NextRequest) {
       last_name: encryptField(lastName),
       phone: encryptField(normalizedPhone),
       phone_bidx: phoneBidx,
+      location: location ? encryptField(location) : null,
     })
-    .select('id, first_name, last_name, phone')
+    .select('id, first_name, last_name, phone, location')
     .single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
@@ -71,6 +79,7 @@ export async function POST(request: NextRequest) {
       firstName: decryptField(data.first_name) ?? '',
       lastName: decryptField(data.last_name) ?? '',
       phone: decryptField(data.phone) ?? '',
+      location: data.location ? decryptField(data.location) : null,
     },
   })
 }
