@@ -58,6 +58,9 @@ export default function OrdersListScreen() {
           <Pressable onPress={() => router.push('/customers')}>
             <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>Customers</ThemedText>
           </Pressable>
+          <Pressable onPress={() => router.push('/payments')}>
+            <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>Payments</ThemedText>
+          </Pressable>
           <Pressable onPress={() => router.push('/orders/new')}>
             <ThemedText style={{ color: Colors.brand, fontWeight: '600' }}>+ New</ThemedText>
           </Pressable>
