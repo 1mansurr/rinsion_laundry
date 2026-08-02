@@ -30,3 +30,20 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   card: 'Card',
   bank_transfer: 'Bank Transfer',
 };
+
+export const RIDER_ROLE = { ADMIN: 'admin', RIDER: 'rider' } as const;
+export type RiderRole = (typeof RIDER_ROLE)[keyof typeof RIDER_ROLE];
+
+/** Mirrors rider_job_status — symmetric across pickup/delivery kind, see the website's migration comment. */
+export const RIDER_JOB_STATUSES = ['assigned', 'en_route', 'picked_up', 'dropped_off'] as const;
+export type RiderJobStatus = (typeof RIDER_JOB_STATUSES)[number];
+
+/** Statuses a rider can move a job forward to — excludes 'assigned', which only a company admin sets via the queue. */
+export const NEXT_RIDER_JOB_STATUSES: RiderJobStatus[] = ['en_route', 'picked_up', 'dropped_off'];
+
+export const RIDER_JOB_STATUS_LABELS: Record<RiderJobStatus, string> = {
+  assigned: 'Assigned',
+  en_route: 'En route',
+  picked_up: 'Picked up',
+  dropped_off: 'Dropped off',
+};
