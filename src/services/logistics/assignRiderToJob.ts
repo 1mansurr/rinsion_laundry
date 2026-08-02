@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase'
 import { getMyRiderProfile } from '@/services/riders/getMyRiderProfile'
 import { requireRiderRole } from '@/lib/auth'
 import { RIDER_ROLE } from '@/constants/statuses'
+import { sendExpoPush } from '@/lib/push/sendExpoPush'
 import { revalidatePath } from 'next/cache'
 import type { ServiceResult } from '@/types/serviceResult'
 
@@ -30,7 +31,7 @@ export async function assignRiderToJob(jobId: string, riderId: string): Promise<
 
   const { data: rider } = await admin
     .from('riders')
-    .select('id')
+    .select('id, expo_push_token')
     .eq('id', riderId)
     .eq('rider_company_id', caller.riderCompanyId)
     .eq('is_active', true)
@@ -49,6 +50,13 @@ export async function assignRiderToJob(jobId: string, riderId: string): Promise<
     logistics_request_id: jobId,
     message: 'New job assigned to you.',
   })
+
+  // Real OS-level push alongside the in-app notification above — the
+  // in-app one still lands even if the phone has no token registered yet
+  // (e.g. permission not granted), so this is additive, not a replacement.
+  if (rider.expo_push_token) {
+    void sendExpoPush(rider.expo_push_token, 'New job assigned', 'Open the app to view and accept it.')
+  }
 
   revalidatePath('/rider/queue')
   return { success: true, data: null }

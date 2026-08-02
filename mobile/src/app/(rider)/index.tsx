@@ -6,6 +6,7 @@ import { ThemedView } from '@/components/themed-view';
 import { MyJobsView } from '@/components/rider/MyJobsView';
 import { QueueView } from '@/components/rider/QueueView';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRegisterRiderPush } from '@/hooks/useRegisterRiderPush';
 import { Colors } from '@/constants/theme';
 import { RIDER_ROLE } from '@/constants/statuses';
 
@@ -16,6 +17,7 @@ export default function RiderHome() {
   const router = useRouter();
   const { profile, signOut } = useAuth();
   const isAdmin = profile?.kind === 'rider' && profile.role === RIDER_ROLE.ADMIN;
+  useRegisterRiderPush();
 
   return (
     <ThemedView style={styles.container}>

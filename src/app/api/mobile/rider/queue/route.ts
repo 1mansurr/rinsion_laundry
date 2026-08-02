@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { decryptField } from '@/lib/crypto'
 import { getMobileRiderProfile } from '@/services/mobile/getMobileRiderProfile'
+import { sendExpoPush } from '@/lib/push/sendExpoPush'
 import { RIDER_ROLE } from '@/constants/statuses'
 import type { RiderJobStatus } from '@/constants/statuses'
 
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest) {
 
   const { data: rider } = await admin
     .from('riders')
-    .select('id')
+    .select('id, expo_push_token')
     .eq('id', riderId)
     .eq('rider_company_id', profile.riderCompanyId)
     .eq('is_active', true)
@@ -125,6 +126,10 @@ export async function POST(request: NextRequest) {
     logistics_request_id: jobId,
     message: 'New job assigned to you.',
   })
+
+  if (rider.expo_push_token) {
+    void sendExpoPush(rider.expo_push_token, 'New job assigned', 'Open the app to view and accept it.')
+  }
 
   return NextResponse.json({ success: true })
 }

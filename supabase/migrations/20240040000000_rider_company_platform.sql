@@ -78,6 +78,11 @@ CREATE TABLE riders (
   last_name        TEXT        NOT NULL,
   phone            TEXT        NOT NULL,
   is_active        BOOLEAN     NOT NULL DEFAULT TRUE,
+  -- Expo push token for this rider's device — lets assignRiderToJob.ts send
+  -- a real OS-level push alongside the in-app rider_notifications row below.
+  -- One token per rider (last-registered-device wins); added here rather
+  -- than a later migration since nothing had consumed this table yet.
+  expo_push_token  TEXT,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   deleted_at       TIMESTAMPTZ
