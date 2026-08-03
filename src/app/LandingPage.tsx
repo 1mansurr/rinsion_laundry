@@ -3,41 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Wordmark } from '@/components/ui/Wordmark'
-
-const FAQS = [
-  {
-    q: 'What happens when the network goes down?',
-    a: "Rinsion needs internet, and we won't pretend otherwise. If the network drops, write it on paper and enter it when you're back. Nothing already recorded is lost.",
-  },
-  {
-    q: 'How do I pay you?',
-    a: 'Mobile money. We send you the number when your trial ends. No card, ever.',
-  },
-  {
-    q: 'Do I need a computer?',
-    a: 'No. Rinsion runs in the browser on the phone in your pocket. Nothing to install.',
-  },
-  {
-    q: 'What if I send more than 400 texts?',
-    a: 'They keep sending at GHS 0.05 each, added to your next month.',
-  },
-  {
-    q: 'Will my staff actually use it?',
-    a: 'They already send WhatsApp messages all day. Marking an order Ready is one tap, fewer steps than writing the line in the book. And because every action carries their name, the ones doing the work get the credit for it.',
-  },
-  {
-    q: 'Can I get my records out?',
-    a: 'Yes. Export your orders, customers and payments to a spreadsheet whenever you want. Your records are yours.',
-  },
-  {
-    q: 'Do I have to enter all my old customers first?',
-    a: "No. Start with today's orders and let the customer list build itself. Keep the book on the counter until you notice you've stopped reaching for it.",
-  },
-  {
-    q: 'What if I stop paying?',
-    a: "You get twelve days. For the first six everything keeps working. After that it goes read-only, so you can still open every record, you just can't add new ones.",
-  },
-]
+import { FAQS } from '@/constants/faq'
 
 const TODAY_ORDERS = [
   { name: 'Ama Owusu', order: 'ORD-4KP7MX2A', status: 'ready' as const, label: 'Ready', ready: 'Ready by 28 Jun', overdue: false },
@@ -594,11 +560,11 @@ export function LandingPage() {
           </div>
           <div className="max-w-[480px] mx-auto">
             <div className="bg-white border border-warm-300 rounded-18 p-[clamp(26px,4vw,36px)] shadow-[0_30px_64px_-40px_rgba(26,26,26,.32)]">
-              <div className="flex items-baseline gap-2 justify-center"><span className="tnum text-[clamp(36px,7vw,48px)] font-extrabold tracking-[-0.03em]">GHS 120</span><span className="text-[15px] text-warm-800 font-medium">/ month</span></div>
+              <div className="flex items-baseline gap-2 justify-center"><span className="tnum text-[clamp(36px,7vw,48px)] font-extrabold tracking-[-0.03em]">GHS 90</span><span className="text-[15px] text-warm-800 font-medium">/ month</span></div>
               <div className="mt-2.5 text-center text-[15px] font-bold">Fourteen days free first.</div>
               <ul className="list-none mt-[26px] p-0 flex flex-col gap-[13px]">
-                <li className="flex gap-2.5 items-start text-[15.5px] leading-[1.45]"><CheckIcon /><span>You, plus up to <b>5 staff</b></span></li>
-                <li className="flex gap-2.5 items-start text-[15.5px] leading-[1.45]"><CheckIcon /><span><b>400 texts</b> a month</span></li>
+                <li className="flex gap-2.5 items-start text-[15.5px] leading-[1.45]"><CheckIcon /><span>You, plus up to <b>4 staff</b></span></li>
+                <li className="flex gap-2.5 items-start text-[15.5px] leading-[1.45]"><CheckIcon /><span><b>350 texts</b> a month</span></li>
                 <li className="flex gap-2.5 items-start text-[15.5px] leading-[1.45]"><CheckIcon /><span>Unlimited orders, customers and payments</span></li>
                 <li className="flex gap-2.5 items-start text-[15.5px] leading-[1.45]"><CheckIcon /><span>Every action logged. Export any time.</span></li>
               </ul>

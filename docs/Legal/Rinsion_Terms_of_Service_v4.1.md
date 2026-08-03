@@ -1,7 +1,7 @@
 # Rinsion Terms of Service
 
 **Effective date:** 2026-07-20
-**Last updated:** 2026-07-20
+**Last updated:** 2026-08-03
 
 ---
 
@@ -35,11 +35,10 @@ New Laundries may receive a one-time free trial of **14 days**. During the trial
 
 ## 6. Plans, fees, and payment
 
-Rinsion is offered on the plan below at signup. Current pricing and allowances are shown here and on our Pricing page, and may change on reasonable notice.
+Rinsion is offered on the plan below at signup, after the free trial described in Section 5. Current pricing and allowances are shown here and on our Pricing page, and may change on reasonable notice.
 
 | Plan | Price | Billing cycle | Staff accounts | SMS included per cycle |
 |---|---|---|---|---|
-| Trial | Free | 14 days, one time | 4 | 350 |
 | Starter | GHS 90 per month | 30 days | 4 | 350 |
 
 **Growth** (GHS 180 per month, 30-day cycle, 9 staff accounts, 800 SMS per cycle) is a higher-limit plan for laundries that outgrow Starter. It is not available as a self-serve signup or upgrade — contact us directly and we will move your subscription onto it manually.
