@@ -560,7 +560,7 @@ export function LandingPage() {
       </section>
 
       {/* ============ BEFORE YOU ASK ============ */}
-      <section className="bg-canvas px-[clamp(20px,5vw,40px)] py-[clamp(56px,8vw,92px)]">
+      <section id="faq" className="bg-canvas px-[clamp(20px,5vw,40px)] py-[clamp(56px,8vw,92px)]">
         <div className="max-w-[1120px] mx-auto">
           <div className="max-w-[640px] mb-[clamp(24px,4vw,40px)]">
             <div className="text-xs font-bold tracking-eyebrow-lg uppercase text-clay mb-3">Before you ask</div>

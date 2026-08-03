@@ -3,12 +3,12 @@
 import Link from 'next/link'
 import { Wordmark } from './ui/Wordmark'
 
-export function TopAppBar({ onOpenDrawer }: { onOpenDrawer: () => void }) {
+export function TopAppBar() {
   return (
     <div className="min-[720px]:hidden flex-shrink-0 h-[54px] flex items-center gap-3 px-[18px] bg-white border-b border-warm-300">
-      <button type="button" onClick={onOpenDrawer} aria-label="Open menu" className="cursor-pointer">
+      <Link href="/dashboard" aria-label="Home">
         <Wordmark size="sm" />
-      </button>
+      </Link>
       <div className="ml-auto flex items-center gap-2">
         <Link
           href="/orders"

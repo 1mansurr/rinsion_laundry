@@ -45,7 +45,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <div className="flex h-dvh bg-canvas">
         <Sidebar profile={profile} showPickupRequests={showPickupRequests} />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <MobileChrome profile={profile} subscriptionLocked={subscriptionLocked} showPickupRequests={showPickupRequests} />
+          <MobileChrome subscriptionLocked={subscriptionLocked} />
           <Suspense fallback={null}>
             <UnauthorizedNotice />
           </Suspense>
@@ -56,7 +56,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           )}
           <MainScrollArea>{children}</MainScrollArea>
         </div>
-        <BottomTabBar role={profile.role} showPickupRequests={showPickupRequests} />
+        <BottomTabBar />
         <CommandPalette />
       </div>
     </ProfileProvider>
