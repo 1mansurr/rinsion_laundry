@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { getMyProfile } from '@/services/employees/getMyProfile'
-import { getSettings } from '@/services/settings/getSettings'
 import { signOut } from '@/app/login/actions'
 
 const ROW_ICONS: Record<string, string> = {
@@ -10,7 +9,6 @@ const ROW_ICONS: Record<string, string> = {
   itemsServices: 'M12.4 2.4 21 11l-9.6 9.6a2 2 0 0 1-2.8 0L3 15V3h12l-.6-.6ZM7 8a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z',
   reports: 'M5 21V10h3v11H5Zm6 0V3h3v18h-3Zm6 0v-7h3v7h-3Z',
   settings: 'M19.14 12.94a7.14 7.14 0 0 0 .06-.94 7.14 7.14 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.7 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.62-.06.94s.02.63.06.94L2.82 14.5a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.4.32.61.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.23.09.47 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.56ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z',
-  pickupRequests: 'M12 2 2 7v10l10 5 10-5V7l-10-5zm0 2.2 6.9 3.4L12 11l-6.9-3.4L12 4.2zM4 8.9l7 3.5v7.4l-7-3.5V8.9zm9 10.9v-7.4l7-3.5v7.4l-7 3.5z',
   support: 'M12 2a10 10 0 1 0 6.2 17.9L21 21l-.9-2.9A10 10 0 0 0 12 2Zm-4 9a1.2 1.2 0 1 1 0 2.4A1.2 1.2 0 0 1 8 11Zm4 0a1.2 1.2 0 1 1 0 2.4A1.2 1.2 0 0 1 12 11Zm4 0a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4Z',
   legal: 'M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.5V8h4.5L14 3.5ZM7 12h10v1.5H7V12Zm0 4h10v1.5H7V16Zm0-8h5v1.5H7V8Z',
 }
@@ -54,8 +52,6 @@ export default async function AccountPage() {
   if (!profile) return null
 
   const isAdmin = profile.role === 'admin'
-  const settings = await getSettings()
-  const showPickupRequests = settings?.allowCustomerSubmissions ?? false
   const initials = `${profile.firstName[0] ?? ''}${profile.lastName[0] ?? ''}`.toUpperCase()
 
   return (
@@ -74,23 +70,27 @@ export default async function AccountPage() {
         <Row href="/customers" icon="customers" label="Customers" desc="Search, view and manage customer records" />
         <Row href="/payments" icon="payments" label="Payments" desc="Payment history across all orders" />
         {isAdmin && <Row href="/employees" icon="team" label="Team" desc="Invite staff, manage roles and access" />}
-        {showPickupRequests && <Row href="/pickup-requests" icon="pickupRequests" label="Pickup Requests" desc="Customer-submitted pickup requests" />}
       </div>
 
       {isAdmin && (
         <div className="bg-white border border-warm-300 rounded-18 overflow-hidden mb-4">
           <Row href="/items-and-services" icon="itemsServices" label="Items & Services" desc="Pricing and catalog management" />
           <Row href="/reports" icon="reports" label="Reports" desc="Revenue, orders and activity" />
-          <Row href="/settings" icon="settings" label="Settings" desc="Business, branches, plan and workflow" />
         </div>
       )}
 
       <div className="bg-white border border-warm-300 rounded-18 overflow-hidden mb-4">
         <Row href="https://wa.me/233257528042" icon="support" label="Help & Support" desc="Message us on WhatsApp" external />
-        <Row href="/#faq" icon="support" label="Frequently Asked Questions" desc="Answers to common questions" />
+        <Row href="/account/faq" icon="support" label="Frequently Asked Questions" desc="Answers to common questions" />
         <Row href="/terms" icon="legal" label="Terms of Service" desc="Terms you agreed to when signing up" />
         <Row href="/privacy" icon="legal" label="Privacy Policy" desc="How your and your customers' data is handled" />
       </div>
+
+      {isAdmin && (
+        <div className="bg-white border border-warm-300 rounded-18 overflow-hidden mb-4">
+          <Row href="/settings" icon="settings" label="Settings" desc="Business, branches, plan and workflow" />
+        </div>
+      )}
 
       <form action={signOut}>
         <button

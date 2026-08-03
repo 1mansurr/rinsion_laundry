@@ -2,8 +2,11 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getOrdersList, type OrderListRow } from '@/services/orders/getOrdersList'
+import { getSettings } from '@/services/settings/getSettings'
+import { getPickupRequestsPendingCount } from '@/services/pickupRequests/getPickupRequestsPendingCount'
 import { StatusBadge } from '@/components/app/StatusBadge'
 import { UrlPagination } from '@/components/ui/UrlPagination'
+import { OrdersSegmentedNav } from '@/components/app/OrdersSegmentedNav'
 import { OrdersFilterBar } from './OrdersFilterBar'
 import { formatDate } from '@/utils/formatDate'
 import { formatCurrency } from '@/utils/formatCurrency'
@@ -29,6 +32,9 @@ export default async function OrdersPage({ searchParams }: Props) {
   const page = Math.max(1, Number(searchParams.page ?? '1'))
 
   const { rows, total } = await getOrdersList(profile.laundryId, { q, status, page, perPage: PER_PAGE })
+  const settings = await getSettings()
+  const showPickupRequests = settings?.allowCustomerSubmissions ?? false
+  const pendingCount = showPickupRequests ? await getPickupRequestsPendingCount() : 0
 
   const totalPages = Math.ceil(total / PER_PAGE)
   const from = total === 0 ? 0 : (page - 1) * PER_PAGE + 1
@@ -60,8 +66,14 @@ export default async function OrdersPage({ searchParams }: Props) {
         </Link>
       </div>
 
+      {showPickupRequests && (
+        <div className="mt-[18px]">
+          <OrdersSegmentedNav active="orders" pendingCount={pendingCount} />
+        </div>
+      )}
+
       {/* Filter bar */}
-      <div className="mt-[18px] mb-[18px]">
+      <div className={`${showPickupRequests ? '' : 'mt-[18px]'} mb-[18px]`}>
         <OrdersFilterBar defaultQ={q} defaultStatus={status} />
       </div>
 
