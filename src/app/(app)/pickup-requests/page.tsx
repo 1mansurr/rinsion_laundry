@@ -3,6 +3,7 @@ import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getSettings } from '@/services/settings/getSettings'
 import { getPickupRequests } from '@/services/pickupRequests/getPickupRequests'
 import { getPickupRequestsPendingCount } from '@/services/pickupRequests/getPickupRequestsPendingCount'
+import { PICKUP_REQUESTS_UI_ENABLED } from '@/constants/featureFlags'
 import { OrdersSegmentedNav } from '@/components/app/OrdersSegmentedNav'
 import { PickupRequestCard } from './PickupRequestCard'
 
@@ -13,7 +14,7 @@ export default async function PickupRequestsPage() {
   // Defense in depth beyond hiding the nav item — a laundry without this
   // flag on shouldn't be able to reach the page via a direct URL either.
   const settings = await getSettings()
-  if (!settings?.allowCustomerSubmissions) redirect('/dashboard')
+  if (!PICKUP_REQUESTS_UI_ENABLED || !settings?.allowCustomerSubmissions) redirect('/dashboard')
 
   const [requests, pendingCount] = await Promise.all([
     getPickupRequests(),

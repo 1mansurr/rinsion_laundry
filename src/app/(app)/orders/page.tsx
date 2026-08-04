@@ -4,6 +4,7 @@ import { getMyProfile } from '@/services/employees/getMyProfile'
 import { getOrdersList, type OrderListRow } from '@/services/orders/getOrdersList'
 import { getSettings } from '@/services/settings/getSettings'
 import { getPickupRequestsPendingCount } from '@/services/pickupRequests/getPickupRequestsPendingCount'
+import { PICKUP_REQUESTS_UI_ENABLED } from '@/constants/featureFlags'
 import { StatusBadge } from '@/components/app/StatusBadge'
 import { UrlPagination } from '@/components/ui/UrlPagination'
 import { OrdersSegmentedNav } from '@/components/app/OrdersSegmentedNav'
@@ -33,7 +34,7 @@ export default async function OrdersPage({ searchParams }: Props) {
 
   const { rows, total } = await getOrdersList(profile.laundryId, { q, status, page, perPage: PER_PAGE })
   const settings = await getSettings()
-  const showPickupRequests = settings?.allowCustomerSubmissions ?? false
+  const showPickupRequests = PICKUP_REQUESTS_UI_ENABLED && (settings?.allowCustomerSubmissions ?? false)
   const pendingCount = showPickupRequests ? await getPickupRequestsPendingCount() : 0
 
   const totalPages = Math.ceil(total / PER_PAGE)
