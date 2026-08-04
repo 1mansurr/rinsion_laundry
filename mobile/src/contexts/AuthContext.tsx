@@ -9,6 +9,7 @@ export interface EmployeeProfile {
   role: 'admin' | 'employee'
   firstName: string
   lastName: string
+  laundryName: string
 }
 
 export interface RiderProfile {
@@ -40,13 +41,14 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 async function loadProfile(userId: string): Promise<AppProfile> {
   const { data: employee } = await supabase
     .from('employees')
-    .select('id, laundry_id, role, first_name, last_name')
+    .select('id, laundry_id, role, first_name, last_name, laundries(name)')
     .eq('auth_user_id', userId)
     .eq('is_active', true)
     .is('deleted_at', null)
     .maybeSingle()
 
   if (employee) {
+    const laundry = employee.laundries as unknown as { name: string } | null
     return {
       kind: 'employee',
       id: employee.id,
@@ -54,6 +56,7 @@ async function loadProfile(userId: string): Promise<AppProfile> {
       role: employee.role,
       firstName: employee.first_name,
       lastName: employee.last_name,
+      laundryName: laundry?.name ?? '',
     }
   }
 

@@ -43,6 +43,10 @@ export default function PaymentsListScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <Pressable onPress={() => router.back()}>
+        <ThemedText themeColor="textSecondary">← Back</ThemedText>
+      </Pressable>
+
       <View style={styles.header}>
         <ThemedText type="title" style={{ color: Colors.brand }}>Payments</ThemedText>
       </View>

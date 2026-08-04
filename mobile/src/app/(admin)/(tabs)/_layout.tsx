@@ -21,16 +21,8 @@ export default function AdminTabsLayout() {
         options={{ title: 'Orders', tabBarIcon: ({ color, size }) => <Ionicons name="receipt-outline" color={color} size={size} /> }}
       />
       <Tabs.Screen
-        name="customers/index"
-        options={{ title: 'Customers', tabBarIcon: ({ color, size }) => <Ionicons name="people-outline" color={color} size={size} /> }}
-      />
-      <Tabs.Screen
-        name="payments/index"
-        options={{ title: 'Payments', tabBarIcon: ({ color, size }) => <Ionicons name="cash-outline" color={color} size={size} /> }}
-      />
-      <Tabs.Screen
-        name="more/index"
-        options={{ title: 'More', tabBarIcon: ({ color, size }) => <Ionicons name="ellipsis-horizontal-circle-outline" color={color} size={size} /> }}
+        name="account/index"
+        options={{ title: 'Account', tabBarIcon: ({ color, size }) => <Ionicons name="person-circle-outline" color={color} size={size} /> }}
       />
     </Tabs>
   );

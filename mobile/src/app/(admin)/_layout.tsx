@@ -12,13 +12,16 @@ export default function AdminLayout() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="orders/[id]" />
       <Stack.Screen name="orders/new" />
+      <Stack.Screen name="customers/index" />
       <Stack.Screen name="customers/[id]" />
       <Stack.Screen name="customers/[id]/edit" />
       <Stack.Screen name="customers/new" />
+      <Stack.Screen name="payments/index" />
       <Stack.Screen name="employees/index" />
       <Stack.Screen name="items-and-services/index" />
       <Stack.Screen name="items-and-services/service/[id]" />
       <Stack.Screen name="reports/index" />
+      <Stack.Screen name="account/faq" />
       <Stack.Screen name="settings/index" />
       <Stack.Screen name="settings/laundry" />
       <Stack.Screen name="settings/branches" />

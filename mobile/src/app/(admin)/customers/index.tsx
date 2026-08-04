@@ -40,6 +40,10 @@ export default function CustomersListScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <Pressable onPress={() => router.back()}>
+        <ThemedText themeColor="textSecondary">← Back</ThemedText>
+      </Pressable>
+
       <View style={styles.header}>
         <ThemedText type="title" style={{ color: Colors.brand }}>Customers</ThemedText>
         <Pressable onPress={() => router.push('/customers/new')}>
