@@ -13,6 +13,7 @@ import { resendPickupCodeSms } from '@/services/notifications/resendPickupCodeSm
 import { createOrderNote } from '@/services/orders/createOrderNote'
 import { setOrderItemPieces } from '@/services/orders/setOrderItemPieces'
 import { DeliverySection } from './DeliverySection'
+import { OrderPaystackPayButton } from '@/components/app/OrderPaystackPayButton'
 import { PAYMENT_METHODS, type OrderStatus, type PaymentMethod } from '@/constants/statuses'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { formatTimeAgo } from '@/utils/formatTimeAgo'
@@ -966,6 +967,19 @@ export function OrderDetail({
               <span className="text-label text-warm-600">Amount due</span>
               <span className="tnum text-ui font-bold text-error-fg">{formatCurrency(balance)}</span>
             </div>
+
+            <OrderPaystackPayButton
+              orderId={orderId}
+              balance={balance}
+              defaultPhone={customerPhone}
+              onPaid={() => { toast.success('Payment received'); setPaymentOpen(false); router.refresh() }}
+            />
+            <div className="flex items-center gap-3">
+              <div className="h-px bg-warm-200 flex-1" />
+              <span className="text-caption text-warm-400">or record manually</span>
+              <div className="h-px bg-warm-200 flex-1" />
+            </div>
+
             <div>
               <label className="text-label font-medium text-warm-700 mb-1.5 block">Payment method</label>
               <select

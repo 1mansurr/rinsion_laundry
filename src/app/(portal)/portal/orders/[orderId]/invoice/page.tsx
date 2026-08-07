@@ -4,6 +4,7 @@ import { getOrderInvoiceData } from '@/services/orders/getOrderInvoiceData'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { Wordmark } from '@/components/ui/Wordmark'
 import { RequestPickupSection } from './RequestPickupSection'
+import { PayNowSection } from './PayNowSection'
 
 export default async function InvoicePage({ params }: { params: { orderId: string } }) {
   const profile = await getMyCustomerProfile()
@@ -92,6 +93,10 @@ export default async function InvoicePage({ params }: { params: { orderId: strin
         <p className="text-caption text-warm-500">
           Prices shown are estimates — the laundry confirms the final price once your items are received.
         </p>
+
+        {invoice.status !== 'draft' && invoice.balanceDue > 0 && (
+          <PayNowSection orderId={invoice.orderId} balanceDue={invoice.balanceDue} defaultPhone={invoice.customerPhone} />
+        )}
 
         {invoice.status === 'draft' && (
           <RequestPickupSection orderId={invoice.orderId} initialLocation={invoice.location} />

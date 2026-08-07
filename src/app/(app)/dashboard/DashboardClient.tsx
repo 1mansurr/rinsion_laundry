@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { verifyAndCollect } from '@/services/orders/verifyAndCollect'
 import { recordPayment } from '@/services/payments/recordPayment'
+import { OrderPaystackPayButton } from '@/components/app/OrderPaystackPayButton'
 import { PAYMENT_METHODS, type PaymentMethod } from '@/constants/statuses'
 import { Button } from '@/components/ui/Button'
 import { Banner } from '@/components/ui/Banner'
@@ -415,6 +416,18 @@ export function DashboardClient({
             <div className="bg-[#F8F5F0] rounded-12 px-4 py-3 flex items-center justify-between">
               <span className="text-label text-warm-600">Amount due</span>
               <span className="tnum text-ui font-bold text-error-fg">{formatCurrency(payingOrder.balance)}</span>
+            </div>
+
+            <OrderPaystackPayButton
+              orderId={payingOrder.id}
+              balance={payingOrder.balance}
+              defaultPhone={payingOrder.phone}
+              onPaid={() => { toast.success('Payment received'); closePay(); router.refresh() }}
+            />
+            <div className="flex items-center gap-3">
+              <div className="h-px bg-warm-200 flex-1" />
+              <span className="text-caption text-warm-400">or record manually</span>
+              <div className="h-px bg-warm-200 flex-1" />
             </div>
 
             {/* Method select */}

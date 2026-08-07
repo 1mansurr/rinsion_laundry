@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -16,6 +16,16 @@ import { enqueueAction, generateOfflineActionId } from '@/lib/offlineQueue';
 import { ORDER_STATUS_TRANSITIONS, PAYMENT_METHODS, PAYMENT_METHOD_LABELS, STATUS_LABELS, type PaymentMethod } from '@/constants/statuses';
 import type { OrderDetailData } from '@/types/orders';
 
+const MOMO_PROVIDERS: { value: 'mtn' | 'vod' | 'tgo'; label: string }[] = [
+  { value: 'mtn', label: 'MTN' },
+  { value: 'vod', label: 'Telecel' },
+  { value: 'tgo', label: 'AirtelTigo' },
+];
+
+const POLL_TIMEOUT_MS = 2 * 60 * 1000;
+
+type PayLinkStatus = 'pending' | 'paid' | 'failed' | 'expired';
+
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -27,6 +37,14 @@ export default function OrderDetailScreen() {
   const [method, setMethod] = useState<PaymentMethod>('cash');
   const [actionError, setActionError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Paystack "Pay via Mobile Money" — pushes a USSD/PIN prompt instead of a manual entry.
+  const [momoPhone, setMomoPhone] = useState('');
+  const [momoProvider, setMomoProvider] = useState<'mtn' | 'vod' | 'tgo'>('mtn');
+  const [isPaying, setIsPaying] = useState(false);
+  const [payLink, setPayLink] = useState<{ referenceCode: string; displayText?: string } | null>(null);
+  const [payLinkStatus, setPayLinkStatus] = useState<PayLinkStatus | null>(null);
+  const pollStartRef = useRef<number | null>(null);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -44,6 +62,52 @@ export default function OrderDetailScreen() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (order?.customerPhone && !momoPhone) setMomoPhone(order.customerPhone);
+  }, [order?.customerPhone, momoPhone]);
+
+  // Poll every 3s for up to ~2min while a Paystack charge is awaiting the
+  // customer's PIN confirmation — mirrors settings/subscription.tsx.
+  useEffect(() => {
+    if (!payLink || payLinkStatus !== 'pending') {
+      pollStartRef.current = null;
+      return;
+    }
+    if (pollStartRef.current === null) pollStartRef.current = Date.now();
+    if (Date.now() - pollStartRef.current > POLL_TIMEOUT_MS) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await apiGet<{ status: PayLinkStatus }>(`/api/mobile/payments/link?reference=${encodeURIComponent(payLink.referenceCode)}`);
+        setPayLinkStatus(res.status);
+        if (res.status === 'paid') await load();
+      } catch {
+        // transient network error — keep polling
+      }
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [payLink, payLinkStatus, load]);
+
+  async function handlePayMoMo() {
+    if (!momoPhone) return;
+    setActionError(null);
+    setIsPaying(true);
+    try {
+      const res = await apiPost<{ referenceCode: string; displayText?: string }>('/api/mobile/payments/link', {
+        orderId: id,
+        channel: 'mobile_money',
+        phone: momoPhone,
+        provider: momoProvider,
+      });
+      setPayLink(res);
+      setPayLinkStatus('pending');
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to start payment.');
+    } finally {
+      setIsPaying(false);
+    }
+  }
 
   async function handleRecordPayment() {
     const parsed = parseFloat(amount);
@@ -159,7 +223,41 @@ export default function OrderDetailScreen() {
 
       {balance > 0 && (
         <Card style={styles.section}>
-          <SectionLabel>Record payment</SectionLabel>
+          <SectionLabel>Pay via Mobile Money</SectionLabel>
+          {payLink && payLinkStatus === 'pending' ? (
+            <>
+              <ThemedText type="small">{payLink.displayText ?? 'Check the customer’s phone to enter their PIN'}</ThemedText>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <ActivityIndicator color={Colors.brand} size="small" />
+                <ThemedText themeColor="textSecondary" type="small">Waiting for confirmation…</ThemedText>
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={styles.chipRow}>
+                {MOMO_PROVIDERS.map(p => (
+                  <Chip key={p.value} selected={momoProvider === p.value} onPress={() => setMomoProvider(p.value)}>
+                    {p.label}
+                  </Chip>
+                ))}
+              </View>
+              <TextField
+                value={momoPhone}
+                onChangeText={setMomoPhone}
+                placeholder="0XX XXX XXXX"
+                keyboardType="phone-pad"
+              />
+              <Button onPress={handlePayMoMo} isPending={isPaying} disabled={!momoPhone}>
+                {`Pay GHS ${balance.toFixed(2)} via Mobile Money`}
+              </Button>
+            </>
+          )}
+        </Card>
+      )}
+
+      {balance > 0 && (
+        <Card style={styles.section}>
+          <SectionLabel>Or record manually</SectionLabel>
           <TextField
             value={amount}
             onChangeText={setAmount}

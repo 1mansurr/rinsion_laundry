@@ -101,6 +101,8 @@ export const ACTIVITY_ACTION_TYPES = {
   RIDER_ASSIGNED:                   'RIDER_ASSIGNED',
   DELIVERY_REQUESTED:               'DELIVERY_REQUESTED',
   DELIVERY_COMPLETED:               'DELIVERY_COMPLETED',
+  // Paystack Ghana payments plan (M2/M3) — payout accounts + order payments.
+  PAYOUT_ACCOUNT_CREATED:           'PAYOUT_ACCOUNT_CREATED',
 } as const
 
 export type ActivityActionType = (typeof ACTIVITY_ACTION_TYPES)[keyof typeof ACTIVITY_ACTION_TYPES]

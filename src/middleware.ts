@@ -59,6 +59,13 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse
   }
 
+  // Paystack webhook: called server-to-server by Paystack, no cookie jar —
+  // same reasoning as /api/mobile/ above. Signature verification happens
+  // inside the route handler itself; this must not redirect to /login.
+  if (pathname.startsWith('/api/webhooks/')) {
+    return supabaseResponse
+  }
+
   // /internal and /platform both require platform_admins clearance, checked
   // server-side in their own layouts (needs the service-role client, which
   // stays out of middleware) — here they just need a valid session, same as

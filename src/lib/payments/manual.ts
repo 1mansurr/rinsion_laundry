@@ -12,7 +12,7 @@
  * Spec reference: Rinsion_Technical_Overview.md §12 (Launch: ManualMomoProvider)
  */
 
-import type { PaymentProvider, PaymentLink, PaymentEvent } from './types'
+import type { PaymentProvider, PaymentLink, PaymentEvent, ChargeResult, MobileMoneyProvider } from './types'
 
 const RINSION_MOMO_NUMBER = process.env.RINSION_MOMO_NUMBER ?? 'TODO: set RINSION_MOMO_NUMBER env var'
 
@@ -29,8 +29,20 @@ export class ManualMomoProvider implements PaymentProvider {
     }
   }
 
+  async chargeMobileMoney(
+    _amount: number,
+    _reference: string,
+    _phone: string,
+    _provider: MobileMoneyProvider,
+    _metadata: Record<string, unknown>
+  ): Promise<ChargeResult> {
+    // Manual MoMo has no device-push equivalent — nothing should ever call
+    // this on ManualMomoProvider. Throw loudly rather than pretending to succeed.
+    throw new Error('ManualMomoProvider does not support chargeMobileMoney — manual MoMo is claim-and-verify only')
+  }
+
   async verifyWebhook(
-    _payload: unknown,
+    _rawBody: string,
     _signature: string
   ): Promise<PaymentEvent | null> {
     // Manual MoMo has no webhook — payments are verified by the Rinsion team

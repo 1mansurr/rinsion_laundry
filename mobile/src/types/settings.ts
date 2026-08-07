@@ -62,6 +62,13 @@ export interface SubscriptionPageData {
   newCycleEnd: string | null;
   referenceCode: string | null;
   momoNumber: string;
+  employeePhone: string;
+  paystackLink: {
+    referenceCode: string;
+    status: 'pending' | 'paid' | 'failed' | 'expired';
+    displayText: string | null;
+    amount: number;
+  } | null;
 }
 
 export interface SmsMessageRow {

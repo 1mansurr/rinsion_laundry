@@ -5,12 +5,13 @@ import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui/Card';
 import { Colors } from '@/constants/theme';
 
-const ITEMS: { label: string; path: '/settings/laundry' | '/settings/branches' | '/settings/pricing-model' | '/settings/workflow' | '/settings/subscription' | '/settings/sms-usage' | '/settings/recycle-bin' }[] = [
+const ITEMS: { label: string; path: '/settings/laundry' | '/settings/branches' | '/settings/pricing-model' | '/settings/workflow' | '/settings/subscription' | '/settings/payouts' | '/settings/sms-usage' | '/settings/recycle-bin' }[] = [
   { label: 'Laundry profile', path: '/settings/laundry' },
   { label: 'Branches', path: '/settings/branches' },
   { label: 'Pricing model', path: '/settings/pricing-model' },
   { label: 'Workflow', path: '/settings/workflow' },
   { label: 'Subscription', path: '/settings/subscription' },
+  { label: 'Payouts', path: '/settings/payouts' },
   { label: 'SMS usage', path: '/settings/sms-usage' },
   { label: 'Recycle bin', path: '/settings/recycle-bin' },
 ];

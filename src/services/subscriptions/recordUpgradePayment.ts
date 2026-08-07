@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase'
 import { revalidateTag } from 'next/cache'
 import { PLANS } from '@/constants/plans'
 import { computeProrateAmount } from './computeProrateAmount'
+import type { SubscriptionPaymentMethod } from '@/constants/subscriptionStatuses'
 
 interface UpgradeInput {
   laundryId: string
@@ -13,6 +14,7 @@ interface UpgradeInput {
   daysRemaining: number
   recordedByEmail: string
   externalReference?: string
+  paymentMethod?: SubscriptionPaymentMethod
 }
 
 /**
@@ -33,7 +35,7 @@ export async function recordUpgradePayment(
     amount,
     plan_at_payment: 'growth',
     payment_type: 'upgrade_prorate',
-    payment_method: 'manual_momo',
+    payment_method: input.paymentMethod ?? 'manual_momo',
     external_reference: input.externalReference ?? null,
     cycle_start_date: input.cycleStartDate,
     cycle_end_date: input.cycleEndDate,

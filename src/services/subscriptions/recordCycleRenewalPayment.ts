@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase'
 import { revalidateTag } from 'next/cache'
 import { PLANS, CYCLE_DAYS } from '@/constants/plans'
 import type { PlanKey } from '@/constants/plans'
+import type { SubscriptionPaymentMethod } from '@/constants/subscriptionStatuses'
 
 interface RenewalInput {
   laundryId: string
@@ -11,6 +12,7 @@ interface RenewalInput {
   plan: PlanKey
   recordedByEmail: string
   externalReference?: string
+  paymentMethod?: SubscriptionPaymentMethod
 }
 
 /**
@@ -36,7 +38,7 @@ export async function recordCycleRenewalPayment(
     amount,
     plan_at_payment: input.plan,
     payment_type: 'cycle_renewal',
-    payment_method: 'manual_momo',
+    payment_method: input.paymentMethod ?? 'manual_momo',
     external_reference: input.externalReference ?? null,
     cycle_start_date: cycleStart,
     cycle_end_date: cycleEnd,

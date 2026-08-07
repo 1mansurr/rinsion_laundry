@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -7,10 +7,19 @@ import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import { TextField } from '@/components/ui/TextField';
 import { Colors } from '@/constants/theme';
 import { apiGet, apiPost } from '@/lib/api';
 import { formatDate } from '@/utils/formatDate';
 import type { SubscriptionPageData } from '@/types/settings';
+
+const MOMO_PROVIDERS: { value: 'mtn' | 'vod' | 'tgo'; label: string }[] = [
+  { value: 'mtn', label: 'MTN' },
+  { value: 'vod', label: 'Telecel' },
+  { value: 'tgo', label: 'AirtelTigo' },
+];
+
+const POLL_TIMEOUT_MS = 2 * 60 * 1000;
 
 export default function SubscriptionScreen() {
   const router = useRouter();
@@ -19,9 +28,15 @@ export default function SubscriptionScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [claimed, setClaimed] = useState(false);
+  const [phone, setPhone] = useState('');
+  const [provider, setProvider] = useState<'mtn' | 'vod' | 'tgo'>('mtn');
+  const [isPaying, setIsPaying] = useState(false);
+  const lastParamsRef = useRef<{ action?: 'renew' | 'convert'; selectedPlan?: string }>({});
+  const pollStartRef = useRef<{ ref: string; start: number } | null>(null);
 
-  const load = useCallback(async (action?: 'renew' | 'convert', selectedPlan?: string) => {
-    setIsLoading(true);
+  const load = useCallback(async (action?: 'renew' | 'convert', selectedPlan?: string, opts?: { silent?: boolean }) => {
+    lastParamsRef.current = { action, selectedPlan };
+    if (!opts?.silent) setIsLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams();
@@ -33,13 +48,57 @@ export default function SubscriptionScreen() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load subscription.');
     } finally {
-      setIsLoading(false);
+      if (!opts?.silent) setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  // Prefill from the employee's own phone once, same as the website.
+  useEffect(() => {
+    if (data?.employeePhone && !phone) setPhone(data.employeePhone);
+  }, [data?.employeePhone, phone]);
+
+  // Poll every 3s for up to ~2min while a Paystack charge is awaiting the
+  // customer's PIN confirmation — mirrors the website's PaystackPayButton.
+  useEffect(() => {
+    const link = data?.paystackLink;
+    if (!link || link.status !== 'pending') {
+      pollStartRef.current = null;
+      return;
+    }
+    if (!pollStartRef.current || pollStartRef.current.ref !== link.referenceCode) {
+      pollStartRef.current = { ref: link.referenceCode, start: Date.now() };
+    }
+    if (Date.now() - pollStartRef.current.start > POLL_TIMEOUT_MS) return;
+
+    const timer = setTimeout(() => {
+      load(lastParamsRef.current.action, lastParamsRef.current.selectedPlan, { silent: true });
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [data, load]);
+
+  async function handlePayMoMo() {
+    if (!data?.paymentType || !data.targetPlan || !phone) return;
+    setError(null);
+    setIsPaying(true);
+    try {
+      await apiPost('/api/mobile/settings/subscription', {
+        action: 'initiatePaystack',
+        paymentType: data.paymentType,
+        targetPlan: data.targetPlan,
+        phone,
+        provider,
+      });
+      await load(lastParamsRef.current.action, lastParamsRef.current.selectedPlan, { silent: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to start payment.');
+    } finally {
+      setIsPaying(false);
+    }
+  }
 
   async function handleStartTrial() {
     setError(null);
@@ -120,22 +179,72 @@ export default function SubscriptionScreen() {
               <ThemedText themeColor="textSecondary" type="small">We&apos;ll confirm this once we&apos;ve verified the transfer.</ThemedText>
             </Card>
           ) : data?.paymentType && data.referenceCode ? (
-            <Card style={styles.section}>
-              <ThemedText type="smallBold">Send payment via MoMo</ThemedText>
-              <ThemedText type="small">MoMo number: {data.momoNumber}</ThemedText>
-              <ThemedText type="small">Amount: GHS {data.paymentAmount?.toFixed(2)}</ThemedText>
-              <ThemedText type="small">Reference: {data.referenceCode}</ThemedText>
-              <ThemedText themeColor="textSecondary" type="small">
-                Include the reference in the MoMo note, then confirm below once sent.
-              </ThemedText>
-              {claimed ? (
-                <ThemedText type="small" style={{ color: Colors.success.fg }}>Claim submitted — awaiting confirmation.</ThemedText>
-              ) : (
-                <Button onPress={handleClaim} isPending={isSubmitting}>
-                  {`I have sent GHS ${data.paymentAmount?.toFixed(2)}`}
-                </Button>
+            <>
+              {(data.paymentType === 'cycle_renewal' || data.paymentType === 'trial_conversion') && (
+                <Card style={styles.section}>
+                  <ThemedText type="smallBold">Pay via Mobile Money</ThemedText>
+                  {data.paystackLink?.status === 'pending' ? (
+                    <>
+                      <ThemedText type="small">
+                        {data.paystackLink.displayText ?? 'Check your phone to enter your PIN'}
+                      </ThemedText>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <ActivityIndicator color={Colors.brand} size="small" />
+                        <ThemedText themeColor="textSecondary" type="small">Waiting for confirmation…</ThemedText>
+                      </View>
+                    </>
+                  ) : (
+                    <>
+                      <View style={styles.row}>
+                        {MOMO_PROVIDERS.map(p => (
+                          <Pressable
+                            key={p.value}
+                            onPress={() => setProvider(p.value)}
+                            style={[
+                              styles.providerPill,
+                              provider === p.value && { backgroundColor: Colors.brand },
+                            ]}
+                          >
+                            <ThemedText
+                              type="small"
+                              style={{ color: provider === p.value ? '#FAF8F5' : Colors.text }}
+                            >
+                              {p.label}
+                            </ThemedText>
+                          </Pressable>
+                        ))}
+                      </View>
+                      <TextField
+                        value={phone}
+                        onChangeText={setPhone}
+                        placeholder="0XX XXX XXXX"
+                        keyboardType="phone-pad"
+                      />
+                      <Button onPress={handlePayMoMo} isPending={isPaying} disabled={!phone}>
+                        {`Pay GHS ${data.paymentAmount?.toFixed(2)} via Mobile Money`}
+                      </Button>
+                    </>
+                  )}
+                </Card>
               )}
-            </Card>
+
+              <Card style={styles.section}>
+                <ThemedText type="smallBold">Or pay manually</ThemedText>
+                <ThemedText type="small">MoMo number: {data.momoNumber}</ThemedText>
+                <ThemedText type="small">Amount: GHS {data.paymentAmount?.toFixed(2)}</ThemedText>
+                <ThemedText type="small">Reference: {data.referenceCode}</ThemedText>
+                <ThemedText themeColor="textSecondary" type="small">
+                  Include the reference in the MoMo note, then confirm below once sent.
+                </ThemedText>
+                {claimed ? (
+                  <ThemedText type="small" style={{ color: Colors.success.fg }}>Claim submitted — awaiting confirmation.</ThemedText>
+                ) : (
+                  <Button onPress={handleClaim} isPending={isSubmitting}>
+                    {`I have sent GHS ${data.paymentAmount?.toFixed(2)}`}
+                  </Button>
+                )}
+              </Card>
+            </>
           ) : (
             <View style={styles.row}>
               <Button onPress={() => load('renew')} style={{ flex: 1 }}>Renew</Button>
@@ -192,6 +301,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  providerPill: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.backgroundSelected,
     alignItems: 'center',
   },
 });

@@ -7,6 +7,7 @@ import { PLANS, TRIAL_DAYS, CYCLE_DAYS } from '@/constants/plans'
 import { formatDate } from '@/utils/formatDate'
 import { RestrictedCard } from '@/components/app/RestrictedCard'
 import { StartTrialButton } from './StartTrialButton'
+import { PaystackPayButton } from './PaystackPayButton'
 
 const STATUS_LABELS: Record<string, string> = {
   trialing: 'Active (trial)',
@@ -173,6 +174,22 @@ export default async function SubscriptionPage({ searchParams }: Props) {
               <span className="tnum text-warm-950">{newCycleStart} → {newCycleEnd}</span>
             </div>
           </div>
+
+          {(paymentType === 'cycle_renewal' || paymentType === 'trial_conversion') && (
+            <>
+              <PaystackPayButton
+                paymentType={paymentType}
+                targetPlan={targetPlan as 'starter' | 'growth'}
+                amount={paymentAmount ?? 0}
+                defaultPhone={profile.phone}
+              />
+              <div className="flex items-center gap-3 my-4">
+                <div className="h-px bg-warm-200 flex-1" />
+                <span className="text-caption text-warm-400">or pay manually</span>
+                <div className="h-px bg-warm-200 flex-1" />
+              </div>
+            </>
+          )}
 
           <p className="text-caption text-warm-500 mb-3.5">
             Include the reference in your MoMo payment note. After sending, tap the button below.
